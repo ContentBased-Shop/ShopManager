@@ -1,0 +1,86 @@
+﻿@{
+    ViewBag.Title = "Tạo sản phẩm";
+    Layout = "~/Views/Shared/_Layout.cshtml"; // tùy bạn dùng layout hay không
+}
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+
+<div class="container py-4">
+    <h3 class="fw-bold mb-3">Tạo sản phẩm</h3>
+
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb bg-info bg-opacity-25 px-3 py-2 rounded">
+            <li class="breadcrumb-item"><a href="#">Trang chủ</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Tạo sản phẩm</li>
+        </ol>
+    </nav>
+
+    <!-- Back button -->
+    <a href="#" class="btn btn-success mb-3">
+        <i class="bi bi-arrow-left-circle"></i> Về danh sách
+    </a>
+
+    <form enctype="multipart/form-data">
+        <div class="row g-4">
+            <!-- Column Left -->
+            <div class="col-md-4">
+                <div class="mb-3">
+                    <label class="form-label">Tên</label>
+                    <input type="text" class="form-control" placeholder="Nhập tên sản phẩm" value="Iphone 12" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Giá</label>
+                    <input type="text" class="form-control" value="30.000.000" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Danh mục</label>
+                    <select class="form-select">
+                        <option selected>[--Chọn danh mục--]</option>
+                        <option value="1">iPhone</option>
+                        <option value="2">Samsung</option>
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Số lượng</label>
+                    <input type="number" class="form-control" value="10" />
+                </div>
+
+                <button type="submit" class="btn btn-success w-100">Tạo</button>
+            </div>
+
+            <!-- Column Middle -->
+            <div class="col-md-4">
+                <div class="mb-3">
+                    <label class="form-label">Mô tả ngắn gọn</label>
+                    <textarea class="form-control" rows="6">Màn hình: 6.1”, Super Retina XDR
+                    Camera sau: 12.0 MP + 12.0 MP
+                    Camera Selfie: 12.0 MP
+                    RAM: 4 GB
+                    Bộ nhớ trong: 128 GB</textarea>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Mô tả chi tiết</label>
+                    <textarea class="form-control" rows="4">Iphone 12 là sản phẩm mới nhất của Apple. Là một sản...</textarea>
+                </div>
+            </div>
+
+            <!-- Column Right -->
+            <div class="col-md-4">
+                <div class="mb-3">
+                    <label class="form-label">Hình ảnh sản phẩm</label>
+                    <input type="file" class="form-control" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Hình ảnh đại diện</label>
+                    <input type="file" class="form-control" />
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
