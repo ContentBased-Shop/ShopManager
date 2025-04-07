@@ -69,12 +69,14 @@
                     <nav class="navbar navbar-expand-lg navbar-light bg-light">
                         <div class="container-fluid">
                             <div class="ms-3 d-flex align-items-center">
-                                <span class="navbar-text me-3 fw-semibold">Xin chào, @ViewBag.UserName</span>
-                                <a href="/Account/Logout" class="btn btn-outline-danger btn-sm">Đăng xuất</a>
+                                @if (Session["UserName"] != null)
+                                {
+                                    <span class="navbar-text me-3 fw-semibold">Xin chào, @Session["UserName"]</span>
+                                    <a href="@Url.Action("Logout", "Home")" class="btn btn-outline-danger btn-sm">Đăng xuất</a>
+                                }
                             </div>
                         </div>
                     </nav>
-
                 </div>
             </nav>
 
