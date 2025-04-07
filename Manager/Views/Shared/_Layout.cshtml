@@ -13,8 +13,11 @@
         <!-- Sidebar -->
         <div class="border-end bg-dark" id="sidebar-wrapper">
             <div class="sidebar-heading text-white text-center py-4 fw-bold border-bottom">
-                <img src="~/images/logo.png" style="width: 50px;" />
-                <div>H A T</div>
+                <a href="/home/Dashboard">
+                    <img src="~/Content/img/logo.png" style="width: 50px;" />
+                    <div>H A T</div>
+                </a>
+               
             </div>
             <div class="list-group list-group-flush">
                 <a class="list-group-item list-group-item-action bg-dark text-white" data-bs-toggle="collapse" href="#collapseProduct">
@@ -63,7 +66,15 @@
             <nav class="navbar navbar-expand-lg navbar-light bg-light border-bottom">
                 <div class="container-fluid">
                     <button class="btn btn-primary" id="menu-toggle">></button>
-                    <span class="navbar-brand ms-3">Trang quản lý sản phẩm</span>
+                    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+                        <div class="container-fluid">
+                            <div class="ms-3 d-flex align-items-center">
+                                <span class="navbar-text me-3 fw-semibold">Xin chào, @ViewBag.UserName</span>
+                                <a href="/Account/Logout" class="btn btn-outline-danger btn-sm">Đăng xuất</a>
+                            </div>
+                        </div>
+                    </nav>
+
                 </div>
             </nav>
 

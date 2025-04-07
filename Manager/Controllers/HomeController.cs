@@ -1,11 +1,11 @@
-﻿using System.Web.Mvc;
+﻿using Manager.Models;
+using System.Web.Mvc;
 
 namespace Manager.Controllers
 {
     public class HomeController : Controller
     {
-        //
-        // GET: /Home/
+        SHOPDataContext data = new SHOPDataContext();
         #region TRANG-CHU
         public ActionResult Dashboard()
         {
