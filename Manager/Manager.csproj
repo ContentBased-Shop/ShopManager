@@ -222,6 +222,11 @@
     <Content Include="Views\Home\Index.cshtml" />
     <Content Include="Views\Home\TaoHangHoa.cshtml" />
     <Content Include="Views\Home\Dashboard.cshtml" />
+    <Content Include="Views\Home\DanhSachKhachHang.cshtml" />
+    <Content Include="Views\Home\DanhSachDonBanHang.cshtml" />
+    <Content Include="Views\Home\ChiTietKhachHang.cshtml" />
+    <Content Include="Views\Home\CapNhatKhachHang.cshtml" />
+    <Content Include="Views\Home\ChiTietDonBanHang.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
