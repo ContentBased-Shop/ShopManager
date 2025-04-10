@@ -1,0 +1,35 @@
+﻿@{
+    ViewBag.Title = "DiaChiKhach";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@model List<Manager.Models.DiaChiKhachHang>
+
+<div class="container mt-5">
+    <h3 class="fw-bold mb-3">Địa chỉ giao hàng của: @ViewBag.TenKhachHang</h3>
+
+    <div class="table-responsive">
+        <table class="table table-bordered text-center align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>ID</th>
+                    <th>Tên người nhận</th>
+                    <th>SĐT</th>
+                    <th>Địa chỉ</th>
+                    <th>Mặc định</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var dc in Model)
+                {
+                    <tr>
+                        <td>@dc.MaDiaChi</td>
+                        <td>@dc.TenNguoiNhan</td>
+                        <td>@dc.SoDienThoai</td>
+                        <td>@dc.DiaChiDayDu</td>
+                        <td>@(dc.LaMacDinh == true ? "✔️" : "")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

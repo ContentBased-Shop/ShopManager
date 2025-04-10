@@ -1,0 +1,23 @@
+﻿@{
+    ViewBag.Title = "DSBienTheHangHoa";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@model List<Manager.Models.BienTheHangHoa>
+<h2>Biến thể của sản phẩm: @ViewBag.TenHangHoa</h2>
+<tbody>
+    @foreach (var item in Model)
+    {
+        <tr>
+            <td>@item.MaBienThe</td>
+            <td>@item.MauSac</td>
+            <td>@item.DungLuong</td>
+            <td>@item.Gia.ToString("N0") VNĐ</td>
+            <td>@item.SoLuongTonKho</td>
+            <td>
+                <a href="#" class="btn btn-sm btn-warning"><i class="bi bi-pencil-square"></i></a>
+                <a href="#" class="btn btn-sm btn-danger"><i class="bi bi-trash3"></i></a>
+            </td>
+        </tr>
+    }
+</tbody>
+

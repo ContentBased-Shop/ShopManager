@@ -36,18 +36,17 @@ namespace Manager.Controllers
             }
 
             // Tìm người dùng với tên đăng nhập và vai trò Admin
-            var user = data.NguoiDungs.FirstOrDefault(u => 
+            var user = data.NhanViens.FirstOrDefault(u => 
                 u.TenDangNhap == username && 
-                u.VaiTro == "Admin" && 
                 u.TrangThai == "HoatDong");
 
             if (user != null)
             {
                 // Kiểm tra mật khẩu (trong thực tế nên sử dụng hash)
-                if (user.MatKhauHash == password)
+                if (user.MatKhau == password)
                 {
                     // Lưu thông tin người dùng vào Session
-                    Session["UserID"] = user.MaNguoiDung;
+                    Session["UserID"] = user.MaNhanVien;
                     Session["UserName"] = user.HoTen;
                     Session["Role"] = user.VaiTro;
 
@@ -67,18 +66,18 @@ namespace Manager.Controllers
         }
         #endregion
 
-        #region HANGHOA
-        public ActionResult DanhSachHangHoa()
+        #region DanhMuc
+        public ActionResult DanhSachDanhMuc()
         {
             // Kiểm tra đăng nhập
             if (Session["UserID"] == null)
             {
                 return RedirectToAction("Index");
             }
-            return View();
+            var danhMucs = data.DanhMucs.ToList(); 
+            return View(danhMucs);
         }
-
-        public ActionResult TaoHangHoa()
+        public ActionResult TaoDanhMuc()
         {
             // Kiểm tra đăng nhập
             if (Session["UserID"] == null)
@@ -89,6 +88,78 @@ namespace Manager.Controllers
         }
         #endregion
 
+        #region ThuongHieu
+        public ActionResult DanhSachThuongHieu()
+        {
+            if (Session["UserID"] == null)
+            {
+                return RedirectToAction("Index");
+            }
+            var thuongHieus = data.ThuongHieus.ToList();
+            return View(thuongHieus);
+        }
+
+        public ActionResult TaoThuongHieu()
+        {
+            // Kiểm tra đăng nhập
+            if (Session["UserID"] == null)
+            {
+                return RedirectToAction("Index");
+            }
+            return View();
+        }
+        #endregion
+
+        #region HANGHOA
+        public ActionResult DanhSachHangHoa()
+        {
+            // Kiểm tra đăng nhập
+            if (Session["UserID"] == null)
+            {
+                return RedirectToAction("Index");
+            }
+            var danhSachHangHoa = data.HangHoas.ToList();
+
+            return View(danhSachHangHoa);
+        }
+        public ActionResult DSBienTheHangHoa(string maHangHoa)
+        {
+            // Kiểm tra đăng nhập
+            if (Session["UserID"] == null)
+            {
+                return RedirectToAction("Index");
+            }
+             // Lấy danh sách biến thể dựa trên mã hàng hóa
+            var bienTheList = data.BienTheHangHoas
+                                 .Where(bt => bt.MaHangHoa == maHangHoa)
+                                 .ToList();
+
+            var hangHoa = data.HangHoas.FirstOrDefault(hh => hh.MaHangHoa == maHangHoa);
+
+            if (hangHoa != null)
+            {
+                ViewBag.TenHangHoa = hangHoa.TenHangHoa;
+            }
+            else
+            {
+                ViewBag.TenHangHoa = "Không xác định";
+            }
+
+
+            return View(bienTheList);
+        }
+        public ActionResult TaoHangHoa()
+        {
+            // Kiểm tra đăng nhập
+            if (Session["UserID"] == null)
+            {
+                return RedirectToAction("Index");
+            }
+            return View();
+        }
+
+        #endregion
+
         #region KHACH-HANG
         public ActionResult DanhSachKhachHang()
         {
@@ -97,7 +168,21 @@ namespace Manager.Controllers
             {
                 return RedirectToAction("Index");
             }
-            return View();
+            var khachHangs = data.KhachHangs.ToList();
+            return View(khachHangs);
+        }
+        public ActionResult DiaChiKhach(string id)
+        {
+            var diaChiList = data.DiaChiKhachHangs
+                                 .Where(dc => dc.MaKhachHang == id)
+                                 .ToList();
+
+            ViewBag.TenKhachHang = data.KhachHangs
+                                       .Where(k => k.MaKhachHang == id)
+                                       .Select(k => k.HoTen)
+                                       .FirstOrDefault() ?? "Không xác định";
+
+            return View(diaChiList);
         }
         public ActionResult ChiTietKhachHang()
         {
@@ -127,9 +212,79 @@ namespace Manager.Controllers
             {
                 return RedirectToAction("Index");
             }
-            return View();
+            var donHangs = data.DonHangs.ToList();  // data là DbContext
+            return View(donHangs);
         }
-        public ActionResult ChiTietDonBanHang()
+        public ActionResult ChiTietDonBanHang(string id)
+        {
+            if (Session["UserID"] == null)
+            {
+                return RedirectToAction("Index");
+            }
+
+            var donHang = data.DonHangs.FirstOrDefault(d => d.MaDonHang == id);
+            var chiTiet = data.ChiTietDonHangs.Where(c => c.MaDonHang == id).ToList();
+            var thanhToan = data.ThanhToans.FirstOrDefault(t => t.MaDonHang == id);
+            var giaoHang = data.GiaoHangs.FirstOrDefault(g => g.MaDonHang == id);
+
+            var viewModel = new ChiTietDonHangViewModel
+            {
+                DonHang = donHang,
+                ChiTietDonHangs = chiTiet,
+                ThanhToan = thanhToan,
+                GiaoHang = giaoHang
+            };
+
+            return View(viewModel);
+        }
+
+        #endregion
+
+        #region DonNhapHang
+        public ActionResult DanhSachNhapHang()
+        {
+            // Kiểm tra đăng nhập
+            if (Session["UserID"] == null)
+            {
+                return RedirectToAction("Index");
+            }
+            var nhapHangs = data.NhapHangs.ToList(); 
+            return View(nhapHangs);
+        }
+        public ActionResult ChiTietNhapHang(string id)
+        {
+            // Kiểm tra đăng nhập
+            if (Session["UserID"] == null)
+            {
+                return RedirectToAction("Index");
+            }
+            // Lấy thông tin phiếu nhập
+            var nhapHang = data.NhapHangs.FirstOrDefault(n => n.MaNhapHang == id);
+            if (nhapHang == null)
+            {
+                return HttpNotFound();
+            }
+
+            // Lấy danh sách chi tiết nhập hàng theo mã phiếu nhập
+            var chiTiet = data.ChiTietNhapHangs.Where(c => c.MaNhapHang == id).ToList();
+
+            ViewBag.NhapHang = nhapHang;
+            return View(chiTiet);
+        }
+        #endregion
+
+        #region Voucher
+        public ActionResult DanhSachVoucher()
+        {
+            // Kiểm tra đăng nhập
+            if (Session["UserID"] == null)
+            {
+                return RedirectToAction("Index");
+            }
+            var vouchers = data.Vouchers.ToList(); 
+            return View(vouchers);
+        }
+        public ActionResult TaoVoucher()
         {
             // Kiểm tra đăng nhập
             if (Session["UserID"] == null)
@@ -139,5 +294,27 @@ namespace Manager.Controllers
             return View();
         }
         #endregion
+
+        public ActionResult DanhSachNhanVien()
+        {
+            // Kiểm tra đăng nhập
+            if (Session["UserID"] == null)
+            {
+                return RedirectToAction("Index");
+            }
+            var nhanViens = data.NhanViens.ToList();
+            return View(nhanViens);
+        }
+        public ActionResult DanhSachNhaCungCap()
+        {
+            // Kiểm tra đăng nhập
+            if (Session["UserID"] == null)
+            {
+                return RedirectToAction("Index");
+            }
+            var nhaCungCaps = data.NhaCungCaps.ToList(); 
+            return View(nhaCungCaps);
+        }
+
     }
 }

@@ -1,20 +1,19 @@
-﻿
-@{
-    ViewBag.Title = "Sản Phẩm";
-    Layout = "~/Views/Shared/_Layout.cshtml"; // hoặc bỏ nếu chưa dùng layout
+﻿@{
+    ViewBag.Title = "Nhân Viên";
+    Layout = "~/Views/Shared/_Layout.cshtml";
 }
-@model List<Manager.Models.HangHoa>
+@model List<Manager.Models.NhanVien>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
 
 <div class="container py-4">
-    <h3 class="fw-bold mb-3">Danh sách sản phẩm</h3>
+    <h3 class="fw-bold mb-3">Danh sách nhân viên</h3>
 
     <!-- Breadcrumb -->
     <nav aria-label="breadcrumb" class="mb-3">
         <ol class="breadcrumb bg-info bg-opacity-25 px-3 py-2 rounded">
             <li class="breadcrumb-item"><a href="#">Trang chủ</a></li>
-            <li class="breadcrumb-item active" aria-current="page">Sản phẩm</li>
+            <li class="breadcrumb-item active" aria-current="page">Nhân viên</li>
         </ol>
     </nav>
 
@@ -24,9 +23,9 @@
         <input type="text" class="form-control w-auto" placeholder="Tìm kiếm..." />
         <button class="btn btn-primary"><i class="bi bi-search"></i></button>
         <select class="form-select w-auto">
-            <option selected>Chọn danh mục</option>
-            <option value="1">iPhone</option>
-            <option value="2">Samsung</option>
+            <option selected>Chọn vai trò</option>
+            <option value="Admin">Admin</option>
+            <option value="NhanVien">Nhân viên</option>
         </select>
         <button class="btn btn-dark">Đặt lại</button>
     </div>
@@ -36,34 +35,41 @@
         <table class="table table-bordered align-middle text-center">
             <thead class="table-light">
                 <tr>
-                    <th>ID</th>
-                    <th>Tên</th>
-                    <th>Giá</th>
-                    <th>Số lượng</th>
+                    <th>Mã NV</th>
+                    <th>Tên đăng nhập</th>
+                    <th>Họ tên</th>
+                    <th>Email</th>
+                    <th>Số điện thoại</th>
+                    <th>Vai trò</th>
+                    <th>Trạng thái</th>
                     <th>Thao tác</th>
                 </tr>
             </thead>
             <tbody>
-                @foreach (var item in Model)
+                @foreach (var nv in Model)
                 {
                     <tr>
-                        <td>@item.MaHangHoa</td>
+                        <td>@nv.MaNhanVien</td>
+                        <td>@nv.TenDangNhap</td>
+                        <td>@nv.HoTen</td>
+                        <td>@nv.Email</td>
+                        <td>@nv.SoDienThoai</td>
                         <td>
-                            <a href="@Url.Action("DSBienTheHangHoa", "Home", new { maHangHoa = item.MaHangHoa })">
-                                @item.TenHangHoa
-                            </a>
+                            <span class="badge @(nv.VaiTro == "Admin" ? "bg-primary" : "bg-secondary")">@nv.VaiTro</span>
                         </td>
-                        <td>@item.MoTa</td>
-                        <td>@item.DanhGiaTrungBinh</td>
-                        <td>@item.NgayTao?.ToString("dd/MM/yyyy")</td>
                         <td>
-                            <a href="#" class="btn btn-sm btn-warning"><i class="bi bi-pencil-square"></i></a>
-                            <a href="#" class="btn btn-sm btn-danger"><i class="bi bi-trash3"></i></a>
+                            <span class="badge @(nv.TrangThai == "HoatDong" ? "bg-success" : "bg-danger")">
+                                @(nv.TrangThai == "HoatDong" ? "Hoạt động" : "Cấm")
+                            </span>
+                        </td>
+                        <td>
+                            <a href="#" class="btn btn-sm btn-info"><i class="bi bi-eye"></i></a>
+                            <a href="#" class="btn btn-sm btn-warning"><i class="bi bi-pencil"></i></a>
+                            <a href="#" class="btn btn-sm btn-danger"><i class="bi bi-trash"></i></a>
                         </td>
                     </tr>
                 }
             </tbody>
-
         </table>
     </div>
 

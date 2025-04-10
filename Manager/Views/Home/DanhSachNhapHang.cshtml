@@ -1,0 +1,29 @@
+﻿@model List<Manager.Models.NhapHang>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Mã nhập hàng</th>
+            <th>Nhà cung cấp</th>
+            <th>Nhân viên</th>
+            <th>Tổng tiền</th>
+            <th>Ngày nhập</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.MaNhapHang</td>
+                <td>@item.MaNhaCungCap</td>
+                <td>@item.MaNhanVien</td>
+                <td>@String.Format("{0:N0}₫", item.TongTien)</td>
+                <td>@item.NgayNhap?.ToString("dd/MM/yyyy HH:mm")</td>
+                <td>
+                    <a href="@Url.Action("ChiTietNhapHang", new { id = item.MaNhapHang })">Xem chi tiết</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
