@@ -1,6 +1,19 @@
 ﻿using Manager.Models;
+using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
+using System.Data.Entity;
+using System.IO;
 using System.Linq;
+using System.Web;
 using System.Web.Mvc;
+using System.Security.Cryptography;
+using System.Text;
+using System.Net;
+using System.Net.Mail;
+using System.Configuration;
+using Newtonsoft.Json.Linq;
+using System.Web.Configuration;
 
 namespace Manager.Controllers
 {
@@ -108,6 +121,30 @@ namespace Manager.Controllers
             }
             return View();
         }
+
+        [HttpPost]
+        public JsonResult XoaMotThuongHieu(string id)
+        {
+            var thuongHieu = data.ThuongHieus.FirstOrDefault(t => t.MaThuongHieu == id);
+
+            if (thuongHieu == null)
+            {
+                return Json(new { success = false, message = "Thương hiệu không tồn tại" });
+            }
+
+            var coSanPham = data.HangHoas.Any(h => h.MaThuongHieu == id);
+            if (coSanPham)
+            {
+                return Json(new { success = false, reason = "coSanPham" });
+            }
+
+            data.ThuongHieus.DeleteOnSubmit(thuongHieu);
+            data.SubmitChanges();
+
+            return Json(new { success = true });
+        }
+
+
         #endregion
 
         #region HANGHOA

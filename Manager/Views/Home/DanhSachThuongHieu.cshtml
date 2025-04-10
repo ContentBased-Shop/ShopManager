@@ -1,12 +1,12 @@
-﻿
+﻿@model List<Manager.Models.ThuongHieu>
 @{
     ViewBag.Title = "Thương Hiệu";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
-@model List<Manager.Models.ThuongHieu>
 
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
+
 
 <div class="container py-4">
     <h3 class="fw-bold mb-3">Danh sách thương hiệu</h3>
@@ -25,6 +25,9 @@
         <input type="text" class="form-control w-auto" placeholder="Tìm kiếm..." />
         <button class="btn btn-primary"><i class="bi bi-search"></i></button>
         <button class="btn btn-dark">Đặt lại</button>
+        <button id="btnXoaNhieu" class="btn btn-danger d-none" onclick="xoaNhieu()">
+            <i class="bi bi-trash3"></i> Xóa đã chọn
+        </button>
     </div>
 
     <!-- Table -->
@@ -32,6 +35,9 @@
         <table class="table table-bordered align-middle text-center">
             <thead class="table-light">
                 <tr>
+                    <th style="width: 50px;">
+                        <input type="checkbox" id="checkAll" />
+                    </th>
                     <th>Mã TH</th>
                     <th>Tên thương hiệu</th>
                     <th>Mô tả</th>
@@ -44,6 +50,9 @@
                 @foreach (var item in Model)
                 {
                     <tr>
+                        <td>
+                            <input type="checkbox" class="check-item" value="@item.MaThuongHieu" />
+                        </td>
                         <td>@item.MaThuongHieu</td>
                         <td>@item.TenThuongHieu</td>
                         <td>@(item.MoTa ?? "Chưa có mô tả")</td>
@@ -61,26 +70,111 @@
                             @(item.TrangThai == true ? "Hiển thị" : "Ẩn")
                         </td>
                         <td>
-                            <a href="#" class="btn btn-sm btn-warning"><i class="bi bi-pencil-square"></i></a>
-                            <a href="#" class="btn btn-sm btn-danger"><i class="bi bi-trash3"></i></a>
+                            <a href="#" class="btn btn-sm btn-warning btn-delete" data-id="@item.MaThuongHieu" data-name="@item.TenThuongHieu" data-bs-toggle="modal" data-bs-target="#confirmDeleteModal">
+                                <i class="bi bi-trash3"></i>
+                            </a>
                         </td>
                     </tr>
                 }
             </tbody>
-
         </table>
     </div>
 
-    <!-- Pagination -->
-    <nav>
-        <ul class="pagination justify-content-center">
-            <li class="page-item"><a class="page-link" href="#">Trang đầu</a></li>
-            <li class="page-item"><a class="page-link" href="#">Trước</a></li>
-            <li class="page-item active"><a class="page-link" href="#">1</a></li>
-            <li class="page-item"><a class="page-link" href="#">2</a></li>
-            <li class="page-item"><a class="page-link" href="#">3</a></li>
-            <li class="page-item"><a class="page-link" href="#">Sau</a></li>
-            <li class="page-item"><a class="page-link" href="#">Trang cuối</a></li>
-        </ul>
-    </nav>
+    <!-- Modal Xác nhận xóa -->
+    <div class="modal fade" id="confirmDeleteModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Xác nhận xóa</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p id="deleteMessage"></p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <button type="button" class="btn btn-danger" id="confirmDelete">Xóa</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Modal thông báo không thể xóa -->
+    <div class="modal fade" id="cannotDeleteModal" tabindex="-1" aria-labelledby="cannotDeleteModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-warning">
+                    <h5 class="modal-title" id="cannotDeleteModalLabel">Không thể xóa</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+                </div>
+                <div class="modal-body">
+                    Thương hiệu này đang được sử dụng trong bảng Hàng Hóa. Vui lòng xóa sản phẩm trước.
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Modal Xóa thành công -->
+    <div class="modal fade" id="successModal" tabindex="-1" aria-labelledby="successModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title" id="successModalLabel">Thành công</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+                </div>
+                <div class="modal-body">
+                    Đã xóa thương hiệu thành công!
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Đóng</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    $(document).ready(function () {
+        $('.btn-warning').click(function () {
+            var maTH = $(this).closest('tr').find('.check-item').val();
+
+            if (!maTH) return;
+
+            $('#deleteMessage').text("Bạn có chắc chắn muốn xóa thương hiệu này?");
+            $('#confirmDeleteModal').modal('show');
+
+            $('#confirmDelete').off('click').on('click', function () {
+                $.ajax({
+                    url: '@Url.Action("XoaMotThuongHieu", "Home")',
+                    type: 'POST',
+                    data: { id: maTH },
+                    success: function (response) {
+                        $('#confirmDeleteModal').modal('hide');
+                        if (response.success) {
+                            $('#successModal').modal('show');
+                            setTimeout(function () {
+                                location.reload();
+                            }, 1500);
+                        }
+                        else {
+                            if (response.reason === "coSanPham") {
+                                $('#cannotDeleteModal').modal('show');
+                            } else {
+                                alert(response.message || "Xóa thất bại");
+                            }
+                        }
+                    },
+                    error: function () {
+                        alert("Lỗi khi gọi server.");
+                    }
+                });
+            });
+        });
+    });
+    </script>
+
+
+
 </div>
+
+
