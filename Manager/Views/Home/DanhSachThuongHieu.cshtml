@@ -22,9 +22,7 @@
     <!-- Action Bar -->
     <div class="d-flex flex-wrap align-items-center mb-3 gap-2">
         <a href="#" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#createBrandModal"><i class="bi bi-plus-circle"></i> Tạo mới</a>
-        <input type="text" class="form-control w-auto" placeholder="Tìm kiếm..." />
-        <button class="btn btn-primary"><i class="bi bi-search"></i></button>
-        <button class="btn btn-dark">Đặt lại</button>
+        <input type="text" class="form-control w-auto" id="searchInput" placeholder="Tìm kiếm..." />
         <button id="btnXoaNhieu" class="btn btn-danger d-none" onclick="xoaNhieu()">
             <i class="bi bi-trash3"></i> Xóa đã chọn
         </button>
@@ -32,7 +30,7 @@
 
     <!-- Table -->
     <div class="table-responsive">
-        <table class="table table-bordered align-middle text-center">
+        <table class="table table-bordered align-middle text-center" id="brandTable">
             <thead class="table-light">
                 <tr>
                     <th style="width: 50px;">
@@ -54,7 +52,7 @@
                             <input type="checkbox" class="check-item" value="@item.MaThuongHieu" />
                         </td>
                         <td>@item.MaThuongHieu</td>
-                        <td>@item.TenThuongHieu</td>
+                        <td class="ten-thuong-hieu">@item.TenThuongHieu</td>
                         <td>@(item.MoTa ?? "Chưa có mô tả")</td>
                         <td>
                             @if (!string.IsNullOrEmpty(item.Logo))
@@ -257,6 +255,30 @@
 
     <script>
     $(document).ready(function () {
+        // Xử lý tìm kiếm
+        function searchBrands() {
+            var searchText = $('#searchInput').val().toLowerCase();
+            $('#brandTable tbody tr').each(function() {
+                var tenThuongHieu = $(this).find('.ten-thuong-hieu').text().toLowerCase();
+                if(tenThuongHieu.includes(searchText)) {
+                    $(this).show();
+                } else {
+                    $(this).hide();
+                }
+            });
+        }
+
+        // Sự kiện khi nhập vào ô tìm kiếm
+        $('#searchInput').on('input', function() {
+            searchBrands();
+        });
+
+        // Sự kiện khi nhấn nút tìm kiếm
+        $('#btnSearch').click(function(e) {
+            e.preventDefault();
+            searchBrands();
+        });
+
         $('.btn-warning').click(function () {
             var maTH = $(this).closest('tr').find('.check-item').val();
 
