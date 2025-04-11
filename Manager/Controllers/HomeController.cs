@@ -183,6 +183,39 @@ namespace Manager.Controllers
             }
         }
 
+        [HttpPost]
+        public JsonResult SuaThuongHieu(string MaThuongHieu, string TenThuongHieu, string MoTa, HttpPostedFileBase Logo, bool TrangThai)
+        {
+            try
+            {
+                var thuongHieu = data.ThuongHieus.FirstOrDefault(t => t.MaThuongHieu == MaThuongHieu);
+                if (thuongHieu == null)
+                {
+                    return Json(new { success = false, message = "Thương hiệu không tồn tại" });
+                }
+
+                thuongHieu.TenThuongHieu = TenThuongHieu;
+                thuongHieu.MoTa = MoTa;
+                thuongHieu.TrangThai = TrangThai;
+
+                if (Logo != null && Logo.ContentLength > 0)
+                {
+                    var fileName = Path.GetFileName(Logo.FileName);
+                    var path = Path.Combine(Server.MapPath("~/Content/img/thuonghieu"), fileName);
+                    Logo.SaveAs(path);
+                    thuongHieu.Logo = fileName;
+                }
+
+                data.SubmitChanges();
+
+                return Json(new { success = true });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Có lỗi xảy ra khi chỉnh sửa thương hiệu: " + ex.Message });
+            }
+        }
+
         private string GenerateRandomString(int length)
         {
             const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";

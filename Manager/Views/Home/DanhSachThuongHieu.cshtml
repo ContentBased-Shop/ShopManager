@@ -70,6 +70,9 @@
                             @(item.TrangThai == true ? "Hiển thị" : "Ẩn")
                         </td>
                         <td>
+                            <a href="#" class="btn btn-sm btn-primary btn-edit" data-id="@item.MaThuongHieu" data-name="@item.TenThuongHieu" data-mota="@item.MoTa" data-logo="@item.Logo" data-trangthai="@item.TrangThai" data-bs-toggle="modal" data-bs-target="#editBrandModal">
+                                <i class="bi bi-pencil-square"></i>
+                            </a>
                             <a href="#" class="btn btn-sm btn-warning btn-delete" data-id="@item.MaThuongHieu" data-name="@item.TenThuongHieu" data-bs-toggle="modal" data-bs-target="#confirmDeleteModal">
                                 <i class="bi bi-trash3"></i>
                             </a>
@@ -191,6 +194,66 @@
             </div>
         </div>
     </div>
+    <!-- Modal Sửa thành công -->
+    <div class="modal fade" id="editSuccessModal" tabindex="-1" aria-labelledby="editSuccessModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title" id="editSuccessModalLabel">Thành công</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+                </div>
+                <div class="modal-body">
+                    Đã sửa thương hiệu thành công!
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Đóng</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Modal Chỉnh sửa thương hiệu -->
+    <div class="modal fade" id="editBrandModal" tabindex="-1" aria-labelledby="editBrandModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editBrandModalLabel">Chỉnh sửa Thương Hiệu</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="editBrandForm">
+                        <div class="mb-3">
+                            <label for="editMaThuongHieu" class="form-label">Mã Thương Hiệu</label>
+                            <input type="text" class="form-control" id="editMaThuongHieu" readonly>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editTenThuongHieu" class="form-label">Tên Thương Hiệu</label>
+                            <input type="text" class="form-control" id="editTenThuongHieu" maxlength="100" required>
+                            <div class="text-danger mt-1" id="editTenThuongHieuError" style="display: none;">Vui lòng nhập tên thương hiệu.</div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editMoTa" class="form-label">Mô Tả</label>
+                            <textarea class="form-control" id="editMoTa" maxlength="255"></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editLogo" class="form-label">Logo</label>
+                            <input type="file" class="form-control" id="editLogo" accept="image/*">
+                        </div>
+                        <div class="mb-3">
+                            <label for="trangThaiEdit">Trạng thái</label>
+                            <select class="form-select" id="trangThaiEdit" name="TrangThai">
+                                <option value="true">Hiển thị</option>
+                                <option value="false">Ẩn</option>
+                            </select>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <button type="button" class="btn btn-primary" id="updateBrand">Lưu</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <script>
     $(document).ready(function () {
@@ -271,6 +334,81 @@
                 error: function () {
                     alert("Lỗi khi gọi server.");
                 }
+            });
+        });
+
+        // Xử lý sự kiện khi nhấn nút Sửa
+        $('.btn-edit').click(function () {
+            var maThuongHieu = $(this).data('id');
+            var tenThuongHieu = $(this).data('name');
+            var moTa = $(this).data('mota');
+            var logo = $(this).data('logo');
+            var trangThai = $(this).data('trangthai');
+
+            $('#editMaThuongHieu').val(maThuongHieu);
+            $('#editTenThuongHieu').val(tenThuongHieu);
+            $('#editMoTa').val(moTa);
+
+            // Hiển thị tên file logo hiện tại
+            if (logo) {
+                $('#editLogo').after('<p id="currentLogo">Logo hiện tại: ' + logo + '</p>');
+            } else {
+                $('#editLogo').after('<p id="currentLogo">Không có logo</p>');
+            }
+
+            // Thiết lập trạng thái
+            $('#editTrangThai').val(trangThai.toString().toLowerCase());
+
+
+            // Xóa thông tin logo hiện tại khi đóng modal
+            $('#editBrandModal').on('hidden.bs.modal', function () {
+                $('#currentLogo').remove();
+            });
+
+            // Xử lý sự kiện khi nhấn nút Lưu trong modal chỉnh sửa
+            $('#updateBrand').click(function () {
+                const tenThuongHieuInput = document.getElementById("editTenThuongHieu");
+                const errorLabel = document.getElementById("editTenThuongHieuError");
+                const tenThuongHieu = tenThuongHieuInput.value.trim();
+
+                if (tenThuongHieu === "") {
+                    errorLabel.style.display = "block";
+                    tenThuongHieuInput.classList.add("is-invalid");
+                    tenThuongHieuInput.focus();
+                    return; // ❌ Không gửi request nếu không nhập tên
+                } else {
+                    errorLabel.style.display = "none";
+                    tenThuongHieuInput.classList.remove("is-invalid");
+                }
+
+                var formData = new FormData();
+                formData.append('MaThuongHieu', $('#editMaThuongHieu').val());
+                formData.append('TenThuongHieu', tenThuongHieu);
+                formData.append('MoTa', $('#editMoTa').val());
+                formData.append('Logo', $('#editLogo')[0].files[0] || logo); // Giữ lại logo cũ nếu không chọn logo mới
+                formData.append('TrangThai', $('#trangThaiEdit').val());
+                
+                $.ajax({
+                    url: '@Url.Action("SuaThuongHieu", "Home")',
+                    type: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function (response) {
+                        if (response.success) {
+                            $('#editBrandModal').modal('hide');
+                            $('#editSuccessModal').modal('show');
+                            setTimeout(function () {
+                                location.reload();
+                            }, 1500);
+                        } else {
+                            alert(response.message || "Chỉnh sửa thương hiệu thất bại");
+                        }
+                    },
+                    error: function () {
+                        alert("Lỗi khi gọi server.");
+                    }
+                });
             });
         });
     });
