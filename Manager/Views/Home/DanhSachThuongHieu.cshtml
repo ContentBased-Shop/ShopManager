@@ -253,6 +253,26 @@
         </div>
     </div>
 
+    <!-- Modal thông báo thương hiệu đang được sử dụng -->
+    <div class="modal fade" id="brandInUseModal" tabindex="-1" aria-labelledby="brandInUseModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-warning">
+                    <h5 class="modal-title" id="brandInUseModalLabel">Không thể xóa</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Không thể xóa các thương hiệu sau vì đang được sử dụng trong bảng Hàng Hóa:</p>
+                    <div id="brandInUseList" class="alert alert-warning">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
     $(document).ready(function () {
         // Xử lý tìm kiếm
@@ -273,11 +293,71 @@
             searchBrands();
         });
 
-        // Sự kiện khi nhấn nút tìm kiếm
-        $('#btnSearch').click(function(e) {
-            e.preventDefault();
-            searchBrands();
+        // Xử lý checkbox "Chọn tất cả"
+        $('#checkAll').change(function() {
+            $('.check-item').prop('checked', $(this).prop('checked'));
+            toggleDeleteButton();
         });
+
+        // Xử lý khi checkbox đơn lẻ thay đổi
+        $('.check-item').change(function() {
+            toggleDeleteButton();
+            // Nếu tất cả checkbox con được chọn, checkbox "Chọn tất cả" cũng được chọn
+            $('#checkAll').prop('checked', $('.check-item:checked').length === $('.check-item').length);
+        });
+
+        // Hàm hiển thị/ẩn nút xóa
+        function toggleDeleteButton() {
+            if($('.check-item:checked').length > 0) {
+                $('#btnXoaNhieu').removeClass('d-none');
+            } else {
+                $('#btnXoaNhieu').addClass('d-none');
+            }
+        }
+
+        // Hàm xóa nhiều thương hiệu
+        window.xoaNhieu = function() {
+            var selectedIds = [];
+            $('.check-item:checked').each(function() {
+                selectedIds.push($(this).val());
+            });
+
+            if(selectedIds.length === 0) {
+                alert('Vui lòng chọn ít nhất một thương hiệu để xóa!');
+                return;
+            }
+
+            $('#deleteMessage').text("Bạn có chắc chắn muốn xóa " + selectedIds.length + " thương hiệu đã chọn?");
+            $('#confirmDeleteModal').modal('show');
+
+            $('#confirmDelete').off('click').on('click', function() {
+                $.ajax({
+                    url: '@Url.Action("XoaNhieuThuongHieu", "Home")',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({ ids: selectedIds }),
+                    success: function(response) {
+                        $('#confirmDeleteModal').modal('hide');
+                        if(response.success) {
+                            $('#deleteSuccessModal').modal('show');
+                            setTimeout(function() {
+                                location.reload();
+                            }, 1500);
+                        } else {
+                            if(response.reason === "coSanPham") {
+                                $('#brandInUseList').html(response.message);
+                                $('#brandInUseModal').modal('show');
+                            } else {
+                                alert(response.message || "Xóa thất bại");
+                            }
+                        }
+                    },
+                    error: function() {
+                        alert("Lỗi khi gọi server.");
+                    }
+                });
+            });
+        }
 
         $('.btn-warning').click(function () {
             var maTH = $(this).closest('tr').find('.check-item').val();

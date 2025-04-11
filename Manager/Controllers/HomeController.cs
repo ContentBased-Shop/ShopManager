@@ -216,6 +216,63 @@ namespace Manager.Controllers
             }
         }
 
+        [HttpPost]
+        public JsonResult XoaNhieuThuongHieu(string[] ids)
+        {
+            try
+            {
+                if (ids == null || ids.Length == 0)
+                {
+                    return Json(new { success = false, message = "Không có thương hiệu nào được chọn để xóa" });
+                }
+
+                // Kiểm tra và lưu danh sách thương hiệu có sản phẩm
+                var thuongHieuCoSanPham = new List<string>();
+                foreach (var id in ids)
+                {
+                    if (string.IsNullOrEmpty(id)) continue;
+
+                    var coSanPham = data.HangHoas.Any(h => h.MaThuongHieu == id);
+                    if (coSanPham)
+                    {
+                        var tenThuongHieu = data.ThuongHieus
+                            .Where(t => t.MaThuongHieu == id)
+                            .Select(t => t.TenThuongHieu)
+                            .FirstOrDefault();
+                        thuongHieuCoSanPham.Add($"{id} ({tenThuongHieu})");
+                    }
+                }
+
+                // Nếu có thương hiệu đang được sử dụng
+                if (thuongHieuCoSanPham.Any())
+                {
+                    var danhSachTH = string.Join(", ", thuongHieuCoSanPham);
+                    return Json(new { 
+                        success = false, 
+                        reason = "coSanPham", 
+                        message = $"Không thể xóa vì các thương hiệu sau đang được sử dụng trong bảng Hàng Hóa: {danhSachTH}" 
+                    });
+                }
+
+                // Nếu không có thương hiệu nào có sản phẩm, tiến hành xóa
+                var thuongHieuCanXoa = data.ThuongHieus.Where(t => ids.Contains(t.MaThuongHieu));
+                if (thuongHieuCanXoa.Any())
+                {
+                    data.ThuongHieus.DeleteAllOnSubmit(thuongHieuCanXoa);
+                    data.SubmitChanges();
+                    return Json(new { success = true });
+                }
+                else
+                {
+                    return Json(new { success = false, message = "Không tìm thấy thương hiệu cần xóa" });
+                }
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Có lỗi xảy ra khi xóa thương hiệu: " + ex.Message });
+            }
+        }
+
         private string GenerateRandomString(int length)
         {
             const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
