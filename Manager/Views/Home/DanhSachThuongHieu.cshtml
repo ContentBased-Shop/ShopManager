@@ -21,7 +21,7 @@
 
     <!-- Action Bar -->
     <div class="d-flex flex-wrap align-items-center mb-3 gap-2">
-        <a href="#" class="btn btn-success"><i class="bi bi-plus-circle"></i> Tạo mới</a>
+        <a href="#" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#createBrandModal"><i class="bi bi-plus-circle"></i> Tạo mới</a>
         <input type="text" class="form-control w-auto" placeholder="Tìm kiếm..." />
         <button class="btn btn-primary"><i class="bi bi-search"></i></button>
         <button class="btn btn-dark">Đặt lại</button>
@@ -116,15 +116,74 @@
         </div>
     </div>
     <!-- Modal Xóa thành công -->
-    <div class="modal fade" id="successModal" tabindex="-1" aria-labelledby="successModalLabel" aria-hidden="true">
+    <div class="modal fade" id="deleteSuccessModal" tabindex="-1" aria-labelledby="deleteSuccessModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header bg-success text-white">
-                    <h5 class="modal-title" id="successModalLabel">Thành công</h5>
+                    <h5 class="modal-title" id="deleteSuccessModalLabel">Thành công</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
                 </div>
                 <div class="modal-body">
                     Đã xóa thương hiệu thành công!
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Đóng</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Tạo mới thương hiệu -->
+    <div class="modal fade" id="createBrandModal" tabindex="-1" aria-labelledby="createBrandModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="createBrandModalLabel">Thêm Thương Hiệu Mới</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="createBrandForm">
+                        <div class="mb-3">
+                            <label for="tenThuongHieu" class="form-label">Tên Thương Hiệu</label>
+                            <input type="text" class="form-control" id="tenThuongHieu" maxlength="100" required>
+                            <div class="text-danger mt-1" id="tenThuongHieuError" style="display: none;">Vui lòng nhập tên thương hiệu.</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="moTa" class="form-label">Mô Tả</label>
+                            <textarea class="form-control" id="moTa" maxlength="255"></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="logo" class="form-label">Logo</label>
+                            <input type="file" class="form-control" id="logo" accept="image/*">
+                        </div>
+                        <div class="mb-3">
+                            <label for="trangThai" class="form-label">Trạng Thái</label>
+                            <select class="form-select" id="trangThai" required>
+                                <option value="true">Hiển thị</option>
+                                <option value="false">Ẩn</option>
+                            </select>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <button type="button" class="btn btn-primary" id="saveBrand">Lưu</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Thêm thành công -->
+    <div class="modal fade" id="addSuccessModal" tabindex="-1" aria-labelledby="addSuccessModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title" id="addSuccessModalLabel">Thành công</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+                </div>
+                <div class="modal-body">
+                    Đã thêm thương hiệu thành công!
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-light" data-bs-dismiss="modal">Đóng</button>
@@ -151,12 +210,11 @@
                     success: function (response) {
                         $('#confirmDeleteModal').modal('hide');
                         if (response.success) {
-                            $('#successModal').modal('show');
+                            $('#deleteSuccessModal').modal('show');
                             setTimeout(function () {
                                 location.reload();
                             }, 1500);
-                        }
-                        else {
+                        } else {
                             if (response.reason === "coSanPham") {
                                 $('#cannotDeleteModal').modal('show');
                             } else {
@@ -170,8 +228,54 @@
                 });
             });
         });
+
+        $('#saveBrand').click(function () {
+            const tenThuongHieuInput = document.getElementById("tenThuongHieu");
+            const errorLabel = document.getElementById("tenThuongHieuError");
+            const tenThuongHieu = tenThuongHieuInput.value.trim();
+
+            if (tenThuongHieu === "") {
+                errorLabel.style.display = "block";
+                tenThuongHieuInput.classList.add("is-invalid");
+                tenThuongHieuInput.focus();
+                return; // ❌ Không gửi request nếu không nhập tên
+            } else {
+                errorLabel.style.display = "none";
+                tenThuongHieuInput.classList.remove("is-invalid");
+            }
+
+            var formData = new FormData();
+            formData.append('MaThuongHieu', $('#maThuongHieu').val());
+            formData.append('TenThuongHieu', tenThuongHieu);
+            formData.append('MoTa', $('#moTa').val());
+            formData.append('Logo', $('#logo')[0].files[0]);
+            formData.append('TrangThai', $('#trangThai').val());
+
+            $.ajax({
+                url: '@Url.Action("TaoThuongHieu", "Home")',
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function (response) {
+                    if (response.success) {
+                        $('#createBrandModal').modal('hide');
+                        $('#addSuccessModal').modal('show');
+                        setTimeout(function () {
+                            location.reload();
+                        }, 1500);
+                    } else {
+                        alert(response.message || "Thêm thương hiệu thất bại");
+                    }
+                },
+                error: function () {
+                    alert("Lỗi khi gọi server.");
+                }
+            });
+        });
     });
     </script>
+
 
 
 

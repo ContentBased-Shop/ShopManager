@@ -144,7 +144,52 @@ namespace Manager.Controllers
             return Json(new { success = true });
         }
 
+        [HttpPost]
+        public JsonResult TaoThuongHieu(string TenThuongHieu, string MoTa, HttpPostedFileBase Logo, bool TrangThai)
+        {
+            try
+            {
+                // Tạo mã thương hiệu tự động
+                string MaThuongHieu;
+                do
+                {
+                    MaThuongHieu = "TH" + GenerateRandomString(6);
+                } while (data.ThuongHieus.Any(t => t.MaThuongHieu == MaThuongHieu));
 
+                var thuongHieu = new ThuongHieu
+                {
+                    MaThuongHieu = MaThuongHieu,
+                    TenThuongHieu = TenThuongHieu,
+                    MoTa = MoTa,
+                    TrangThai = TrangThai
+                };
+
+                if (Logo != null && Logo.ContentLength > 0)
+                {
+                    var fileName = Path.GetFileName(Logo.FileName);
+                    var path = Path.Combine(Server.MapPath("~/Content/img/thuonghieu"), fileName);
+                    Logo.SaveAs(path);
+                    thuongHieu.Logo = fileName;
+                }
+
+                data.ThuongHieus.InsertOnSubmit(thuongHieu);
+                data.SubmitChanges();
+
+                return Json(new { success = true });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Có lỗi xảy ra khi thêm thương hiệu: " + ex.Message });
+            }
+        }
+
+        private string GenerateRandomString(int length)
+        {
+            const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+            var random = new Random();
+            return new string(Enumerable.Repeat(chars, length)
+              .Select(s => s[random.Next(s.Length)]).ToArray());
+        }
         #endregion
 
         #region HANGHOA
