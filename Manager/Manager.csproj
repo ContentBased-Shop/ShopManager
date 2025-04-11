@@ -259,6 +259,7 @@
     <Content Include="Views\Home\ChiTietNhapHang.cshtml" />
     <Content Include="Views\Home\DSBienTheHangHoa.cshtml" />
     <Content Include="Views\Home\DiaChiKhach.cshtml" />
+    <Content Include="Views\Home\SuaHangHoa.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

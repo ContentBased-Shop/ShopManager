@@ -311,10 +311,12 @@ namespace Manager.Controllers
             if (hangHoa != null)
             {
                 ViewBag.TenHangHoa = hangHoa.TenHangHoa;
+                ViewBag.MaHangHoa = hangHoa.MaHangHoa;
             }
             else
             {
                 ViewBag.TenHangHoa = "Không xác định";
+                ViewBag.MaHangHoa = "";
             }
 
 
@@ -327,7 +329,213 @@ namespace Manager.Controllers
             {
                 return RedirectToAction("Index");
             }
+            
+            // Lấy danh sách thương hiệu và danh mục có trạng thái true
+            ViewBag.DanhSachThuongHieu = data.ThuongHieus
+                .Where(th => th.TrangThai == true)
+                .ToList();
+            
+            ViewBag.DanhSachDanhMuc = data.DanhMucs
+               
+                .ToList();
+                
             return View();
+        }
+        
+        public ActionResult SuaHangHoa(string id)
+        {
+            // Kiểm tra đăng nhập
+            if (Session["UserID"] == null)
+            {
+                return RedirectToAction("Index");
+            }
+            
+            var hangHoa = data.HangHoas.FirstOrDefault(h => h.MaHangHoa == id);
+            if (hangHoa == null)
+            {
+                return HttpNotFound();
+            }
+            
+            // Lấy danh sách thương hiệu và danh mục có trạng thái true
+            ViewBag.DanhSachThuongHieu = data.ThuongHieus
+                .Where(th => th.TrangThai == true)
+                .ToList();
+            
+            ViewBag.DanhSachDanhMuc = data.DanhMucs
+                
+                .ToList();
+                
+            return View(hangHoa);
+        }
+
+        [HttpPost]
+        public JsonResult TaoHangHoa(string TenHangHoa, string MaDanhMuc, string MaThuongHieu, string MoTa)
+        {
+            try
+            {
+                // Tạo mã hàng hóa tự động
+                string MaHangHoa;
+                do
+                {
+                    MaHangHoa = "HH" + GenerateRandomString(6);
+                } while (data.HangHoas.Any(h => h.MaHangHoa == MaHangHoa));
+
+                var hangHoa = new HangHoa
+                {
+                    MaHangHoa = MaHangHoa,
+                    TenHangHoa = TenHangHoa,
+                    MaDanhMuc = MaDanhMuc,
+                    MaThuongHieu = MaThuongHieu,
+                    MoTa = MoTa,
+                    DanhGiaTrungBinh = 0,
+                    NgayTao = DateTime.Now
+                };
+
+                data.HangHoas.InsertOnSubmit(hangHoa);
+                data.SubmitChanges();
+
+                return Json(new { success = true, maHangHoa = MaHangHoa });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Có lỗi xảy ra khi thêm hàng hóa: " + ex.Message });
+            }
+        }
+
+        [HttpPost]
+        public JsonResult SuaHangHoa(string MaHangHoa, string TenHangHoa, string MaDanhMuc, string MaThuongHieu, string MoTa)
+        {
+            try
+            {
+                var hangHoa = data.HangHoas.FirstOrDefault(h => h.MaHangHoa == MaHangHoa);
+                if (hangHoa == null)
+                {
+                    return Json(new { success = false, message = "Hàng hóa không tồn tại" });
+                }
+
+                hangHoa.TenHangHoa = TenHangHoa;
+                hangHoa.MaDanhMuc = MaDanhMuc;
+                hangHoa.MaThuongHieu = MaThuongHieu;
+                hangHoa.MoTa = MoTa;
+
+                data.SubmitChanges();
+
+                return Json(new { success = true });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Có lỗi xảy ra khi chỉnh sửa hàng hóa: " + ex.Message });
+            }
+        }
+
+        [HttpPost]
+        public JsonResult XoaMotHangHoa(string id)
+        {
+            try {
+                var hangHoa = data.HangHoas.FirstOrDefault(h => h.MaHangHoa == id);
+                if (hangHoa == null)
+                {
+                    return Json(new { success = false, message = "Hàng hóa không tồn tại" });
+                }
+
+                // Kiểm tra xem có biến thể nào của sản phẩm này đang có trong ChiTietDonHang không
+                var coBienTheTrongDonHang = false;
+                var bienThes = data.BienTheHangHoas.Where(bt => bt.MaHangHoa == id).ToList();
+                
+                foreach (var bienThe in bienThes)
+                {
+                    var coTrongChiTietDonHang = data.ChiTietDonHangs.Any(ct => ct.MaBienThe == bienThe.MaBienThe);
+                    if (coTrongChiTietDonHang)
+                    {
+                        coBienTheTrongDonHang = true;
+                        break;
+                    }
+                }
+
+                if (coBienTheTrongDonHang)
+                {
+                    return Json(new { success = false, reason = "coBienTheTrongDonHang" });
+                }
+
+                // Xóa hàng hóa (CASCADE sẽ xóa các biến thể liên quan)
+                data.HangHoas.DeleteOnSubmit(hangHoa);
+                data.SubmitChanges();
+
+                return Json(new { success = true });
+            }
+            catch (Exception ex) {
+                return Json(new { success = false, message = "Có lỗi xảy ra khi xóa hàng hóa: " + ex.Message });
+            }
+        }
+
+        [HttpPost]
+        public JsonResult XoaNhieuHangHoa(string[] ids)
+        {
+            try
+            {
+                if (ids == null || ids.Length == 0)
+                {
+                    return Json(new { success = false, message = "Không có hàng hóa nào được chọn để xóa" });
+                }
+
+                // Kiểm tra và lưu danh sách hàng hóa có biến thể trong đơn hàng
+                var hangHoaCoTrongDonHang = new List<string>();
+                
+                foreach (var id in ids)
+                {
+                    if (string.IsNullOrEmpty(id)) continue;
+
+                    var bienThes = data.BienTheHangHoas.Where(bt => bt.MaHangHoa == id).ToList();
+                    var coBienTheTrongDonHang = false;
+                    
+                    foreach (var bienThe in bienThes)
+                    {
+                        var coTrongChiTietDonHang = data.ChiTietDonHangs.Any(ct => ct.MaBienThe == bienThe.MaBienThe);
+                        if (coTrongChiTietDonHang)
+                        {
+                            coBienTheTrongDonHang = true;
+                            break;
+                        }
+                    }
+                    
+                    if (coBienTheTrongDonHang)
+                    {
+                        var tenHangHoa = data.HangHoas
+                            .Where(h => h.MaHangHoa == id)
+                            .Select(h => h.TenHangHoa)
+                            .FirstOrDefault();
+                        hangHoaCoTrongDonHang.Add($"{id} ({tenHangHoa})");
+                    }
+                }
+
+                // Nếu có hàng hóa có biến thể đang được sử dụng trong đơn hàng
+                if (hangHoaCoTrongDonHang.Any())
+                {
+                    var danhSachHH = string.Join(", ", hangHoaCoTrongDonHang);
+                    return Json(new { 
+                        success = false, 
+                        reason = "coBienTheTrongDonHang", 
+                        message = $"Không thể xóa vì các hàng hóa sau có biến thể đang được sử dụng trong Đơn Hàng: {danhSachHH}" 
+                    });
+                }
+
+                // Nếu không có hàng hóa nào có biến thể trong đơn hàng, tiến hành xóa
+                var hangHoaCanXoa = data.HangHoas.Where(h => ids.Contains(h.MaHangHoa)).ToList();
+                if (hangHoaCanXoa.Any())
+                {
+                    data.HangHoas.DeleteAllOnSubmit(hangHoaCanXoa);
+                    data.SubmitChanges();
+                    return Json(new { success = true });
+                }
+                else
+                {
+                    return Json(new { success = false, message = "Không tìm thấy hàng hóa cần xóa" });
+                }
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Có lỗi xảy ra khi xóa hàng hóa: " + ex.Message });
+            }
         }
 
         #endregion
@@ -648,6 +856,167 @@ namespace Manager.Controllers
             catch (Exception ex)
             {
                 return Json(new { success = false, message = "Có lỗi xảy ra khi cập nhật voucher: " + ex.Message });
+            }
+        }
+
+        [HttpPost]
+        public JsonResult TaoBienTheHangHoa(string MaHangHoa, string MauSac, string DungLuong, decimal Gia, int SoLuongTonKho)
+        {
+            try
+            {
+                // Kiểm tra hàng hóa có tồn tại
+                var hangHoa = data.HangHoas.FirstOrDefault(h => h.MaHangHoa == MaHangHoa);
+                if (hangHoa == null)
+                {
+                    return Json(new { success = false, message = "Hàng hóa không tồn tại" });
+                }
+                
+                // Tạo mã biến thể tự động
+                string MaBienThe;
+                do
+                {
+                    MaBienThe = "BT" + GenerateRandomString(6);
+                } while (data.BienTheHangHoas.Any(b => b.MaBienThe == MaBienThe));
+
+                var bienThe = new BienTheHangHoa
+                {
+                    MaBienThe = MaBienThe,
+                    MaHangHoa = MaHangHoa,
+                    MauSac = MauSac,
+                    DungLuong = DungLuong,
+                    Gia = Gia,
+                    SoLuongTonKho = SoLuongTonKho
+                };
+
+                data.BienTheHangHoas.InsertOnSubmit(bienThe);
+                data.SubmitChanges();
+
+                return Json(new { success = true });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Có lỗi xảy ra khi thêm biến thể: " + ex.Message });
+            }
+        }
+
+        [HttpPost]
+        public JsonResult SuaBienTheHangHoa(string MaBienThe, string MauSac, string DungLuong, decimal Gia, int SoLuongTonKho)
+        {
+            try
+            {
+                var bienThe = data.BienTheHangHoas.FirstOrDefault(b => b.MaBienThe == MaBienThe);
+                if (bienThe == null)
+                {
+                    return Json(new { success = false, message = "Biến thể không tồn tại" });
+                }
+
+                bienThe.MauSac = MauSac;
+                bienThe.DungLuong = DungLuong;
+                bienThe.Gia = Gia;
+                bienThe.SoLuongTonKho = SoLuongTonKho;
+
+                data.SubmitChanges();
+
+                return Json(new { success = true });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Có lỗi xảy ra khi chỉnh sửa biến thể: " + ex.Message });
+            }
+        }
+
+        [HttpPost]
+        public JsonResult XoaMotBienTheHangHoa(string id)
+        {
+            try 
+            {
+                var bienThe = data.BienTheHangHoas.FirstOrDefault(b => b.MaBienThe == id);
+                if (bienThe == null)
+                {
+                    return Json(new { success = false, message = "Biến thể không tồn tại" });
+                }
+
+                // Kiểm tra xem biến thể có trong đơn hàng không
+                var coTrongDonHang = data.ChiTietDonHangs.Any(ct => ct.MaBienThe == id);
+                if (coTrongDonHang)
+                {
+                    return Json(new { success = false, reason = "coTrongDonHang" });
+                }
+
+                data.BienTheHangHoas.DeleteOnSubmit(bienThe);
+                data.SubmitChanges();
+
+                return Json(new { success = true });
+            }
+            catch (Exception ex) 
+            {
+                return Json(new { success = false, message = "Có lỗi xảy ra khi xóa biến thể: " + ex.Message });
+            }
+        }
+
+        [HttpPost]
+        public JsonResult XoaNhieuBienTheHangHoa(string[] ids)
+        {
+            try
+            {
+                if (ids == null || ids.Length == 0)
+                {
+                    return Json(new { success = false, message = "Không có biến thể nào được chọn để xóa" });
+                }
+
+                // Kiểm tra và lưu danh sách biến thể có trong đơn hàng
+                var bienTheCoTrongDonHang = new List<string>();
+                
+                foreach (var id in ids)
+                {
+                    if (string.IsNullOrEmpty(id)) continue;
+
+                    var coTrongDonHang = data.ChiTietDonHangs.Any(ct => ct.MaBienThe == id);
+                    if (coTrongDonHang)
+                    {
+                        var bienThe = data.BienTheHangHoas
+                            .Where(b => b.MaBienThe == id)
+                            .Select(b => new { 
+                                MaBienThe = b.MaBienThe, 
+                                MauSac = b.MauSac ?? "Không có", 
+                                DungLuong = b.DungLuong ?? "Không có" 
+                            })
+                            .FirstOrDefault();
+                            
+                        if (bienThe != null)
+                        {
+                            bienTheCoTrongDonHang.Add($"{bienThe.MaBienThe} ({bienThe.MauSac} - {bienThe.DungLuong})");
+                        }
+                    }
+                }
+
+                // Nếu có biến thể đang được sử dụng trong đơn hàng
+                if (bienTheCoTrongDonHang.Any())
+                {
+                    var danhSachBT = string.Join("<br>", bienTheCoTrongDonHang);
+                    return Json(new { 
+                        success = false, 
+                        reason = "coTrongDonHang", 
+                        message = danhSachBT
+                    });
+                }
+
+                // Nếu không có biến thể nào có trong đơn hàng, tiến hành xóa
+                var bienTheCanXoa = data.BienTheHangHoas.Where(b => ids.Contains(b.MaBienThe)).ToList();
+                if (bienTheCanXoa.Any())
+                {
+                    data.BienTheHangHoas.DeleteAllOnSubmit(bienTheCanXoa);
+                    data.SubmitChanges();
+                    return Json(new { success = true });
+                }
+                else
+                {
+                    return Json(new { success = false, message = "Không tìm thấy biến thể cần xóa" });
+                }
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Có lỗi xảy ra khi xóa biến thể: " + ex.Message });
             }
         }
 

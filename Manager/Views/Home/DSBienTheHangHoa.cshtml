@@ -1,23 +1,552 @@
 ﻿@{
-    ViewBag.Title = "DSBienTheHangHoa";
+    ViewBag.Title = "Danh sách biến thể";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 @model List<Manager.Models.BienTheHangHoa>
-<h2>Biến thể của sản phẩm: @ViewBag.TenHangHoa</h2>
-<tbody>
-    @foreach (var item in Model)
-    {
-        <tr>
-            <td>@item.MaBienThe</td>
-            <td>@item.MauSac</td>
-            <td>@item.DungLuong</td>
-            <td>@item.Gia.ToString("N0") VNĐ</td>
-            <td>@item.SoLuongTonKho</td>
-            <td>
-                <a href="#" class="btn btn-sm btn-warning"><i class="bi bi-pencil-square"></i></a>
-                <a href="#" class="btn btn-sm btn-danger"><i class="bi bi-trash3"></i></a>
-            </td>
-        </tr>
-    }
-</tbody>
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
+
+<div class="container py-4">
+    <h3 class="fw-bold mb-3">Biến thể của sản phẩm: @ViewBag.TenHangHoa</h3>
+
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb bg-info bg-opacity-25 px-3 py-2 rounded">
+            <li class="breadcrumb-item"><a href="@Url.Action("Dashboard", "Home")">Trang chủ</a></li>
+            <li class="breadcrumb-item"><a href="@Url.Action("DanhSachHangHoa", "Home")">Sản phẩm</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Biến thể sản phẩm</li>
+        </ol>
+    </nav>
+
+    <!-- Action Bar -->
+    <div class="d-flex flex-wrap align-items-center mb-3 gap-2">
+        <a href="#" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#createVariantModal">
+            <i class="bi bi-plus-circle"></i> Thêm biến thể mới
+        </a>
+        <a href="@Url.Action("DanhSachHangHoa", "Home")" class="btn btn-primary">
+            <i class="bi bi-arrow-left-circle"></i> Về danh sách sản phẩm
+        </a>
+        <input type="text" class="form-control w-auto" id="searchInput" placeholder="Tìm kiếm..." />
+        <button id="btnXoaNhieu" class="btn btn-danger d-none" onclick="xoaNhieu()">
+            <i class="bi bi-trash3"></i> Xóa đã chọn
+        </button>
+    </div>
+
+    <!-- Table -->
+    <div class="table-responsive">
+        <table class="table table-bordered align-middle text-center" id="variantTable">
+            <thead class="table-light">
+                <tr>
+                    <th style="width: 50px;">
+                        <input type="checkbox" id="checkAll" />
+                    </th>
+                    <th>Mã biến thể</th>
+                    <th>Màu sắc</th>
+                    <th>Dung lượng</th>
+                    <th>Giá</th>
+                    <th>Số lượng tồn kho</th>
+                    <th>Thao tác</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td>
+                            <input type="checkbox" class="check-item" value="@item.MaBienThe" />
+                        </td>
+                        <td class="ma-bien-the">@item.MaBienThe</td>
+                        <td class="mau-sac">@(item.MauSac ?? "Không có")</td>
+                        <td class="dung-luong">@(item.DungLuong ?? "Không có")</td>
+                        <td>@item.Gia.ToString("N0") VNĐ</td>
+                        <td>@item.SoLuongTonKho</td>
+                        <td>
+                            <button class="btn btn-sm btn-primary btn-edit" data-id="@item.MaBienThe" 
+                                data-mausac="@item.MauSac" data-dungluong="@item.DungLuong" 
+                                data-gia="@item.Gia" data-soluong="@item.SoLuongTonKho"
+                                data-bs-toggle="modal" data-bs-target="#editVariantModal">
+                                <i class="bi bi-pencil-square"></i>
+                            </button>
+                            <button class="btn btn-sm btn-danger btn-delete" data-id="@item.MaBienThe" 
+                                data-mausac="@(item.MauSac ?? "Không có")" data-dungluong="@(item.DungLuong ?? "Không có")"
+                                data-bs-toggle="modal" data-bs-target="#confirmDeleteModal">
+                                <i class="bi bi-trash3"></i>
+                            </button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Modal Xác nhận xóa -->
+    <div class="modal fade" id="confirmDeleteModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Xác nhận xóa</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p id="deleteMessage"></p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <button type="button" class="btn btn-danger" id="confirmDelete">Xóa</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal thông báo không thể xóa -->
+    <div class="modal fade" id="cannotDeleteModal" tabindex="-1" aria-labelledby="cannotDeleteModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-warning">
+                    <h5 class="modal-title" id="cannotDeleteModalLabel">Không thể xóa</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+                </div>
+                <div class="modal-body">
+                    Biến thể này đang được sử dụng trong đơn hàng. Vui lòng xóa đơn hàng trước.
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Xóa thành công -->
+    <div class="modal fade" id="deleteSuccessModal" tabindex="-1" aria-labelledby="deleteSuccessModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title" id="deleteSuccessModalLabel">Thành công</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+                </div>
+                <div class="modal-body">
+                    Đã xóa biến thể thành công!
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Đóng</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal thông báo biến thể đang được sử dụng -->
+    <div class="modal fade" id="variantInUseModal" tabindex="-1" aria-labelledby="variantInUseModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-warning">
+                    <h5 class="modal-title" id="variantInUseModalLabel">Không thể xóa</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Không thể xóa các biến thể sau vì đang được sử dụng trong đơn hàng:</p>
+                    <div id="variantInUseList" class="alert alert-warning">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Tạo mới biến thể -->
+    <div class="modal fade" id="createVariantModal" tabindex="-1" aria-labelledby="createVariantModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="createVariantModalLabel">Thêm Biến Thể Mới</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="createVariantForm">
+                        <input type="hidden" id="maHangHoa" name="MaHangHoa" value="@ViewBag.MaHangHoa" />
+                        
+                        <div class="mb-3">
+                            <label for="mauSac" class="form-label">Màu Sắc</label>
+                            <input type="text" class="form-control" id="mauSac" name="MauSac" maxlength="50">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="dungLuong" class="form-label">Dung Lượng</label>
+                            <input type="text" class="form-control" id="dungLuong" name="DungLuong" maxlength="50">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="gia" class="form-label">Giá <span class="text-danger">*</span></label>
+                            <input type="number" class="form-control" id="gia" name="Gia" required>
+                            <div class="text-danger mt-1" id="giaError" style="display: none;">Vui lòng nhập giá cho biến thể.</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="soLuongTonKho" class="form-label">Số Lượng Tồn Kho <span class="text-danger">*</span></label>
+                            <input type="number" class="form-control" id="soLuongTonKho" name="SoLuongTonKho" required>
+                            <div class="text-danger mt-1" id="soLuongTonKhoError" style="display: none;">Vui lòng nhập số lượng tồn kho.</div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <button type="button" class="btn btn-primary" id="saveVariant">Lưu</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Thêm thành công -->
+    <div class="modal fade" id="addSuccessModal" tabindex="-1" aria-labelledby="addSuccessModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title" id="addSuccessModalLabel">Thành công</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+                </div>
+                <div class="modal-body">
+                    Đã thêm biến thể thành công!
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Đóng</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Chỉnh sửa biến thể -->
+    <div class="modal fade" id="editVariantModal" tabindex="-1" aria-labelledby="editVariantModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editVariantModalLabel">Chỉnh sửa Biến Thể</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="editVariantForm">
+                        <div class="mb-3">
+                            <label for="editMaBienThe" class="form-label">Mã Biến Thể</label>
+                            <input type="text" class="form-control" id="editMaBienThe" name="MaBienThe" readonly>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="editMauSac" class="form-label">Màu Sắc</label>
+                            <input type="text" class="form-control" id="editMauSac" name="MauSac" maxlength="50">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="editDungLuong" class="form-label">Dung Lượng</label>
+                            <input type="text" class="form-control" id="editDungLuong" name="DungLuong" maxlength="50">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="editGia" class="form-label">Giá <span class="text-danger">*</span></label>
+                            <input type="number" class="form-control" id="editGia" name="Gia" required>
+                            <div class="text-danger mt-1" id="editGiaError" style="display: none;">Vui lòng nhập giá cho biến thể.</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="editSoLuongTonKho" class="form-label">Số Lượng Tồn Kho <span class="text-danger">*</span></label>
+                            <input type="number" class="form-control" id="editSoLuongTonKho" name="SoLuongTonKho" required>
+                            <div class="text-danger mt-1" id="editSoLuongTonKhoError" style="display: none;">Vui lòng nhập số lượng tồn kho.</div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <button type="button" class="btn btn-primary" id="updateVariant">Lưu</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Sửa thành công -->
+    <div class="modal fade" id="editSuccessModal" tabindex="-1" aria-labelledby="editSuccessModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title" id="editSuccessModalLabel">Thành công</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+                </div>
+                <div class="modal-body">
+                    Đã sửa biến thể thành công!
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Đóng</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    $(document).ready(function () {
+        // Xử lý tìm kiếm
+        function searchVariants() {
+            var searchText = $('#searchInput').val().toLowerCase();
+            $('#variantTable tbody tr').each(function() {
+                var maBienThe = $(this).find('.ma-bien-the').text().toLowerCase();
+                var mauSac = $(this).find('.mau-sac').text().toLowerCase();
+                var dungLuong = $(this).find('.dung-luong').text().toLowerCase();
+                
+                if(maBienThe.includes(searchText) || mauSac.includes(searchText) || dungLuong.includes(searchText)) {
+                    $(this).show();
+                } else {
+                    $(this).hide();
+                }
+            });
+        }
+
+        // Sự kiện khi nhập vào ô tìm kiếm
+        $('#searchInput').on('input', function() {
+            searchVariants();
+        });
+
+        // Xử lý checkbox "Chọn tất cả"
+        $('#checkAll').change(function() {
+            $('.check-item').prop('checked', $(this).prop('checked'));
+            toggleDeleteButton();
+        });
+
+        // Xử lý khi checkbox đơn lẻ thay đổi
+        $('.check-item').change(function() {
+            toggleDeleteButton();
+            // Nếu tất cả checkbox con được chọn, checkbox "Chọn tất cả" cũng được chọn
+            $('#checkAll').prop('checked', $('.check-item:checked').length === $('.check-item').length);
+        });
+
+        // Hàm hiển thị/ẩn nút xóa
+        function toggleDeleteButton() {
+            if($('.check-item:checked').length > 0) {
+                $('#btnXoaNhieu').removeClass('d-none');
+            } else {
+                $('#btnXoaNhieu').addClass('d-none');
+            }
+        }
+
+        // Validate form thêm biến thể
+        function validateCreateForm() {
+            var isValid = true;
+            
+            // Validate giá
+            var gia = $('#gia').val();
+            if (!gia || gia <= 0) {
+                $('#gia').addClass('is-invalid');
+                $('#giaError').show();
+                isValid = false;
+            } else {
+                $('#gia').removeClass('is-invalid');
+                $('#giaError').hide();
+            }
+            
+            // Validate số lượng tồn kho
+            var soLuong = $('#soLuongTonKho').val();
+            if (soLuong === '' || parseInt(soLuong) < 0) {
+                $('#soLuongTonKho').addClass('is-invalid');
+                $('#soLuongTonKhoError').show();
+                isValid = false;
+            } else {
+                $('#soLuongTonKho').removeClass('is-invalid');
+                $('#soLuongTonKhoError').hide();
+            }
+            
+            return isValid;
+        }
+        
+        // Validate form sửa biến thể
+        function validateEditForm() {
+            var isValid = true;
+            
+            // Validate giá
+            var gia = $('#editGia').val();
+            if (!gia || gia <= 0) {
+                $('#editGia').addClass('is-invalid');
+                $('#editGiaError').show();
+                isValid = false;
+            } else {
+                $('#editGia').removeClass('is-invalid');
+                $('#editGiaError').hide();
+            }
+            
+            // Validate số lượng tồn kho
+            var soLuong = $('#editSoLuongTonKho').val();
+            if (soLuong === '' || parseInt(soLuong) < 0) {
+                $('#editSoLuongTonKho').addClass('is-invalid');
+                $('#editSoLuongTonKhoError').show();
+                isValid = false;
+            } else {
+                $('#editSoLuongTonKho').removeClass('is-invalid');
+                $('#editSoLuongTonKhoError').hide();
+            }
+            
+            return isValid;
+        }
+
+        // Xử lý thêm biến thể
+        $('#saveVariant').click(function() {
+            if (!validateCreateForm()) {
+                return;
+            }
+            
+            var formData = {
+                MaHangHoa: $('#maHangHoa').val(),
+                MauSac: $('#mauSac').val(),
+                DungLuong: $('#dungLuong').val(),
+                Gia: $('#gia').val(),
+                SoLuongTonKho: $('#soLuongTonKho').val()
+            };
+            
+            $.ajax({
+                url: '@Url.Action("TaoBienTheHangHoa", "Home")',
+                type: 'POST',
+                data: formData,
+                success: function(response) {
+                    if (response.success) {
+                        $('#createVariantModal').modal('hide');
+                        $('#addSuccessModal').modal('show');
+                        setTimeout(function() {
+                            location.reload();
+                        }, 1500);
+                    } else {
+                        alert(response.message || "Thêm biến thể thất bại");
+                    }
+                },
+                error: function() {
+                    alert("Lỗi khi gọi server.");
+                }
+            });
+        });
+
+        // Xử lý hiển thị form sửa
+        $('.btn-edit').click(function() {
+            var maBienThe = $(this).data('id');
+            var mauSac = $(this).data('mausac');
+            var dungLuong = $(this).data('dungluong');
+            var gia = $(this).data('gia');
+            var soLuong = $(this).data('soluong');
+            
+            $('#editMaBienThe').val(maBienThe);
+            $('#editMauSac').val(mauSac);
+            $('#editDungLuong').val(dungLuong);
+            $('#editGia').val(gia);
+            $('#editSoLuongTonKho').val(soLuong);
+        });
+        
+        // Xử lý sửa biến thể
+        $('#updateVariant').click(function() {
+            if (!validateEditForm()) {
+                return;
+            }
+            
+            var formData = {
+                MaBienThe: $('#editMaBienThe').val(),
+                MauSac: $('#editMauSac').val(),
+                DungLuong: $('#editDungLuong').val(),
+                Gia: $('#editGia').val(),
+                SoLuongTonKho: $('#editSoLuongTonKho').val()
+            };
+            
+            $.ajax({
+                url: '@Url.Action("SuaBienTheHangHoa", "Home")',
+                type: 'POST',
+                data: formData,
+                success: function(response) {
+                    if (response.success) {
+                        $('#editVariantModal').modal('hide');
+                        $('#editSuccessModal').modal('show');
+                        setTimeout(function() {
+                            location.reload();
+                        }, 1500);
+                    } else {
+                        alert(response.message || "Sửa biến thể thất bại");
+                    }
+                },
+                error: function() {
+                    alert("Lỗi khi gọi server.");
+                }
+            });
+        });
+
+        // Xử lý xóa biến thể
+        $('.btn-delete').click(function() {
+            var maBienThe = $(this).data('id');
+            var mauSac = $(this).data('mausac');
+            var dungLuong = $(this).data('dungluong');
+            
+            $('#deleteMessage').text(`Bạn có chắc chắn muốn xóa biến thể ${mauSac} - ${dungLuong}?`);
+            
+            $('#confirmDelete').off('click').on('click', function() {
+                $.ajax({
+                    url: '@Url.Action("XoaMotBienTheHangHoa", "Home")',
+                    type: 'POST',
+                    data: { id: maBienThe },
+                    success: function(response) {
+                        $('#confirmDeleteModal').modal('hide');
+                        if (response.success) {
+                            $('#deleteSuccessModal').modal('show');
+                            setTimeout(function() {
+                                location.reload();
+                            }, 1500);
+                        } else {
+                            if (response.reason === "coTrongDonHang") {
+                                $('#cannotDeleteModal').modal('show');
+                            } else {
+                                alert(response.message || "Xóa thất bại");
+                            }
+                        }
+                    },
+                    error: function() {
+                        alert("Lỗi khi gọi server.");
+                    }
+                });
+            });
+        });
+
+        // Xử lý xóa nhiều biến thể
+        window.xoaNhieu = function() {
+            var selectedIds = [];
+            $('.check-item:checked').each(function() {
+                selectedIds.push($(this).val());
+            });
+            
+            if (selectedIds.length === 0) {
+                alert('Vui lòng chọn ít nhất một biến thể để xóa!');
+                return;
+            }
+            
+            $('#deleteMessage').text(`Bạn có chắc chắn muốn xóa ${selectedIds.length} biến thể đã chọn?`);
+            $('#confirmDeleteModal').modal('show');
+            
+            $('#confirmDelete').off('click').on('click', function() {
+                $.ajax({
+                    url: '@Url.Action("XoaNhieuBienTheHangHoa", "Home")',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({ ids: selectedIds }),
+                    success: function(response) {
+                        $('#confirmDeleteModal').modal('hide');
+                        if (response.success) {
+                            $('#deleteSuccessModal').modal('show');
+                            setTimeout(function() {
+                                location.reload();
+                            }, 1500);
+                        } else {
+                            if (response.reason === "coTrongDonHang") {
+                                $('#variantInUseList').html(response.message);
+                                $('#variantInUseModal').modal('show');
+                            } else {
+                                alert(response.message || "Xóa thất bại");
+                            }
+                        }
+                    },
+                    error: function() {
+                        alert("Lỗi khi gọi server.");
+                    }
+                });
+            });
+        };
+    });
+    </script>
+</div>
 
