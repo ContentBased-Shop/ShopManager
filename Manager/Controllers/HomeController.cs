@@ -488,5 +488,168 @@ namespace Manager.Controllers
             return View(nhaCungCaps);
         }
 
+        [HttpPost]
+        public JsonResult TaoVoucher(Voucher voucher)
+        {
+            try
+            {
+                // Kiểm tra mã code đã tồn tại chưa
+                if (data.Vouchers.Any(v => v.MaVoucherCode == voucher.MaVoucherCode))
+                {
+                    return Json(new { success = false, message = "Mã voucher code đã tồn tại" });
+                }
+
+                // Kiểm tra ngày bắt đầu phải lớn hơn ngày hiện tại
+                if (voucher.NgayBatDau <= DateTime.Now.Date)
+                {
+                    return Json(new { success = false, message = "Ngày bắt đầu phải lớn hơn ngày hiện tại" });
+                }
+
+                // Kiểm tra ngày kết thúc phải lớn hơn ngày bắt đầu
+                if (voucher.NgayKetThuc <= voucher.NgayBatDau)
+                {
+                    return Json(new { success = false, message = "Ngày kết thúc phải lớn hơn ngày bắt đầu" });
+                }
+
+                // Lấy mã voucher lớn nhất và tăng thêm 1
+                int maxMaVoucher = data.Vouchers.Any() ? data.Vouchers.Max(v => v.MaVoucher) : 0;
+                voucher.MaVoucher = maxMaVoucher + 1;
+
+                // Thiết lập các giá trị mặc định
+                voucher.SoLuongDaDung = 0;
+                voucher.NgayTao = DateTime.Now;
+
+                data.Vouchers.InsertOnSubmit(voucher);
+                data.SubmitChanges();
+
+                return Json(new { success = true });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Có lỗi xảy ra khi thêm voucher: " + ex.Message });
+            }
+        }
+
+        [HttpPost]
+        public JsonResult XoaVoucher(int id)
+        {
+            try
+            {
+                // Kiểm tra xem voucher có được sử dụng trong đơn hàng không
+                var coTrongDonHang = data.DonHangs.Any(d => d.MaVoucher == id);
+                if (coTrongDonHang)
+                {
+                    return Json(new { success = false, reason = "daDung", message = "Voucher này đã được sử dụng trong đơn hàng" });
+                }
+
+                var voucher = data.Vouchers.FirstOrDefault(v => v.MaVoucher == id);
+                if (voucher == null)
+                {
+                    return Json(new { success = false, message = "Không tìm thấy voucher" });
+                }
+
+                data.Vouchers.DeleteOnSubmit(voucher);
+                data.SubmitChanges();
+
+                return Json(new { success = true });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Có lỗi xảy ra khi xóa voucher: " + ex.Message });
+            }
+        }
+
+        [HttpPost]
+        public JsonResult XoaNhieuVoucher(int[] ids)
+        {
+            try
+            {
+                if (ids == null || ids.Length == 0)
+                {
+                    return Json(new { success = false, message = "Không có voucher nào được chọn để xóa" });
+                }
+
+                // Kiểm tra xem có voucher nào đang được sử dụng không
+                var voucherDaDung = new List<string>();
+                foreach (var id in ids)
+                {
+                    var coTrongDonHang = data.DonHangs.Any(d => d.MaVoucher == id);
+                    if (coTrongDonHang)
+                    {
+                        var tenVoucher = data.Vouchers
+                            .Where(v => v.MaVoucher == id)
+                            .Select(v => v.MaVoucherCode + " (" + v.TenVoucher + ")")
+                            .FirstOrDefault();
+                        voucherDaDung.Add(tenVoucher);
+                    }
+                }
+
+                if (voucherDaDung.Any())
+                {
+                    var danhSach = string.Join(", ", voucherDaDung);
+                    return Json(new { 
+                        success = false, 
+                        reason = "daDung", 
+                        message = $"Không thể xóa vì các voucher sau đã được sử dụng trong đơn hàng: {danhSach}" 
+                    });
+                }
+
+                var vouchersCanXoa = data.Vouchers.Where(v => ids.Contains(v.MaVoucher));
+                if (vouchersCanXoa.Any())
+                {
+                    data.Vouchers.DeleteAllOnSubmit(vouchersCanXoa);
+                    data.SubmitChanges();
+                    return Json(new { success = true });
+                }
+                else
+                {
+                    return Json(new { success = false, message = "Không tìm thấy voucher cần xóa" });
+                }
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Có lỗi xảy ra khi xóa voucher: " + ex.Message });
+            }
+        }
+
+        [HttpPost]
+        public JsonResult SuaVoucher(Voucher voucher)
+        {
+            try
+            {
+                var existingVoucher = data.Vouchers.FirstOrDefault(v => v.MaVoucher == voucher.MaVoucher);
+                if (existingVoucher == null)
+                {
+                    return Json(new { success = false, message = "Không tìm thấy voucher" });
+                }
+
+                // Kiểm tra mã code mới có trùng với mã code khác không
+                if (existingVoucher.MaVoucherCode != voucher.MaVoucherCode &&
+                    data.Vouchers.Any(v => v.MaVoucherCode == voucher.MaVoucherCode))
+                {
+                    return Json(new { success = false, message = "Mã voucher code đã tồn tại" });
+                }
+
+                existingVoucher.MaVoucherCode = voucher.MaVoucherCode;
+                existingVoucher.TenVoucher = voucher.TenVoucher;
+                existingVoucher.MoTa = voucher.MoTa;
+                existingVoucher.LoaiGiamGia = voucher.LoaiGiamGia;
+                existingVoucher.GiaTriGiamGia = voucher.GiaTriGiamGia;
+                existingVoucher.DonHangToiThieu = voucher.DonHangToiThieu;
+                existingVoucher.SoLuong = voucher.SoLuong;
+                existingVoucher.NgayBatDau = voucher.NgayBatDau;
+                existingVoucher.NgayKetThuc = voucher.NgayKetThuc;
+                existingVoucher.TrangThai = voucher.TrangThai;
+
+                data.SubmitChanges();
+
+                return Json(new { success = true });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Có lỗi xảy ra khi cập nhật voucher: " + ex.Message });
+            }
+        }
+
     }
 }

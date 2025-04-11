@@ -19,16 +19,22 @@
     </nav>
 
     <div class="d-flex flex-wrap align-items-center mb-3 gap-2">
-        <a href="#" class="btn btn-success"><i class="bi bi-plus-circle"></i> Tạo mới</a>
-        <input type="text" class="form-control w-auto" placeholder="Tìm kiếm..." />
-        <button class="btn btn-primary"><i class="bi bi-search"></i></button>
-        <button class="btn btn-dark">Đặt lại</button>
+        <a href="#" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#createVoucherModal">
+            <i class="bi bi-plus-circle"></i> Tạo mới
+        </a>
+        <input type="text" class="form-control w-auto" id="searchInput" placeholder="Tìm kiếm theo mã code hoặc tên..." />
+        <button id="btnXoaNhieu" class="btn btn-danger d-none" onclick="xoaNhieu()">
+            <i class="bi bi-trash3"></i> Xóa đã chọn
+        </button>
     </div>
 
     <div class="table-responsive">
-        <table class="table table-bordered align-middle text-center">
+        <table class="table table-bordered align-middle text-center" id="voucherTable">
             <thead class="table-light">
                 <tr>
+                    <th style="width: 50px;">
+                        <input type="checkbox" id="checkAll" />
+                    </th>
                     <th>Mã</th>
                     <th>Mã code</th>
                     <th>Tên</th>
@@ -45,16 +51,18 @@
                 @foreach (var v in Model)
                 {
                     <tr>
-                        <td>@v.MaVoucher</td>
-                        <td>@v.MaVoucherCode</td>
-                        <td>@v.TenVoucher</td>
+                        <td>
+                            <input type="checkbox" class="check-item" value="@v.MaVoucher" />
+                        </td>
+                        <td class="ma-voucher">@v.MaVoucher</td>
+                        <td class="ma-code">@v.MaVoucherCode</td>
+                        <td class="ten-voucher">@v.TenVoucher</td>
                         <td>
                             @(v.LoaiGiamGia == "TienMat"
-        ? v.GiaTriGiamGia.ToString("N0") + "₫"
-        : v.GiaTriGiamGia.ToString("N0") + "%")
+                                ? v.GiaTriGiamGia.ToString("N0") + "₫"
+                                : v.GiaTriGiamGia.ToString("N0") + "%")
                         </td>
                         <td>@(v.DonHangToiThieu.ToString("N0") + "₫")</td>
-
                         <td>@v.SoLuong</td>
                         <td>@v.SoLuongDaDung</td>
                         <td>
@@ -76,9 +84,29 @@
                             }
                         </td>
                         <td>
-                            <a href="#" class="btn btn-sm btn-info"><i class="bi bi-eye"></i></a>
-                            <a href="#" class="btn btn-sm btn-warning"><i class="bi bi-pencil"></i></a>
-                            <a href="#" class="btn btn-sm btn-danger"><i class="bi bi-trash"></i></a>
+                            <a href="#" class="btn btn-sm btn-primary btn-edit" 
+                               data-id="@v.MaVoucher" 
+                               data-code="@v.MaVoucherCode"
+                               data-name="@v.TenVoucher"
+                               data-desc="@v.MoTa"
+                               data-type="@v.LoaiGiamGia"
+                               data-value="@v.GiaTriGiamGia"
+                               data-min="@v.DonHangToiThieu"
+                               data-quantity="@v.SoLuong"
+                               data-start="@v.NgayBatDau.ToString("yyyy-MM-dd")"
+                               data-end="@v.NgayKetThuc.ToString("yyyy-MM-dd")"
+                               data-status="@v.TrangThai"
+                               data-bs-toggle="modal" 
+                               data-bs-target="#editVoucherModal">
+                                <i class="bi bi-pencil-square"></i>
+                            </a>
+                            <a href="#" class="btn btn-sm btn-warning btn-delete" 
+                               data-id="@v.MaVoucher" 
+                               data-code="@v.MaVoucherCode"
+                               data-bs-toggle="modal" 
+                               data-bs-target="#confirmDeleteModal">
+                                <i class="bi bi-trash3"></i>
+                            </a>
                         </td>
                     </tr>
                 }
@@ -98,3 +126,638 @@
         </ul>
     </nav>
 </div>
+
+<!-- Modal Xác nhận xóa -->
+<div class="modal fade" id="confirmDeleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Xác nhận xóa</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p id="deleteMessage"></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                <button type="button" class="btn btn-danger" id="confirmDelete">Xóa</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal thông báo voucher đang được sử dụng -->
+<div class="modal fade" id="voucherInUseModal" tabindex="-1" aria-labelledby="voucherInUseModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-warning">
+                <h5 class="modal-title" id="voucherInUseModalLabel">Không thể xóa</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+            </div>
+            <div class="modal-body">
+                <p>Không thể xóa các voucher sau vì đang được sử dụng trong đơn hàng:</p>
+                <div id="voucherInUseList" class="alert alert-warning">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Thêm thành công -->
+<div class="modal fade" id="addSuccessModal" tabindex="-1" aria-labelledby="addSuccessModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title" id="addSuccessModalLabel">Thành công</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+            </div>
+            <div class="modal-body">
+                Đã thêm voucher thành công!
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Đóng</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Sửa thành công -->
+<div class="modal fade" id="editSuccessModal" tabindex="-1" aria-labelledby="editSuccessModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title" id="editSuccessModalLabel">Thành công</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+            </div>
+            <div class="modal-body">
+                Đã sửa voucher thành công!
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Đóng</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Tạo mới voucher -->
+<div class="modal fade" id="createVoucherModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Thêm Voucher Mới</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="createVoucherForm">
+                    <div class="mb-3">
+                        <label for="maVoucherCode" class="form-label">Mã Code</label>
+                        <input type="text" class="form-control" id="maVoucherCode" required maxlength="20">
+                        <div class="text-danger mt-1" id="maVoucherCodeError" style="display: none;">
+                            Vui lòng nhập mã code voucher.
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="tenVoucher" class="form-label">Tên Voucher</label>
+                        <input type="text" class="form-control" id="tenVoucher" required maxlength="100">
+                        <div class="text-danger mt-1" id="tenVoucherError" style="display: none;">
+                            Vui lòng nhập tên voucher.
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="moTa" class="form-label">Mô Tả</label>
+                        <textarea class="form-control" id="moTa" maxlength="255"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="loaiGiamGia" class="form-label">Loại Giảm Giá</label>
+                        <select class="form-select" id="loaiGiamGia" required>
+                            <option value="TienMat">Tiền mặt</option>
+                            <option value="PhanTram">Phần trăm</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="giaTriGiamGia" class="form-label">Giá Trị Giảm Giá</label>
+                        <input type="number" class="form-control" id="giaTriGiamGia" required min="0" step="1" oninput="this.value = Math.abs(this.value)">
+                    </div>
+                    <div class="mb-3">
+                        <label for="donHangToiThieu" class="form-label">Đơn Hàng Tối Thiểu</label>
+                        <input type="number" class="form-control" id="donHangToiThieu" required min="0" step="1" oninput="this.value = Math.abs(this.value)">
+                    </div>
+                    <div class="mb-3">
+                        <label for="soLuong" class="form-label">Số Lượng</label>
+                        <input type="number" class="form-control" id="soLuong" required min="1" step="1" oninput="this.value = Math.abs(this.value)">
+                    </div>
+                    <div class="mb-3">
+                        <label for="ngayBatDau" class="form-label">Ngày Bắt Đầu</label>
+                        <input type="date" class="form-control" id="ngayBatDau" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="ngayKetThuc" class="form-label">Ngày Kết Thúc</label>
+                        <input type="date" class="form-control" id="ngayKetThuc" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="trangThai" class="form-label">Trạng Thái</label>
+                        <select class="form-select" id="trangThai" required>
+                            <option value="HoatDong">Hoạt động</option>
+                            <option value="TamKhoa">Tạm khóa</option>
+                            <option value="HetHan">Hết hạn</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                <button type="button" class="btn btn-primary" id="saveVoucher">Lưu</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Chỉnh sửa voucher -->
+<div class="modal fade" id="editVoucherModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Chỉnh sửa Voucher</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editVoucherForm">
+                    <input type="hidden" id="editMaVoucher">
+                    <div class="mb-3">
+                        <label for="editMaVoucherCode" class="form-label">Mã Code</label>
+                        <input type="text" class="form-control" id="editMaVoucherCode" required maxlength="20">
+                        <div class="text-danger mt-1" id="editMaVoucherCodeError" style="display: none;">
+                            Vui lòng nhập mã code voucher.
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="editTenVoucher" class="form-label">Tên Voucher</label>
+                        <input type="text" class="form-control" id="editTenVoucher" required maxlength="100">
+                        <div class="text-danger mt-1" id="editTenVoucherError" style="display: none;">
+                            Vui lòng nhập tên voucher.
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="editMoTa" class="form-label">Mô Tả</label>
+                        <textarea class="form-control" id="editMoTa" maxlength="255"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="editLoaiGiamGia" class="form-label">Loại Giảm Giá</label>
+                        <select class="form-select" id="editLoaiGiamGia" required>
+                            <option value="TienMat">Tiền mặt</option>
+                            <option value="PhanTram">Phần trăm</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="editGiaTriGiamGia" class="form-label">Giá Trị Giảm Giá</label>
+                        <input type="number" class="form-control" id="editGiaTriGiamGia" required min="0" step="1" oninput="this.value = Math.abs(this.value)">
+                    </div>
+                    <div class="mb-3">
+                        <label for="editDonHangToiThieu" class="form-label">Đơn Hàng Tối Thiểu</label>
+                        <input type="number" class="form-control" id="editDonHangToiThieu" required min="0" step="1" oninput="this.value = Math.abs(this.value)">
+                    </div>
+                    <div class="mb-3">
+                        <label for="editSoLuong" class="form-label">Số Lượng</label>
+                        <input type="number" class="form-control" id="editSoLuong" required min="1" step="1" oninput="this.value = Math.abs(this.value)">
+                    </div>
+                    <div class="mb-3">
+                        <label for="editNgayBatDau" class="form-label">Ngày Bắt Đầu</label>
+                        <input type="date" class="form-control" id="editNgayBatDau" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="editNgayKetThuc" class="form-label">Ngày Kết Thúc</label>
+                        <input type="date" class="form-control" id="editNgayKetThuc" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="editTrangThai" class="form-label">Trạng Thái</label>
+                        <select class="form-select" id="editTrangThai" required>
+                            <option value="HoatDong">Hoạt động</option>
+                            <option value="TamKhoa">Tạm khóa</option>
+                            <option value="HetHan">Hết hạn</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                <button type="button" class="btn btn-primary" id="updateVoucher">Lưu</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+$(document).ready(function () {
+    // Thiết lập giá trị mặc định cho ngày bắt đầu và kết thúc
+    var tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    var nextWeek = new Date();
+    nextWeek.setDate(nextWeek.getDate() + 7);
+
+    // Format dates to YYYY-MM-DD
+    var tomorrowFormatted = tomorrow.toISOString().split('T')[0];
+    var nextWeekFormatted = nextWeek.toISOString().split('T')[0];
+
+    // Set default values
+    $('#ngayBatDau').val(tomorrowFormatted);
+    $('#ngayBatDau').attr('min', tomorrowFormatted);
+    $('#ngayKetThuc').val(nextWeekFormatted);
+    $('#ngayKetThuc').attr('min', tomorrowFormatted);
+
+    // Xử lý khi ngày bắt đầu thay đổi
+    $('#ngayBatDau').change(function() {
+        var startDate = $(this).val();
+        $('#ngayKetThuc').attr('min', startDate);
+        
+        // Nếu ngày kết thúc nhỏ hơn ngày bắt đầu, cập nhật ngày kết thúc
+        if($('#ngayKetThuc').val() < startDate) {
+            $('#ngayKetThuc').val(startDate);
+        }
+    });
+
+    // Xử lý khi loại giảm giá thay đổi trong form thêm mới
+    $('#loaiGiamGia').change(function() {
+        var giaTriInput = $('#giaTriGiamGia');
+        if($(this).val() === 'PhanTram') {
+            giaTriInput.attr('max', '100');
+            if(parseFloat(giaTriInput.val()) > 100) {
+                giaTriInput.val('100');
+            }
+        } else {
+            giaTriInput.removeAttr('max');
+        }
+    });
+
+    // Xử lý khi nhập giá trị giảm giá trong form thêm mới
+    $('#giaTriGiamGia').on('input', function() {
+        if($('#loaiGiamGia').val() === 'PhanTram') {
+            var value = parseFloat($(this).val());
+            if(value > 100) {
+                $(this).val(100);
+            }
+        }
+    });
+
+    // Xử lý khi loại giảm giá thay đổi trong form chỉnh sửa
+    $('#editLoaiGiamGia').change(function() {
+        var giaTriInput = $('#editGiaTriGiamGia');
+        if($(this).val() === 'PhanTram') {
+            giaTriInput.attr('max', '100');
+            if(parseFloat(giaTriInput.val()) > 100) {
+                giaTriInput.val('100');
+            }
+        } else {
+            giaTriInput.removeAttr('max');
+        }
+    });
+
+    // Xử lý khi nhập giá trị giảm giá trong form chỉnh sửa
+    $('#editGiaTriGiamGia').on('input', function() {
+        if($('#editLoaiGiamGia').val() === 'PhanTram') {
+            var value = parseFloat($(this).val());
+            if(value > 100) {
+                $(this).val(100);
+            }
+        }
+    });
+
+    // Xử lý tìm kiếm
+    function searchVouchers() {
+        var searchText = $('#searchInput').val().toLowerCase();
+        $('#voucherTable tbody tr').each(function() {
+            var maCode = $(this).find('.ma-code').text().toLowerCase();
+            var tenVoucher = $(this).find('.ten-voucher').text().toLowerCase();
+            
+            if(maCode.includes(searchText) || tenVoucher.includes(searchText)) {
+                $(this).show();
+            } else {
+                $(this).hide();
+            }
+        });
+    }
+
+    // Sự kiện khi nhập vào ô tìm kiếm
+    $('#searchInput').on('input', function() {
+        searchVouchers();
+    });
+
+    // Xử lý checkbox "Chọn tất cả"
+    $('#checkAll').change(function() {
+        $('.check-item').prop('checked', $(this).prop('checked'));
+        toggleDeleteButton();
+    });
+
+    // Xử lý khi checkbox đơn lẻ thay đổi
+    $('.check-item').change(function() {
+        toggleDeleteButton();
+        $('#checkAll').prop('checked', $('.check-item:checked').length === $('.check-item').length);
+    });
+
+    // Hàm hiển thị/ẩn nút xóa
+    function toggleDeleteButton() {
+        if($('.check-item:checked').length > 0) {
+            $('#btnXoaNhieu').removeClass('d-none');
+        } else {
+            $('#btnXoaNhieu').addClass('d-none');
+        }
+    }
+
+    // Xử lý xóa một voucher
+    $('.btn-delete').click(function() {
+        var id = $(this).data('id');
+        var code = $(this).data('code');
+        $('#deleteMessage').text('Bạn có chắc chắn muốn xóa voucher ' + code + ' không?');
+        $('#confirmDelete').data('id', id);
+    });
+
+    $('#confirmDelete').click(function() {
+        var id = $(this).data('id');
+        $.ajax({
+            url: '/Home/XoaVoucher',
+            type: 'POST',
+            data: { id: id },
+            success: function(response) {
+                if (response.success) {
+                    location.reload();
+                } else {
+                    if (response.reason === 'daDung') {
+                        $('#confirmDeleteModal').modal('hide');
+                        $('#voucherInUseList').html(response.message);
+                        $('#voucherInUseModal').modal('show');
+                    } else {
+                        alert(response.message);
+                    }
+                }
+            },
+            error: function() {
+                alert('Có lỗi xảy ra khi xóa voucher');
+            }
+        });
+    });
+
+    // Xử lý xóa nhiều voucher
+    function xoaNhieu() {
+        var ids = $('.check-item:checked').map(function() {
+            return parseInt($(this).val());
+        }).get();
+
+        if (ids.length === 0) {
+            alert('Vui lòng chọn ít nhất một voucher để xóa');
+            return;
+        }
+
+        $('#deleteMessage').text('Bạn có chắc chắn muốn xóa ' + ids.length + ' voucher đã chọn không?');
+        $('#confirmDeleteModal').modal('show');
+
+        $('#confirmDelete').off('click').on('click', function() {
+            $.ajax({
+                url: '/Home/XoaNhieuVoucher',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ ids: ids }),
+                success: function(response) {
+                    $('#confirmDeleteModal').modal('hide');
+                    if (response.success) {
+                        location.reload();
+                    } else {
+                        if (response.reason === 'daDung') {
+                            $('#voucherInUseList').html(response.message);
+                            $('#voucherInUseModal').modal('show');
+                        } else {
+                            alert(response.message || 'Có lỗi xảy ra khi xóa voucher');
+                        }
+                    }
+                },
+                error: function() {
+                    alert('Có lỗi xảy ra khi xóa voucher');
+                }
+            });
+        });
+    }
+
+    // Gán hàm xoaNhieu vào window để có thể gọi từ onclick
+    window.xoaNhieu = xoaNhieu;
+
+    // Xử lý thêm mới voucher
+    $('#saveVoucher').click(function () {
+        // Kiểm tra mã code
+        const maCodeInput = document.getElementById("maVoucherCode");
+        const maCodeError = document.getElementById("maVoucherCodeError");
+        const maCode = maCodeInput.value.trim();
+
+        if (maCode === "") {
+            maCodeError.style.display = "block";
+            maCodeInput.classList.add("is-invalid");
+            maCodeInput.focus();
+            return;
+        } else {
+            maCodeError.style.display = "none";
+            maCodeInput.classList.remove("is-invalid");
+        }
+
+        // Kiểm tra tên voucher
+        const tenVoucherInput = document.getElementById("tenVoucher");
+        const tenVoucherError = document.getElementById("tenVoucherError");
+        const tenVoucher = tenVoucherInput.value.trim();
+
+        if (tenVoucher === "") {
+            tenVoucherError.style.display = "block";
+            tenVoucherInput.classList.add("is-invalid");
+            tenVoucherInput.focus();
+            return;
+        } else {
+            tenVoucherError.style.display = "none";
+            tenVoucherInput.classList.remove("is-invalid");
+        }
+
+        // Kiểm tra giá trị giảm giá
+        const giaTriGiamGia = parseFloat($('#giaTriGiamGia').val());
+        if (isNaN(giaTriGiamGia) || giaTriGiamGia <= 0) {
+            alert('Vui lòng nhập giá trị giảm giá hợp lệ');
+            $('#giaTriGiamGia').focus();
+            return;
+        }
+
+        // Kiểm tra đơn hàng tối thiểu
+        const donHangToiThieu = parseFloat($('#donHangToiThieu').val());
+        if (isNaN(donHangToiThieu) || donHangToiThieu < 0) {
+            alert('Vui lòng nhập giá trị đơn hàng tối thiểu hợp lệ');
+            $('#donHangToiThieu').focus();
+            return;
+        }
+
+        // Kiểm tra số lượng
+        const soLuong = parseInt($('#soLuong').val());
+        if (isNaN(soLuong) || soLuong <= 0) {
+            alert('Vui lòng nhập số lượng hợp lệ');
+            $('#soLuong').focus();
+            return;
+        }
+
+        // Kiểm tra ngày
+        const ngayBatDau = new Date($('#ngayBatDau').val());
+        const ngayKetThuc = new Date($('#ngayKetThuc').val());
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        if (ngayBatDau <= today) {
+            alert('Ngày bắt đầu phải lớn hơn ngày hiện tại');
+            $('#ngayBatDau').focus();
+            return;
+        }
+
+        if (ngayKetThuc <= ngayBatDau) {
+            alert('Ngày kết thúc phải lớn hơn ngày bắt đầu');
+            $('#ngayKetThuc').focus();
+            return;
+        }
+
+        // Tạo đối tượng voucher
+        var voucher = {
+            MaVoucherCode: maCode,
+            TenVoucher: tenVoucher,
+            MoTa: $('#moTa').val(),
+            LoaiGiamGia: $('#loaiGiamGia').val(),
+            GiaTriGiamGia: giaTriGiamGia,
+            DonHangToiThieu: donHangToiThieu,
+            SoLuong: soLuong,
+            NgayBatDau: $('#ngayBatDau').val(),
+            NgayKetThuc: $('#ngayKetThuc').val(),
+            TrangThai: $('#trangThai').val()
+        };
+
+        $.ajax({
+            url: '/Home/TaoVoucher',
+            type: 'POST',
+            data: voucher,
+            success: function (response) {
+                if (response.success) {
+                    $('#createVoucherModal').modal('hide');
+                    $('#addSuccessModal').modal('show');
+                    setTimeout(function () {
+                        location.reload();
+                    }, 1500);
+                } else {
+                    alert(response.message || "Thêm voucher thất bại");
+                }
+            },
+            error: function () {
+                alert("Lỗi khi gọi server.");
+            }
+        });
+    });
+
+    // Xử lý sửa voucher
+    $('.btn-edit').click(function () {
+        var maVoucher = $(this).data('id');
+        var maCode = $(this).data('code');
+        var tenVoucher = $(this).data('name');
+        var moTa = $(this).data('desc');
+        var loaiGiamGia = $(this).data('type');
+        var giaTriGiamGia = $(this).data('value');
+        var donHangToiThieu = $(this).data('min');
+        var soLuong = $(this).data('quantity');
+        var ngayBatDau = $(this).data('start');
+        var ngayKetThuc = $(this).data('end');
+        var trangThai = $(this).data('status');
+
+        $('#editMaVoucher').val(maVoucher);
+        $('#editMaVoucherCode').val(maCode);
+        $('#editTenVoucher').val(tenVoucher);
+        $('#editMoTa').val(moTa);
+        $('#editLoaiGiamGia').val(loaiGiamGia);
+        $('#editGiaTriGiamGia').val(giaTriGiamGia);
+        $('#editDonHangToiThieu').val(donHangToiThieu);
+        $('#editSoLuong').val(soLuong);
+        $('#editNgayBatDau').val(ngayBatDau);
+        $('#editNgayKetThuc').val(ngayKetThuc);
+        $('#editTrangThai').val(trangThai);
+    });
+
+    $('#updateVoucher').click(function () {
+        // Kiểm tra mã code
+        const maCodeInput = document.getElementById("editMaVoucherCode");
+        const maCodeError = document.getElementById("editMaVoucherCodeError");
+        const maCode = maCodeInput.value.trim();
+
+        if (maCode === "") {
+            maCodeError.style.display = "block";
+            maCodeInput.classList.add("is-invalid");
+            maCodeInput.focus();
+            return;
+        } else {
+            maCodeError.style.display = "none";
+            maCodeInput.classList.remove("is-invalid");
+        }
+
+        // Kiểm tra tên voucher
+        const tenVoucherInput = document.getElementById("editTenVoucher");
+        const tenVoucherError = document.getElementById("editTenVoucherError");
+        const tenVoucher = tenVoucherInput.value.trim();
+
+        if (tenVoucher === "") {
+            tenVoucherError.style.display = "block";
+            tenVoucherInput.classList.add("is-invalid");
+            tenVoucherInput.focus();
+            return;
+        } else {
+            tenVoucherError.style.display = "none";
+            tenVoucherInput.classList.remove("is-invalid");
+        }
+
+        // Tạo đối tượng voucher
+        var voucher = {
+            MaVoucher: parseInt($('#editMaVoucher').val()),
+            MaVoucherCode: maCode,
+            TenVoucher: tenVoucher,
+            MoTa: $('#editMoTa').val(),
+            LoaiGiamGia: $('#editLoaiGiamGia').val(),
+            GiaTriGiamGia: parseFloat($('#editGiaTriGiamGia').val()),
+            DonHangToiThieu: parseFloat($('#editDonHangToiThieu').val()),
+            SoLuong: parseInt($('#editSoLuong').val()),
+            NgayBatDau: $('#editNgayBatDau').val(),
+            NgayKetThuc: $('#editNgayKetThuc').val(),
+            TrangThai: $('#editTrangThai').val()
+        };
+
+        $.ajax({
+            url: '/Home/SuaVoucher',
+            type: 'POST',
+            data: voucher,
+            success: function (response) {
+                if (response.success) {
+                    $('#editVoucherModal').modal('hide');
+                    $('#editSuccessModal').modal('show');
+                    setTimeout(function () {
+                        location.reload();
+                    }, 1500);
+                } else {
+                    alert(response.message || "Chỉnh sửa voucher thất bại");
+                }
+            },
+            error: function () {
+                alert("Lỗi khi gọi server.");
+            }
+        });
+    });
+
+    // Xử lý khi nhập giá trị âm trong form thêm mới
+    $('#giaTriGiamGia, #donHangToiThieu, #soLuong').on('input', function() {
+        var value = parseFloat($(this).val());
+        if (value < 0) {
+            $(this).val(Math.abs(value));
+        }
+    });
+
+    // Xử lý khi nhập giá trị âm trong form chỉnh sửa
+    $('#editGiaTriGiamGia, #editDonHangToiThieu, #editSoLuong').on('input', function() {
+        var value = parseFloat($(this).val());
+        if (value < 0) {
+            $(this).val(Math.abs(value));
+        }
+    });
+});
+</script>
