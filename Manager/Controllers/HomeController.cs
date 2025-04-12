@@ -394,12 +394,166 @@ namespace Manager.Controllers
                 data.HangHoas.InsertOnSubmit(hangHoa);
                 data.SubmitChanges();
 
+                // Tính toán điểm tương đồng với các sản phẩm khác và lưu vào ContentBasedFiltering
+                TinhDiemTuongDongChoHangHoa(MaHangHoa);
+
                 return Json(new { success = true, maHangHoa = MaHangHoa });
             }
             catch (Exception ex)
             {
                 return Json(new { success = false, message = "Có lỗi xảy ra khi thêm hàng hóa: " + ex.Message });
             }
+        }
+
+        // Hàm tính điểm tương đồng cho hàng hóa mới
+        private void TinhDiemTuongDongChoHangHoa(string maHangHoaMoi)
+        {
+            try
+            {
+                // Lấy hàng hóa mới vừa thêm
+                var hangHoaMoi = data.HangHoas.FirstOrDefault(h => h.MaHangHoa == maHangHoaMoi);
+                if (hangHoaMoi == null) return;
+
+                // Lấy tất cả hàng hóa khác để tính điểm tương đồng
+                var danhSachHangHoa = data.HangHoas.Where(h => h.MaHangHoa != maHangHoaMoi).ToList();
+
+                // Nếu không có sản phẩm nào khác để so sánh thì dừng lại
+                if (!danhSachHangHoa.Any()) return;
+
+                // Tính điểm tương đồng với từng sản phẩm
+                foreach (var hangHoaKhac in danhSachHangHoa)
+                {
+                    // Đảm bảo MaHangHoa1 < MaHangHoa2 theo ràng buộc của bảng
+                    string maHangHoa1 = maHangHoaMoi;
+                    string maHangHoa2 = hangHoaKhac.MaHangHoa;
+
+                    // Đổi chỗ nếu cần để thỏa mãn ràng buộc
+                    if (String.Compare(maHangHoa1, maHangHoa2) > 0)
+                    {
+                        string temp = maHangHoa1;
+                        maHangHoa1 = maHangHoa2;
+                        maHangHoa2 = temp;
+                    }
+
+                    // Điểm tương đồng dựa trên 3 yếu tố: DanhMuc, ThuongHieu và MoTa
+                    double diemTuongDong = 0;
+                    double tongTrongSo = 0;
+
+                    // Trọng số cho mỗi yếu tố
+                    double trongSoDanhMuc = 0.3;
+                    double trongSoThuongHieu = 0.3;
+                    double trongSoMoTa = 0.4;
+
+                    // 1. So sánh Danh Mục (30%)
+                    if (!string.IsNullOrEmpty(hangHoaMoi.MaDanhMuc) && !string.IsNullOrEmpty(hangHoaKhac.MaDanhMuc))
+                    {
+                        if (hangHoaMoi.MaDanhMuc == hangHoaKhac.MaDanhMuc)
+                        {
+                            diemTuongDong += trongSoDanhMuc;
+                        }
+                        tongTrongSo += trongSoDanhMuc;
+                    }
+
+                    // 2. So sánh Thương Hiệu (30%)
+                    if (!string.IsNullOrEmpty(hangHoaMoi.MaThuongHieu) && !string.IsNullOrEmpty(hangHoaKhac.MaThuongHieu))
+                    {
+                        if (hangHoaMoi.MaThuongHieu == hangHoaKhac.MaThuongHieu)
+                        {
+                            diemTuongDong += trongSoThuongHieu;
+                        }
+                        tongTrongSo += trongSoThuongHieu;
+                    }
+
+                    // 3. So sánh Mô Tả sử dụng TF-IDF (40%)
+                    if (!string.IsNullOrEmpty(hangHoaMoi.MoTa) && !string.IsNullOrEmpty(hangHoaKhac.MoTa))
+                    {
+                        double diemMoTa = TinhDiemTuongDongVanBan(hangHoaMoi.MoTa, hangHoaKhac.MoTa);
+                        diemTuongDong += diemMoTa * trongSoMoTa;
+                        tongTrongSo += trongSoMoTa;
+                    }
+
+                    // Chuẩn hóa điểm tương đồng (nếu có ít nhất một yếu tố để so sánh)
+                    double diemTuongDongChuanHoa = tongTrongSo > 0 ? diemTuongDong / tongTrongSo : 0;
+
+                    // Kiểm tra xem đã có bản ghi tương đồng này chưa
+                    var existingRecord = data.ContentBasedFilterings.FirstOrDefault(
+                        c => (c.MaHangHoa1 == maHangHoa1 && c.MaHangHoa2 == maHangHoa2));
+
+                    if (existingRecord != null)
+                    {
+                        // Nếu đã có thì cập nhật
+                        existingRecord.DiemTuongDong = diemTuongDongChuanHoa;
+                    }
+                    else
+                    {
+                        // Nếu chưa có thì tạo mới
+                        var contentBasedFiltering = new ContentBasedFiltering
+                        {
+                            MaHangHoa1 = maHangHoa1,
+                            MaHangHoa2 = maHangHoa2,
+                            DiemTuongDong = diemTuongDongChuanHoa
+                        };
+
+                        data.ContentBasedFilterings.InsertOnSubmit(contentBasedFiltering);
+                    }
+                }
+
+                // Lưu các thay đổi vào cơ sở dữ liệu
+                data.SubmitChanges();
+            }
+            catch (Exception ex)
+            {
+                // Ghi log hoặc xử lý lỗi ở đây nếu cần
+                System.Diagnostics.Debug.WriteLine("Lỗi khi tính điểm tương đồng: " + ex.Message);
+            }
+        }
+
+        // Hàm tính điểm tương đồng văn bản sử dụng TF-IDF đơn giản
+        private double TinhDiemTuongDongVanBan(string vanBan1, string vanBan2)
+        {
+            try
+            {
+                // Chuẩn hóa văn bản (chuyển về chữ thường, loại bỏ dấu câu)
+                string normalizedText1 = NormalizeText(vanBan1);
+                string normalizedText2 = NormalizeText(vanBan2);
+
+                // Tách từ
+                HashSet<string> tuVanBan1 = new HashSet<string>(normalizedText1.Split(new char[] { ' ', '\t', '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries));
+                HashSet<string> tuVanBan2 = new HashSet<string>(normalizedText2.Split(new char[] { ' ', '\t', '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries));
+
+                // Tính tổng số từ giống nhau
+                int soTuGiongNhau = tuVanBan1.Intersect(tuVanBan2).Count();
+
+                // Tính tổng số từ khác nhau
+                int tongSoTu = tuVanBan1.Union(tuVanBan2).Count();
+
+                // Tính hệ số Jaccard - tỷ lệ từ chung trên tổng số từ
+                double diemTuongDong = tongSoTu > 0 ? (double)soTuGiongNhau / tongSoTu : 0;
+
+                return diemTuongDong;
+            }
+            catch
+            {
+                return 0;
+            }
+        }
+
+        // Hàm chuẩn hóa văn bản
+        private string NormalizeText(string text)
+        {
+            if (string.IsNullOrEmpty(text))
+                return string.Empty;
+
+            // Chuyển thành chữ thường
+            string result = text.ToLower();
+
+            // Loại bỏ dấu câu và ký tự đặc biệt
+            result = System.Text.RegularExpressions.Regex.Replace(result, @"[^\p{L}\p{N}\s]", " ");
+
+            // Loại bỏ khoảng trắng thừa
+            result = System.Text.RegularExpressions.Regex.Replace(result, @"\s+", " ").Trim();
+
+            return result;
         }
 
         [HttpPost]
@@ -413,12 +567,25 @@ namespace Manager.Controllers
                     return Json(new { success = false, message = "Hàng hóa không tồn tại" });
                 }
 
+                // Lưu thông tin cũ để so sánh
+                string maDanhMucCu = hangHoa.MaDanhMuc;
+                string maThuongHieuCu = hangHoa.MaThuongHieu;
+                string moTaCu = hangHoa.MoTa;
+
+                // Cập nhật thông tin mới
                 hangHoa.TenHangHoa = TenHangHoa;
                 hangHoa.MaDanhMuc = MaDanhMuc;
                 hangHoa.MaThuongHieu = MaThuongHieu;
                 hangHoa.MoTa = MoTa;
 
                 data.SubmitChanges();
+
+                // Kiểm tra nếu có thay đổi về danh mục, thương hiệu hoặc mô tả thì mới cập nhật lại điểm tương đồng
+                if (maDanhMucCu != MaDanhMuc || maThuongHieuCu != MaThuongHieu || moTaCu != MoTa)
+                {
+                    // Cập nhật lại điểm tương đồng
+                    CapNhatDiemTuongDongChoHangHoa(MaHangHoa);
+                }
 
                 return Json(new { success = true });
             }
@@ -428,113 +595,74 @@ namespace Manager.Controllers
             }
         }
 
-        [HttpPost]
-        public JsonResult XoaMotHangHoa(string id)
+        // Hàm cập nhật điểm tương đồng khi sửa hàng hóa
+        private void CapNhatDiemTuongDongChoHangHoa(string maHangHoa)
         {
-            try {
-                var hangHoa = data.HangHoas.FirstOrDefault(h => h.MaHangHoa == id);
+            try
+            {
+                // Lấy tất cả bản ghi có liên quan đến hàng hóa này
+                var dsFiltering = data.ContentBasedFilterings.Where(c => 
+                    c.MaHangHoa1 == maHangHoa || c.MaHangHoa2 == maHangHoa).ToList();
+
+                // Xóa tất cả bản ghi cũ
+                if (dsFiltering.Any())
+                {
+                    data.ContentBasedFilterings.DeleteAllOnSubmit(dsFiltering);
+                    data.SubmitChanges();
+                }
+
+                // Tính toán lại điểm tương đồng
+                TinhDiemTuongDongChoHangHoa(maHangHoa);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine("Lỗi khi cập nhật điểm tương đồng: " + ex.Message);
+            }
+        }
+
+        [HttpPost]
+        public JsonResult XoaHangHoa(string MaHangHoa)
+        {
+            try
+            {
+                var hangHoa = data.HangHoas.FirstOrDefault(h => h.MaHangHoa == MaHangHoa);
                 if (hangHoa == null)
                 {
                     return Json(new { success = false, message = "Hàng hóa không tồn tại" });
                 }
 
-                // Kiểm tra xem có biến thể nào của sản phẩm này đang có trong ChiTietDonHang không
-                var coBienTheTrongDonHang = false;
-                var bienThes = data.BienTheHangHoas.Where(bt => bt.MaHangHoa == id).ToList();
-                
-                foreach (var bienThe in bienThes)
-                {
-                    var coTrongChiTietDonHang = data.ChiTietDonHangs.Any(ct => ct.MaBienThe == bienThe.MaBienThe);
-                    if (coTrongChiTietDonHang)
-                    {
-                        coBienTheTrongDonHang = true;
-                        break;
-                    }
-                }
+                // Xóa tất cả bản ghi điểm tương đồng liên quan đến hàng hóa này
+                XoaDiemTuongDongCuaHangHoa(MaHangHoa);
 
-                if (coBienTheTrongDonHang)
-                {
-                    return Json(new { success = false, reason = "coBienTheTrongDonHang" });
-                }
-
-                // Xóa hàng hóa (CASCADE sẽ xóa các biến thể liên quan)
                 data.HangHoas.DeleteOnSubmit(hangHoa);
                 data.SubmitChanges();
-
                 return Json(new { success = true });
-            }
-            catch (Exception ex) {
-                return Json(new { success = false, message = "Có lỗi xảy ra khi xóa hàng hóa: " + ex.Message });
-            }
-        }
-
-        [HttpPost]
-        public JsonResult XoaNhieuHangHoa(string[] ids)
-        {
-            try
-            {
-                if (ids == null || ids.Length == 0)
-                {
-                    return Json(new { success = false, message = "Không có hàng hóa nào được chọn để xóa" });
-                }
-
-                // Kiểm tra và lưu danh sách hàng hóa có biến thể trong đơn hàng
-                var hangHoaCoTrongDonHang = new List<string>();
-                
-                foreach (var id in ids)
-                {
-                    if (string.IsNullOrEmpty(id)) continue;
-
-                    var bienThes = data.BienTheHangHoas.Where(bt => bt.MaHangHoa == id).ToList();
-                    var coBienTheTrongDonHang = false;
-                    
-                    foreach (var bienThe in bienThes)
-                    {
-                        var coTrongChiTietDonHang = data.ChiTietDonHangs.Any(ct => ct.MaBienThe == bienThe.MaBienThe);
-                        if (coTrongChiTietDonHang)
-                        {
-                            coBienTheTrongDonHang = true;
-                            break;
-                        }
-                    }
-                    
-                    if (coBienTheTrongDonHang)
-                    {
-                        var tenHangHoa = data.HangHoas
-                            .Where(h => h.MaHangHoa == id)
-                            .Select(h => h.TenHangHoa)
-                            .FirstOrDefault();
-                        hangHoaCoTrongDonHang.Add($"{id} ({tenHangHoa})");
-                    }
-                }
-
-                // Nếu có hàng hóa có biến thể đang được sử dụng trong đơn hàng
-                if (hangHoaCoTrongDonHang.Any())
-                {
-                    var danhSachHH = string.Join(", ", hangHoaCoTrongDonHang);
-                    return Json(new { 
-                        success = false, 
-                        reason = "coBienTheTrongDonHang", 
-                        message = $"Không thể xóa vì các hàng hóa sau có biến thể đang được sử dụng trong Đơn Hàng: {danhSachHH}" 
-                    });
-                }
-
-                // Nếu không có hàng hóa nào có biến thể trong đơn hàng, tiến hành xóa
-                var hangHoaCanXoa = data.HangHoas.Where(h => ids.Contains(h.MaHangHoa)).ToList();
-                if (hangHoaCanXoa.Any())
-                {
-                    data.HangHoas.DeleteAllOnSubmit(hangHoaCanXoa);
-                    data.SubmitChanges();
-                    return Json(new { success = true });
-                }
-                else
-                {
-                    return Json(new { success = false, message = "Không tìm thấy hàng hóa cần xóa" });
-                }
             }
             catch (Exception ex)
             {
                 return Json(new { success = false, message = "Có lỗi xảy ra khi xóa hàng hóa: " + ex.Message });
+            }
+        }
+
+        // Hàm xóa điểm tương đồng khi xóa hàng hóa
+        private void XoaDiemTuongDongCuaHangHoa(string maHangHoa)
+        {
+            try
+            {
+                // Lấy tất cả bản ghi có liên quan đến hàng hóa này
+                var dsFiltering = data.ContentBasedFilterings.Where(c => 
+                    c.MaHangHoa1 == maHangHoa || c.MaHangHoa2 == maHangHoa).ToList();
+
+                // Xóa tất cả bản ghi
+                if (dsFiltering.Any())
+                {
+                    data.ContentBasedFilterings.DeleteAllOnSubmit(dsFiltering);
+                    data.SubmitChanges();
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine("Lỗi khi xóa điểm tương đồng: " + ex.Message);
             }
         }
 
