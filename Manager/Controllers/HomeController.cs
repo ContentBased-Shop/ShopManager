@@ -824,6 +824,212 @@ namespace Manager.Controllers
             }
             return View();
         }
+
+        [HttpPost]
+        public JsonResult TaoKhachHang(string TenDangNhap, string HoTen, string MatKhau, string Email, string SoDienThoai, string DiaChi, string TrangThai)
+        {
+            try
+            {
+                // Kiểm tra tên đăng nhập đã tồn tại chưa
+                if (data.KhachHangs.Any(k => k.TenDangNhap == TenDangNhap))
+                {
+                    return Json(new { success = false, message = "Tên đăng nhập đã tồn tại" });
+                }
+
+                // Kiểm tra email đã tồn tại chưa
+                if (data.KhachHangs.Any(k => k.Email == Email))
+                {
+                    return Json(new { success = false, message = "Email đã tồn tại" });
+                }
+
+                // Tạo mã khách hàng tự động
+                string MaKhachHang;
+                do
+                {
+                    MaKhachHang = "KH" + GenerateRandomString(6);
+                } while (data.KhachHangs.Any(k => k.MaKhachHang == MaKhachHang));
+
+                // Mã hóa mật khẩu (trong thực tế nên sử dụng thư viện mã hóa tốt hơn)
+                string matKhauHash = MatKhau; // Trong thực tế, đây là nơi bạn sẽ hash mật khẩu
+
+                var khachHang = new KhachHang
+                {
+                    MaKhachHang = MaKhachHang,
+                    TenDangNhap = TenDangNhap,
+                    HoTen = HoTen,
+                    MatKhauHash = matKhauHash,
+                    Email = Email,
+                    SoDienThoai = SoDienThoai,
+                    DiaChi = DiaChi,
+                    NgayTao = DateTime.Now,
+                    TrangThai = TrangThai
+                };
+
+                data.KhachHangs.InsertOnSubmit(khachHang);
+                data.SubmitChanges();
+
+                return Json(new { success = true });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Có lỗi xảy ra khi thêm khách hàng: " + ex.Message });
+            }
+        }
+
+        [HttpPost]
+        public JsonResult SuaKhachHang(string MaKhachHang, string HoTen, string Email, string SoDienThoai, string DiaChi, string TrangThai, string MatKhau)
+        {
+            try
+            {
+                var khachHang = data.KhachHangs.FirstOrDefault(k => k.MaKhachHang == MaKhachHang);
+                if (khachHang == null)
+                {
+                    return Json(new { success = false, message = "Khách hàng không tồn tại" });
+                }
+
+                // Kiểm tra email đã tồn tại với khách hàng khác chưa
+                if (khachHang.Email != Email && data.KhachHangs.Any(k => k.Email == Email))
+                {
+                    return Json(new { success = false, message = "Email đã tồn tại với khách hàng khác" });
+                }
+
+                // Cập nhật thông tin
+                khachHang.HoTen = HoTen;
+                khachHang.Email = Email;
+                khachHang.SoDienThoai = SoDienThoai;
+                khachHang.DiaChi = DiaChi;
+                khachHang.TrangThai = TrangThai;
+
+                // Nếu có mật khẩu mới thì cập nhật
+                if (!string.IsNullOrEmpty(MatKhau))
+                {
+                    // Mã hóa mật khẩu (trong thực tế nên sử dụng thư viện mã hóa tốt hơn)
+                    khachHang.MatKhauHash = MatKhau; // Trong thực tế, đây là nơi bạn sẽ hash mật khẩu
+                }
+
+                data.SubmitChanges();
+
+                return Json(new { success = true });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Có lỗi xảy ra khi cập nhật khách hàng: " + ex.Message });
+            }
+        }
+
+        [HttpGet]
+        public string LayDiaChiKhachHang(string id)
+        {
+            var khachHang = data.KhachHangs.FirstOrDefault(k => k.MaKhachHang == id);
+            return khachHang?.DiaChi ?? "";
+        }
+
+        [HttpPost]
+        public JsonResult XoaMotKhachHang(string id)
+        {
+            try
+            {
+                var khachHang = data.KhachHangs.FirstOrDefault(k => k.MaKhachHang == id);
+                if (khachHang == null)
+                {
+                    return Json(new { success = false, message = "Khách hàng không tồn tại" });
+                }
+
+                // Kiểm tra xem khách hàng có đơn hàng không
+                var coDonHang = data.DonHangs.Any(d => d.MaKhachHang == id);
+                if (coDonHang)
+                {
+                    return Json(new { success = false, reason = "coDonHang" });
+                }
+
+                // Xóa tất cả địa chỉ của khách hàng
+                var diaChiList = data.DiaChiKhachHangs.Where(dc => dc.MaKhachHang == id);
+                if (diaChiList.Any())
+                {
+                    data.DiaChiKhachHangs.DeleteAllOnSubmit(diaChiList);
+                }
+
+                // Xóa khách hàng
+                data.KhachHangs.DeleteOnSubmit(khachHang);
+                data.SubmitChanges();
+
+                return Json(new { success = true });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Có lỗi xảy ra khi xóa khách hàng: " + ex.Message });
+            }
+        }
+
+        [HttpPost]
+        public JsonResult XoaNhieuKhachHang(string[] ids)
+        {
+            try
+            {
+                if (ids == null || ids.Length == 0)
+                {
+                    return Json(new { success = false, message = "Không có khách hàng nào được chọn để xóa" });
+                }
+
+                // Kiểm tra và lưu danh sách khách hàng có đơn hàng
+                var khachHangCoDonHang = new List<string>();
+                foreach (var id in ids)
+                {
+                    if (string.IsNullOrEmpty(id)) continue;
+
+                    var coDonHang = data.DonHangs.Any(d => d.MaKhachHang == id);
+                    if (coDonHang)
+                    {
+                        var tenKhachHang = data.KhachHangs
+                            .Where(k => k.MaKhachHang == id)
+                            .Select(k => k.HoTen)
+                            .FirstOrDefault();
+                        khachHangCoDonHang.Add($"{id} ({tenKhachHang})");
+                    }
+                }
+
+                // Nếu có khách hàng đang có đơn hàng
+                if (khachHangCoDonHang.Any())
+                {
+                    var danhSachKH = string.Join(", ", khachHangCoDonHang);
+                    return Json(new { 
+                        success = false, 
+                        reason = "coDonHang", 
+                        message = danhSachKH
+                    });
+                }
+
+                // Xóa các địa chỉ và khách hàng nếu không có vấn đề
+                foreach (var id in ids)
+                {
+                    if (string.IsNullOrEmpty(id)) continue;
+
+                    // Xóa tất cả địa chỉ của khách hàng
+                    var diaChiList = data.DiaChiKhachHangs.Where(dc => dc.MaKhachHang == id);
+                    if (diaChiList.Any())
+                    {
+                        data.DiaChiKhachHangs.DeleteAllOnSubmit(diaChiList);
+                    }
+                }
+
+                // Xóa các khách hàng
+                var khachHangCanXoa = data.KhachHangs.Where(k => ids.Contains(k.MaKhachHang));
+                if (khachHangCanXoa.Any())
+                {
+                    data.KhachHangs.DeleteAllOnSubmit(khachHangCanXoa);
+                    data.SubmitChanges();
+                    return Json(new { success = true });
+                }
+                else
+                {
+                    return Json(new { success = false, message = "Không tìm thấy khách hàng cần xóa" });
+                }
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Có lỗi xảy ra khi xóa khách hàng: " + ex.Message });
+            }
+        }
         #endregion
 
         #region DonBanHang
