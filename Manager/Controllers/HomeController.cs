@@ -90,14 +90,159 @@ namespace Manager.Controllers
             var danhMucs = data.DanhMucs.ToList(); 
             return View(danhMucs);
         }
-        public ActionResult TaoDanhMuc()
+
+        [HttpPost]
+        public JsonResult ThemDanhMuc(string TenDanhMuc)
         {
-            // Kiểm tra đăng nhập
-            if (Session["UserID"] == null)
+            try
             {
-                return RedirectToAction("Index");
+                // Kiểm tra dữ liệu đầu vào
+                if (string.IsNullOrEmpty(TenDanhMuc))
+                {
+                    return Json(new { success = false, message = "Vui lòng nhập tên danh mục" });
+                }
+
+                // Tạo mã danh mục tự động
+                string MaDanhMuc;
+                do
+                {
+                    MaDanhMuc = "DM" + GenerateRandomString(6);
+                } while (data.DanhMucs.Any(d => d.MaDanhMuc == MaDanhMuc));
+
+                // Tạo danh mục mới
+                var danhMuc = new DanhMuc
+                {
+                    MaDanhMuc = MaDanhMuc,
+                    TenDanhMuc = TenDanhMuc
+                };
+
+                data.DanhMucs.InsertOnSubmit(danhMuc);
+                data.SubmitChanges();
+
+                return Json(new { success = true });
             }
-            return View();
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Có lỗi xảy ra khi thêm danh mục: " + ex.Message });
+            }
+        }
+
+        [HttpPost]
+        public JsonResult SuaDanhMuc(string MaDanhMuc, string TenDanhMuc)
+        {
+            try
+            {
+                // Kiểm tra dữ liệu đầu vào
+                if (string.IsNullOrEmpty(MaDanhMuc) || string.IsNullOrEmpty(TenDanhMuc))
+                {
+                    return Json(new { success = false, message = "Vui lòng nhập đầy đủ thông tin" });
+                }
+
+                // Tìm danh mục cần cập nhật
+                var danhMuc = data.DanhMucs.FirstOrDefault(d => d.MaDanhMuc == MaDanhMuc);
+                if (danhMuc == null)
+                {
+                    return Json(new { success = false, message = "Danh mục không tồn tại" });
+                }
+
+                // Cập nhật thông tin
+                danhMuc.TenDanhMuc = TenDanhMuc;
+                data.SubmitChanges();
+
+                return Json(new { success = true });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Có lỗi xảy ra khi cập nhật danh mục: " + ex.Message });
+            }
+        }
+
+        [HttpPost]
+        public JsonResult XoaDanhMuc(string id)
+        {
+            try
+            {
+                // Tìm danh mục cần xóa
+                var danhMuc = data.DanhMucs.FirstOrDefault(d => d.MaDanhMuc == id);
+                if (danhMuc == null)
+                {
+                    return Json(new { success = false, message = "Danh mục không tồn tại" });
+                }
+
+                // Kiểm tra xem danh mục có đang được sử dụng trong bảng Hàng Hóa không
+                var coSanPham = data.HangHoas.Any(h => h.MaDanhMuc == id);
+                if (coSanPham)
+                {
+                    return Json(new { success = false, reason = "coSanPham" });
+                }
+
+                // Xóa danh mục
+                data.DanhMucs.DeleteOnSubmit(danhMuc);
+                data.SubmitChanges();
+
+                return Json(new { success = true });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Có lỗi xảy ra khi xóa danh mục: " + ex.Message });
+            }
+        }
+
+        [HttpPost]
+        public JsonResult XoaNhieuDanhMuc(List<string> ids)
+        {
+            try
+            {
+                if (ids == null || ids.Count == 0)
+                {
+                    return Json(new { success = false, message = "Không có danh mục nào được chọn để xóa" });
+                }
+
+                // Kiểm tra và lưu danh sách danh mục có sản phẩm
+                var danhMucCoSanPham = new List<string>();
+                foreach (var id in ids)
+                {
+                    if (string.IsNullOrEmpty(id)) continue;
+
+                    var coSanPham = data.HangHoas.Any(h => h.MaDanhMuc == id);
+                    if (coSanPham)
+                    {
+                        var tenDanhMuc = data.DanhMucs
+                            .Where(d => d.MaDanhMuc == id)
+                            .Select(d => d.TenDanhMuc)
+                            .FirstOrDefault();
+                        danhMucCoSanPham.Add($"{id} ({tenDanhMuc})");
+                    }
+                }
+
+                // Nếu có danh mục đang được sử dụng
+                if (danhMucCoSanPham.Any())
+                {
+                    var danhSachDM = string.Join("<br/>", danhMucCoSanPham);
+                    return Json(new { 
+                        success = false, 
+                        reason = "coSanPham", 
+                        message = danhSachDM
+                    });
+                }
+
+                // Xóa các danh mục nếu không có vấn đề
+                var danhMucCanXoa = data.DanhMucs.Where(d => ids.Contains(d.MaDanhMuc));
+                if (danhMucCanXoa.Any())
+                {
+                    data.DanhMucs.DeleteAllOnSubmit(danhMucCanXoa);
+                    data.SubmitChanges();
+                    return Json(new { success = true });
+                }
+                else
+                {
+                    return Json(new { success = false, message = "Không tìm thấy danh mục cần xóa" });
+                }
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Có lỗi xảy ra khi xóa danh mục: " + ex.Message });
+            }
         }
         #endregion
 
@@ -1337,16 +1482,7 @@ namespace Manager.Controllers
             var nhanViens = data.NhanViens.ToList();
             return View(nhanViens);
         }
-        public ActionResult DanhSachNhaCungCap()
-        {
-            // Kiểm tra đăng nhập
-            if (Session["UserID"] == null)
-            {
-                return RedirectToAction("Index");
-            }
-            var nhaCungCaps = data.NhaCungCaps.ToList(); 
-            return View(nhaCungCaps);
-        }
+
 
         [HttpPost]
         public JsonResult TaoVoucher(Voucher voucher)
@@ -1671,6 +1807,180 @@ namespace Manager.Controllers
                 return Json(new { success = false, message = "Có lỗi xảy ra khi xóa biến thể: " + ex.Message });
             }
         }
+        #region 1
+        #endregion
 
+        #region NhaCungCap
+        public ActionResult DanhSachNhaCungCap()
+        {
+            // Kiểm tra đăng nhập
+            if (Session["UserID"] == null)
+            {
+                return RedirectToAction("Index");
+            }
+            var nhaCungCaps = data.NhaCungCaps.ToList(); 
+            return View(nhaCungCaps);
+        }
+
+        [HttpPost]
+        public JsonResult ThemNhaCungCap(string TenNhaCungCap, string LienHe, string Email, string SoDienThoai)
+        {
+            try
+            {
+                // Kiểm tra dữ liệu đầu vào
+                if (string.IsNullOrEmpty(TenNhaCungCap))
+                {
+                    return Json(new { success = false, message = "Vui lòng nhập tên nhà cung cấp" });
+                }
+
+                // Tạo mã nhà cung cấp tự động
+                string MaNhaCungCap;
+                do
+                {
+                    MaNhaCungCap = "NCC" + GenerateRandomString(6);
+                } while (data.NhaCungCaps.Any(n => n.MaNhaCungCap == MaNhaCungCap));
+
+                // Tạo nhà cung cấp mới
+                var nhaCungCap = new NhaCungCap
+                {
+                    MaNhaCungCap = MaNhaCungCap,
+                    TenNhaCungCap = TenNhaCungCap,
+                    LienHe = LienHe,
+                    Email = Email,
+                    SoDienThoai = SoDienThoai
+                };
+
+                data.NhaCungCaps.InsertOnSubmit(nhaCungCap);
+                data.SubmitChanges();
+
+                return Json(new { success = true });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Có lỗi xảy ra khi thêm nhà cung cấp: " + ex.Message });
+            }
+        }
+
+        [HttpPost]
+        public JsonResult SuaNhaCungCap(string MaNhaCungCap, string TenNhaCungCap, string LienHe, string Email, string SoDienThoai)
+        {
+            try
+            {
+                // Kiểm tra dữ liệu đầu vào
+                if (string.IsNullOrEmpty(MaNhaCungCap) || string.IsNullOrEmpty(TenNhaCungCap))
+                {
+                    return Json(new { success = false, message = "Vui lòng nhập đầy đủ thông tin" });
+                }
+
+                // Tìm nhà cung cấp cần cập nhật
+                var nhaCungCap = data.NhaCungCaps.FirstOrDefault(n => n.MaNhaCungCap == MaNhaCungCap);
+                if (nhaCungCap == null)
+                {
+                    return Json(new { success = false, message = "Nhà cung cấp không tồn tại" });
+                }
+
+                // Cập nhật thông tin
+                nhaCungCap.TenNhaCungCap = TenNhaCungCap;
+                nhaCungCap.LienHe = LienHe;
+                nhaCungCap.Email = Email;
+                nhaCungCap.SoDienThoai = SoDienThoai;
+                data.SubmitChanges();
+
+                return Json(new { success = true });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Có lỗi xảy ra khi cập nhật nhà cung cấp: " + ex.Message });
+            }
+        }
+
+        [HttpPost]
+        public JsonResult XoaNhaCungCap(string id)
+        {
+            try
+            {
+                // Tìm nhà cung cấp cần xóa
+                var nhaCungCap = data.NhaCungCaps.FirstOrDefault(n => n.MaNhaCungCap == id);
+                if (nhaCungCap == null)
+                {
+                    return Json(new { success = false, message = "Nhà cung cấp không tồn tại" });
+                }
+
+                // Kiểm tra xem nhà cung cấp có đang được sử dụng trong bảng NhapHang không
+                var coDonNhap = data.NhapHangs.Any(nh => nh.MaNhaCungCap == id);
+                if (coDonNhap)
+                {
+                    return Json(new { success = false, reason = "coDonNhap" });
+                }
+
+                // Xóa nhà cung cấp
+                data.NhaCungCaps.DeleteOnSubmit(nhaCungCap);
+                data.SubmitChanges();
+
+                return Json(new { success = true });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Có lỗi xảy ra khi xóa nhà cung cấp: " + ex.Message });
+            }
+        }
+
+        [HttpPost]
+        public JsonResult XoaNhieuNhaCungCap(List<string> ids)
+        {
+            try
+            {
+                if (ids == null || ids.Count == 0)
+                {
+                    return Json(new { success = false, message = "Không có nhà cung cấp nào được chọn để xóa" });
+                }
+
+                // Kiểm tra và lưu danh sách nhà cung cấp có đơn nhập hàng
+                var nhaCungCapCoDonNhap = new List<string>();
+                foreach (var id in ids)
+                {
+                    if (string.IsNullOrEmpty(id)) continue;
+
+                    var coDonNhap = data.NhapHangs.Any(nh => nh.MaNhaCungCap == id);
+                    if (coDonNhap)
+                    {
+                        var tenNhaCungCap = data.NhaCungCaps
+                            .Where(n => n.MaNhaCungCap == id)
+                            .Select(n => n.TenNhaCungCap)
+                            .FirstOrDefault();
+                        nhaCungCapCoDonNhap.Add($"{id} ({tenNhaCungCap})");
+                    }
+                }
+
+                // Nếu có nhà cung cấp đang được sử dụng
+                if (nhaCungCapCoDonNhap.Any())
+                {
+                    var danhSachNCC = string.Join("<br/>", nhaCungCapCoDonNhap);
+                    return Json(new { 
+                        success = false, 
+                        reason = "coDonNhap", 
+                        message = danhSachNCC
+                    });
+                }
+
+                // Xóa các nhà cung cấp nếu không có vấn đề
+                var nhaCungCapCanXoa = data.NhaCungCaps.Where(n => ids.Contains(n.MaNhaCungCap));
+                if (nhaCungCapCanXoa.Any())
+                {
+                    data.NhaCungCaps.DeleteAllOnSubmit(nhaCungCapCanXoa);
+                    data.SubmitChanges();
+                    return Json(new { success = true });
+                }
+                else
+                {
+                    return Json(new { success = false, message = "Không tìm thấy nhà cung cấp cần xóa" });
+                }
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Có lỗi xảy ra khi xóa nhà cung cấp: " + ex.Message });
+            }
+        }
+        #endregion
     }
 }

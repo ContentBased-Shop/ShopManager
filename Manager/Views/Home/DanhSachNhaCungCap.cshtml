@@ -19,16 +19,22 @@
     </nav>
 
     <div class="d-flex flex-wrap align-items-center mb-3 gap-2">
-        <a href="#" class="btn btn-success"><i class="bi bi-plus-circle"></i> Tạo mới</a>
-        <input type="text" class="form-control w-auto" placeholder="Tìm kiếm..." />
-        <button class="btn btn-primary"><i class="bi bi-search"></i></button>
-        <button class="btn btn-dark">Đặt lại</button>
+        <a href="#" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#createSupplierModal">
+            <i class="bi bi-plus-circle"></i> Tạo mới
+        </a>
+        <input type="text" class="form-control w-auto" id="searchInput" placeholder="Tìm kiếm..." />
+        <button id="btnXoaNhieu" class="btn btn-danger d-none" onclick="xoaNhieu()">
+            <i class="bi bi-trash3"></i> Xóa đã chọn
+        </button>
     </div>
 
     <div class="table-responsive">
-        <table class="table table-bordered align-middle text-center">
+        <table class="table table-bordered align-middle text-center" id="supplierTable">
             <thead class="table-light">
                 <tr>
+                    <th style="width: 50px;">
+                        <input type="checkbox" id="checkAll" />
+                    </th>
                     <th>Mã NCC</th>
                     <th>Tên nhà cung cấp</th>
                     <th>Liên hệ</th>
@@ -41,15 +47,32 @@
                 @foreach (var ncc in Model)
                 {
                     <tr>
-                        <td>@ncc.MaNhaCungCap</td>
-                        <td>@ncc.TenNhaCungCap</td>
+                        <td>
+                            <input type="checkbox" class="check-item" value="@ncc.MaNhaCungCap" />
+                        </td>
+                        <td class="ma-ncc">@ncc.MaNhaCungCap</td>
+                        <td class="ten-ncc">@ncc.TenNhaCungCap</td>
                         <td>@ncc.LienHe</td>
                         <td>@ncc.Email</td>
                         <td>@ncc.SoDienThoai</td>
                         <td>
-                            <a href="#" class="btn btn-sm btn-info"><i class="bi bi-eye"></i></a>
-                            <a href="#" class="btn btn-sm btn-warning"><i class="bi bi-pencil"></i></a>
-                            <a href="#" class="btn btn-sm btn-danger"><i class="bi bi-trash"></i></a>
+                            <a href="#" class="btn btn-sm btn-primary btn-edit" 
+                               data-id="@ncc.MaNhaCungCap" 
+                               data-name="@ncc.TenNhaCungCap" 
+                               data-contact="@ncc.LienHe" 
+                               data-email="@ncc.Email" 
+                               data-phone="@ncc.SoDienThoai" 
+                               data-bs-toggle="modal" 
+                               data-bs-target="#editSupplierModal">
+                                <i class="bi bi-pencil-square"></i>
+                            </a>
+                            <a href="#" class="btn btn-sm btn-warning btn-delete" 
+                               data-id="@ncc.MaNhaCungCap" 
+                               data-name="@ncc.TenNhaCungCap" 
+                               data-bs-toggle="modal" 
+                               data-bs-target="#confirmDeleteModal">
+                                <i class="bi bi-trash3"></i>
+                            </a>
                         </td>
                     </tr>
                 }
@@ -69,3 +92,379 @@
         </ul>
     </nav>
 </div>
+
+<!-- Modal Tạo mới nhà cung cấp -->
+<div class="modal fade" id="createSupplierModal" tabindex="-1" aria-labelledby="createSupplierModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="createSupplierModalLabel">Thêm Nhà Cung Cấp Mới</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="createSupplierForm">
+                    <div class="mb-3">
+                        <label for="tenNhaCungCap" class="form-label">Tên Nhà Cung Cấp</label>
+                        <input type="text" class="form-control" id="tenNhaCungCap" maxlength="255" required>
+                        <div class="invalid-feedback">Vui lòng nhập tên nhà cung cấp</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="lienHe" class="form-label">Người Liên Hệ</label>
+                        <input type="text" class="form-control" id="lienHe" maxlength="255">
+                    </div>
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email</label>
+                        <input type="email" class="form-control" id="email" maxlength="100">
+                    </div>
+                    <div class="mb-3">
+                        <label for="soDienThoai" class="form-label">Số Điện Thoại</label>
+                        <input type="tel" class="form-control" id="soDienThoai" maxlength="20">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                <button type="button" class="btn btn-primary" id="saveSupplier">Lưu</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Chỉnh sửa nhà cung cấp -->
+<div class="modal fade" id="editSupplierModal" tabindex="-1" aria-labelledby="editSupplierModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editSupplierModalLabel">Chỉnh Sửa Nhà Cung Cấp</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editSupplierForm">
+                    <input type="hidden" id="editMaNhaCungCap">
+                    <div class="mb-3">
+                        <label for="editTenNhaCungCap" class="form-label">Tên Nhà Cung Cấp</label>
+                        <input type="text" class="form-control" id="editTenNhaCungCap" maxlength="255" required>
+                        <div class="invalid-feedback">Vui lòng nhập tên nhà cung cấp</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="editLienHe" class="form-label">Người Liên Hệ</label>
+                        <input type="text" class="form-control" id="editLienHe" maxlength="255">
+                    </div>
+                    <div class="mb-3">
+                        <label for="editEmail" class="form-label">Email</label>
+                        <input type="email" class="form-control" id="editEmail" maxlength="100">
+                    </div>
+                    <div class="mb-3">
+                        <label for="editSoDienThoai" class="form-label">Số Điện Thoại</label>
+                        <input type="tel" class="form-control" id="editSoDienThoai" maxlength="20">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                <button type="button" class="btn btn-primary" id="updateSupplier">Lưu</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Xác nhận xóa -->
+<div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-labelledby="confirmDeleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="confirmDeleteModalLabel">Xác nhận xóa</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p id="deleteMessage"></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                <button type="button" class="btn btn-danger" id="confirmDelete">Xóa</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal thông báo không thể xóa -->
+<div class="modal fade" id="cannotDeleteModal" tabindex="-1" aria-labelledby="cannotDeleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-warning">
+                <h5 class="modal-title" id="cannotDeleteModalLabel">Không thể xóa</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                Nhà cung cấp này đang được sử dụng trong bảng Nhập Hàng. Vui lòng xóa đơn nhập hàng trước.
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal thông báo nhà cung cấp đang được sử dụng -->
+<div class="modal fade" id="supplierInUseModal" tabindex="-1" aria-labelledby="supplierInUseModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-warning">
+                <h5 class="modal-title" id="supplierInUseModalLabel">Không thể xóa</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Không thể xóa các nhà cung cấp sau vì đang được sử dụng trong bảng Nhập Hàng:</p>
+                <div id="supplierInUseList" class="alert alert-warning"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal thông báo thành công -->
+<div class="modal fade" id="successModal" tabindex="-1" aria-labelledby="successModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title" id="successModalLabel">Thành công</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p id="successMessage">Thao tác thành công!</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Đóng</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function () {
+        // Xử lý tìm kiếm
+        $("#searchInput").on("keyup", function () {
+            var value = $(this).val().toLowerCase();
+            $("#supplierTable tbody tr").filter(function() {
+                $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1);
+            });
+        });
+
+        // Xử lý checkbox "Chọn tất cả"
+        $("#checkAll").change(function() {
+            $(".check-item").prop("checked", $(this).prop("checked"));
+            toggleDeleteButton();
+        });
+
+        // Xử lý khi checkbox đơn lẻ thay đổi
+        $(".check-item").change(function() {
+            toggleDeleteButton();
+            // Nếu tất cả checkbox con được chọn, checkbox "Chọn tất cả" cũng được chọn
+            $("#checkAll").prop("checked", $(".check-item:checked").length === $(".check-item").length);
+        });
+
+        // Hàm hiển thị/ẩn nút xóa
+        function toggleDeleteButton() {
+            if($(".check-item:checked").length > 0) {
+                $("#btnXoaNhieu").removeClass("d-none");
+            } else {
+                $("#btnXoaNhieu").addClass("d-none");
+            }
+        }
+
+        // Hàm xóa nhiều nhà cung cấp
+        window.xoaNhieu = function() {
+            var selectedIds = [];
+            $(".check-item:checked").each(function() {
+                selectedIds.push($(this).val());
+            });
+
+            if(selectedIds.length === 0) {
+                alert("Vui lòng chọn ít nhất một nhà cung cấp để xóa!");
+                return;
+            }
+
+            $("#deleteMessage").text("Bạn có chắc chắn muốn xóa " + selectedIds.length + " nhà cung cấp đã chọn?");
+            $("#confirmDeleteModal").modal("show");
+
+            $("#confirmDelete").off("click").on("click", function() {
+                $.ajax({
+                    url: '@Url.Action("XoaNhieuNhaCungCap", "Home")',
+                    type: "POST",
+                    contentType: "application/json",
+                    data: JSON.stringify({ ids: selectedIds }),
+                    success: function(response) {
+                        $("#confirmDeleteModal").modal("hide");
+                        if(response.success) {
+                            $("#successMessage").text("Xóa nhà cung cấp thành công!");
+                            $("#successModal").modal("show");
+                            setTimeout(function() {
+                                location.reload();
+                            }, 1500);
+                        } else {
+                            if(response.reason === "coDonNhap") {
+                                $("#supplierInUseList").html(response.message);
+                                $("#supplierInUseModal").modal("show");
+                            } else {
+                                alert(response.message || "Xóa thất bại");
+                            }
+                        }
+                    },
+                    error: function() {
+                        alert("Lỗi khi gọi server.");
+                    }
+                });
+            });
+        };
+
+        // Xử lý khi nhấn nút xóa
+        $(".btn-delete").click(function() {
+            var maNhaCungCap = $(this).data("id");
+            var tenNhaCungCap = $(this).data("name");
+            
+            $("#deleteMessage").text("Bạn có chắc chắn muốn xóa nhà cung cấp '" + tenNhaCungCap + "'?");
+            
+            $("#confirmDelete").off("click").on("click", function() {
+                $.ajax({
+                    url: '@Url.Action("XoaNhaCungCap", "Home")',
+                    type: "POST",
+                    data: { id: maNhaCungCap },
+                    success: function(response) {
+                        $("#confirmDeleteModal").modal("hide");
+                        if(response.success) {
+                            $("#successMessage").text("Xóa nhà cung cấp thành công!");
+                            $("#successModal").modal("show");
+                            setTimeout(function() {
+                                location.reload();
+                            }, 1500);
+                        } else {
+                            if(response.reason === "coDonNhap") {
+                                $("#cannotDeleteModal").modal("show");
+                            } else {
+                                alert(response.message || "Xóa thất bại");
+                            }
+                        }
+                    },
+                    error: function() {
+                        alert("Lỗi khi gọi server.");
+                    }
+                });
+            });
+        });
+
+        // Xử lý khi nhấn nút Lưu trong form thêm mới
+        $("#saveSupplier").click(function() {
+            var tenNhaCungCap = $("#tenNhaCungCap").val().trim();
+            var lienHe = $("#lienHe").val().trim();
+            var email = $("#email").val().trim();
+            var soDienThoai = $("#soDienThoai").val().trim();
+            
+            // Kiểm tra dữ liệu
+            if(tenNhaCungCap === "") {
+                $("#tenNhaCungCap").addClass("is-invalid");
+                return;
+            } else {
+                $("#tenNhaCungCap").removeClass("is-invalid");
+            }
+            
+            // Gửi dữ liệu về server
+            $.ajax({
+                url: '@Url.Action("ThemNhaCungCap", "Home")',
+                type: "POST",
+                data: { 
+                    TenNhaCungCap: tenNhaCungCap,
+                    LienHe: lienHe,
+                    Email: email,
+                    SoDienThoai: soDienThoai
+                },
+                success: function(response) {
+                    if(response.success) {
+                        $("#createSupplierModal").modal("hide");
+                        $("#successMessage").text("Thêm nhà cung cấp thành công!");
+                        $("#successModal").modal("show");
+                        setTimeout(function() {
+                            location.reload();
+                        }, 1500);
+                    } else {
+                        alert(response.message || "Thêm nhà cung cấp thất bại");
+                    }
+                },
+                error: function() {
+                    alert("Lỗi khi gọi server.");
+                }
+            });
+        });
+
+        // Xử lý khi nhấn nút Sửa
+        $(".btn-edit").click(function() {
+            var maNhaCungCap = $(this).data("id");
+            var tenNhaCungCap = $(this).data("name");
+            var lienHe = $(this).data("contact");
+            var email = $(this).data("email");
+            var soDienThoai = $(this).data("phone");
+            
+            $("#editMaNhaCungCap").val(maNhaCungCap);
+            $("#editTenNhaCungCap").val(tenNhaCungCap);
+            $("#editLienHe").val(lienHe);
+            $("#editEmail").val(email);
+            $("#editSoDienThoai").val(soDienThoai);
+        });
+
+        // Xử lý khi nhấn nút Lưu trong form chỉnh sửa
+        $("#updateSupplier").click(function() {
+            var maNhaCungCap = $("#editMaNhaCungCap").val();
+            var tenNhaCungCap = $("#editTenNhaCungCap").val().trim();
+            var lienHe = $("#editLienHe").val().trim();
+            var email = $("#editEmail").val().trim();
+            var soDienThoai = $("#editSoDienThoai").val().trim();
+            
+            // Kiểm tra dữ liệu
+            if(tenNhaCungCap === "") {
+                $("#editTenNhaCungCap").addClass("is-invalid");
+                return;
+            } else {
+                $("#editTenNhaCungCap").removeClass("is-invalid");
+            }
+            
+            // Gửi dữ liệu về server
+            $.ajax({
+                url: '@Url.Action("SuaNhaCungCap", "Home")',
+                type: "POST",
+                data: { 
+                    MaNhaCungCap: maNhaCungCap,
+                    TenNhaCungCap: tenNhaCungCap,
+                    LienHe: lienHe,
+                    Email: email,
+                    SoDienThoai: soDienThoai
+                },
+                success: function(response) {
+                    if(response.success) {
+                        $("#editSupplierModal").modal("hide");
+                        $("#successMessage").text("Cập nhật nhà cung cấp thành công!");
+                        $("#successModal").modal("show");
+                        setTimeout(function() {
+                            location.reload();
+                        }, 1500);
+                    } else {
+                        alert(response.message || "Cập nhật nhà cung cấp thất bại");
+                    }
+                },
+                error: function() {
+                    alert("Lỗi khi gọi server.");
+                }
+            });
+        });
+
+        // Reset form khi đóng modal
+        $("#createSupplierModal").on("hidden.bs.modal", function() {
+            $("#createSupplierForm")[0].reset();
+            $("#tenNhaCungCap").removeClass("is-invalid");
+        });
+
+        $("#editSupplierModal").on("hidden.bs.modal", function() {
+            $("#editTenNhaCungCap").removeClass("is-invalid");
+        });
+    });
+</script>
