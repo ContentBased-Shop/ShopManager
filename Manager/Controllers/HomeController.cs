@@ -795,6 +795,12 @@ namespace Manager.Controllers
         }
         public ActionResult DiaChiKhach(string id)
         {
+            // Kiểm tra đăng nhập
+            if (Session["UserID"] == null)
+            {
+                return RedirectToAction("Index");
+            }
+
             var diaChiList = data.DiaChiKhachHangs
                                  .Where(dc => dc.MaKhachHang == id)
                                  .ToList();
@@ -803,9 +809,206 @@ namespace Manager.Controllers
                                        .Where(k => k.MaKhachHang == id)
                                        .Select(k => k.HoTen)
                                        .FirstOrDefault() ?? "Không xác định";
+            
+            ViewBag.MaKhachHang = id;
 
             return View(diaChiList);
         }
+
+        [HttpPost]
+        public JsonResult ThemDiaChiKhachHang(string MaKhachHang, string TenNguoiNhan, string SoDienThoai, string DiaChiDayDu, bool LaMacDinh)
+        {
+            try
+            {
+                // Kiểm tra dữ liệu đầu vào
+                if (string.IsNullOrEmpty(MaKhachHang) || string.IsNullOrEmpty(TenNguoiNhan) || 
+                    string.IsNullOrEmpty(SoDienThoai) || string.IsNullOrEmpty(DiaChiDayDu))
+                {
+                    return Json(new { success = false, message = "Vui lòng nhập đầy đủ thông tin" });
+                }
+
+                // Kiểm tra khách hàng có tồn tại không
+                var khachHang = data.KhachHangs.FirstOrDefault(k => k.MaKhachHang == MaKhachHang);
+                if (khachHang == null)
+                {
+                    return Json(new { success = false, message = "Khách hàng không tồn tại" });
+                }
+
+                // Tạo mã địa chỉ tự động
+                string MaDiaChi;
+                do
+                {
+                    MaDiaChi = "DC" + GenerateRandomString(6);
+                } while (data.DiaChiKhachHangs.Any(d => d.MaDiaChi == MaDiaChi));
+
+                // Nếu địa chỉ mới là mặc định, hủy mặc định của các địa chỉ khác
+                if (LaMacDinh)
+                {
+                    var diaChiMacDinh = data.DiaChiKhachHangs
+                        .Where(d => d.MaKhachHang == MaKhachHang && d.LaMacDinh == true);
+                    
+                    foreach (var dc in diaChiMacDinh)
+                    {
+                        dc.LaMacDinh = false;
+                    }
+                }
+
+                // Tạo địa chỉ mới
+                var diaChiMoi = new DiaChiKhachHang
+                {
+                    MaDiaChi = MaDiaChi,
+                    MaKhachHang = MaKhachHang,
+                    TenNguoiNhan = TenNguoiNhan,
+                    SoDienThoai = SoDienThoai,
+                    DiaChiDayDu = DiaChiDayDu,
+                    LaMacDinh = LaMacDinh
+                };
+
+                data.DiaChiKhachHangs.InsertOnSubmit(diaChiMoi);
+                data.SubmitChanges();
+
+                return Json(new { success = true });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Có lỗi xảy ra khi thêm địa chỉ: " + ex.Message });
+            }
+        }
+
+        [HttpPost]
+        public JsonResult SuaDiaChiKhachHang(string MaDiaChi, string TenNguoiNhan, string SoDienThoai, string DiaChiDayDu, bool LaMacDinh)
+        {
+            try
+            {
+                // Kiểm tra dữ liệu đầu vào
+                if (string.IsNullOrEmpty(MaDiaChi) || string.IsNullOrEmpty(TenNguoiNhan) || 
+                    string.IsNullOrEmpty(SoDienThoai) || string.IsNullOrEmpty(DiaChiDayDu))
+                {
+                    return Json(new { success = false, message = "Vui lòng nhập đầy đủ thông tin" });
+                }
+
+                // Tìm địa chỉ cần cập nhật
+                var diaChi = data.DiaChiKhachHangs.FirstOrDefault(d => d.MaDiaChi == MaDiaChi);
+                if (diaChi == null)
+                {
+                    return Json(new { success = false, message = "Địa chỉ không tồn tại" });
+                }
+
+                // Nếu địa chỉ là mặc định và chưa được đặt làm mặc định trước đó
+                if (LaMacDinh && diaChi.LaMacDinh == false)
+                {
+                    // Hủy mặc định của các địa chỉ khác
+                    var diaChiMacDinh = data.DiaChiKhachHangs
+                        .Where(d => d.MaKhachHang == diaChi.MaKhachHang && d.LaMacDinh == true);
+                    
+                    foreach (var dc in diaChiMacDinh)
+                    {
+                        dc.LaMacDinh = false;
+                    }
+                }
+
+                // Cập nhật thông tin
+                diaChi.TenNguoiNhan = TenNguoiNhan;
+                diaChi.SoDienThoai = SoDienThoai;
+                diaChi.DiaChiDayDu = DiaChiDayDu;
+                diaChi.LaMacDinh = LaMacDinh;
+
+                data.SubmitChanges();
+
+                return Json(new { success = true });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Có lỗi xảy ra khi cập nhật địa chỉ: " + ex.Message });
+            }
+        }
+
+        [HttpPost]
+        public JsonResult XoaDiaChiKhachHang(string MaDiaChi)
+        {
+            try
+            {
+                // Tìm địa chỉ cần xóa
+                var diaChi = data.DiaChiKhachHangs.FirstOrDefault(d => d.MaDiaChi == MaDiaChi);
+                if (diaChi == null)
+                {
+                    return Json(new { success = false, message = "Địa chỉ không tồn tại" });
+                }
+
+                // Kiểm tra xem địa chỉ có đang được sử dụng trong đơn hàng không
+                var daDung = data.GiaoHangs.Any(g => g.MaDiaChi == MaDiaChi);
+                if (daDung)
+                {
+                    return Json(new { success = false, reason = "daDung" });
+                }
+
+                // Kiểm tra xem địa chỉ này có phải địa chỉ mặc định không
+                bool? laMacDinh = diaChi.LaMacDinh;
+                string maKhachHang = diaChi.MaKhachHang;
+
+                // Xóa địa chỉ
+                data.DiaChiKhachHangs.DeleteOnSubmit(diaChi);
+                data.SubmitChanges();
+
+                // Nếu là địa chỉ mặc định và có các địa chỉ khác, trả về thông tin để yêu cầu chọn địa chỉ mặc định mới
+                if (laMacDinh == true)
+                {
+                    var diaChiKhac = data.DiaChiKhachHangs
+                        .Where(d => d.MaKhachHang == maKhachHang)
+                        .Select(d => new { d.MaDiaChi, d.TenNguoiNhan, d.DiaChiDayDu })
+                        .ToList();
+
+                    if (diaChiKhac.Any())
+                    {
+                        return Json(new { 
+                            success = true, 
+                            canChonMacDinh = true, 
+                            danhSachDiaChi = diaChiKhac 
+                        });
+                    }
+                }
+
+                return Json(new { success = true });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Có lỗi xảy ra khi xóa địa chỉ: " + ex.Message });
+            }
+        }
+
+        [HttpPost]
+        public JsonResult DatDiaChiMacDinh(string MaDiaChi)
+        {
+            try
+            {
+                // Tìm địa chỉ cần đặt làm mặc định
+                var diaChi = data.DiaChiKhachHangs.FirstOrDefault(d => d.MaDiaChi == MaDiaChi);
+                if (diaChi == null)
+                {
+                    return Json(new { success = false, message = "Địa chỉ không tồn tại" });
+                }
+
+                // Hủy mặc định của các địa chỉ khác
+                var diaChiMacDinh = data.DiaChiKhachHangs
+                    .Where(d => d.MaKhachHang == diaChi.MaKhachHang && d.LaMacDinh == true);
+                
+                foreach (var dc in diaChiMacDinh)
+                {
+                    dc.LaMacDinh = false;
+                }
+
+                // Đặt địa chỉ mới làm mặc định
+                diaChi.LaMacDinh = true;
+                data.SubmitChanges();
+
+                return Json(new { success = true });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Có lỗi xảy ra khi đặt địa chỉ mặc định: " + ex.Message });
+            }
+        }
+
         public ActionResult ChiTietKhachHang()
         {
             // Kiểm tra đăng nhập
@@ -815,6 +1018,7 @@ namespace Manager.Controllers
             }
             return View();
         }
+
         public ActionResult CapNhatKhachHang()
         {
             // Kiểm tra đăng nhập
