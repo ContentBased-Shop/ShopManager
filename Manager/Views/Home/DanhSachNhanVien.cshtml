@@ -19,22 +19,33 @@
 
     <!-- Action Bar -->
     <div class="d-flex flex-wrap align-items-center mb-3 gap-2">
-        <a href="#" class="btn btn-success"><i class="bi bi-plus-circle"></i> Tạo mới</a>
-        <input type="text" class="form-control w-auto" placeholder="Tìm kiếm..." />
-        <button class="btn btn-primary"><i class="bi bi-search"></i></button>
-        <select class="form-select w-auto">
-            <option selected>Chọn vai trò</option>
+        <a href="#" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#createEmployeeModal"><i class="bi bi-plus-circle"></i> Tạo mới</a>
+        <input type="text" class="form-control w-auto" id="searchInput" placeholder="Tìm kiếm theo mã, tên, email..." />
+        <button class="btn btn-primary" id="btnSearch"><i class="bi bi-search"></i></button>
+        <select class="form-select w-auto" id="roleFilter">
+            <option value="">Chọn vai trò</option>
             <option value="Admin">Admin</option>
             <option value="NhanVien">Nhân viên</option>
         </select>
-        <button class="btn btn-dark">Đặt lại</button>
+        <select class="form-select w-auto" id="statusFilter">
+            <option value="">Chọn trạng thái</option>
+            <option value="HoatDong">Hoạt động</option>
+            <option value="Cam">Cấm</option>
+        </select>
+        <button class="btn btn-dark" id="btnReset">Đặt lại</button>
+        <button id="btnXoaNhieu" class="btn btn-danger d-none" onclick="xoaNhieu()">
+            <i class="bi bi-trash3"></i> Xóa đã chọn
+        </button>
     </div>
 
     <!-- Table -->
     <div class="table-responsive">
-        <table class="table table-bordered align-middle text-center">
+        <table class="table table-bordered align-middle text-center" id="employeeTable">
             <thead class="table-light">
                 <tr>
+                    <th style="width: 50px;">
+                        <input type="checkbox" id="checkAll" />
+                    </th>
                     <th>Mã NV</th>
                     <th>Tên đăng nhập</th>
                     <th>Họ tên</th>
@@ -49,11 +60,14 @@
                 @foreach (var nv in Model)
                 {
                     <tr>
-                        <td>@nv.MaNhanVien</td>
-                        <td>@nv.TenDangNhap</td>
-                        <td>@nv.HoTen</td>
-                        <td>@nv.Email</td>
-                        <td>@nv.SoDienThoai</td>
+                        <td>
+                            <input type="checkbox" class="check-item" value="@nv.MaNhanVien" />
+                        </td>
+                        <td class="ma-nhanvien">@nv.MaNhanVien</td>
+                        <td class="ten-dangnhap">@nv.TenDangNhap</td>
+                        <td class="ho-ten">@nv.HoTen</td>
+                        <td class="email">@nv.Email</td>
+                        <td class="so-dien-thoai">@nv.SoDienThoai</td>
                         <td>
                             <span class="badge @(nv.VaiTro == "Admin" ? "bg-primary" : "bg-secondary")">@nv.VaiTro</span>
                         </td>
@@ -63,9 +77,24 @@
                             </span>
                         </td>
                         <td>
-                            <a href="#" class="btn btn-sm btn-info"><i class="bi bi-eye"></i></a>
-                            <a href="#" class="btn btn-sm btn-warning"><i class="bi bi-pencil"></i></a>
-                            <a href="#" class="btn btn-sm btn-danger"><i class="bi bi-trash"></i></a>
+                            <a href="#" class="btn btn-sm btn-info btn-detail" data-id="@nv.MaNhanVien" data-bs-toggle="modal" data-bs-target="#viewEmployeeModal">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                            <a href="#" class="btn btn-sm btn-warning btn-edit" 
+                               data-id="@nv.MaNhanVien" 
+                               data-username="@nv.TenDangNhap" 
+                               data-name="@nv.HoTen" 
+                               data-address="@nv.DiaChi" 
+                               data-email="@nv.Email" 
+                               data-phone="@nv.SoDienThoai" 
+                               data-status="@nv.TrangThai" 
+                               data-role="@nv.VaiTro"
+                               data-bs-toggle="modal" data-bs-target="#editEmployeeModal">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <a href="#" class="btn btn-sm btn-danger btn-delete" data-id="@nv.MaNhanVien" data-name="@nv.HoTen" data-bs-toggle="modal" data-bs-target="#confirmDeleteModal">
+                                <i class="bi bi-trash"></i>
+                            </a>
                         </td>
                     </tr>
                 }
@@ -85,4 +114,318 @@
             <li class="page-item"><a class="page-link" href="#">Trang cuối</a></li>
         </ul>
     </nav>
+
+    <!-- Modal Tạo mới nhân viên -->
+    <div class="modal fade" id="createEmployeeModal" tabindex="-1" aria-labelledby="createEmployeeModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="createEmployeeModalLabel">Thêm Nhân Viên Mới</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="createEmployeeForm">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="tenDangNhap" class="form-label">Tên Đăng Nhập <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="tenDangNhap" maxlength="50" required>
+                                <div class="text-danger mt-1" id="tenDangNhapError" style="display: none;">Vui lòng nhập tên đăng nhập.</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="hoTen" class="form-label">Họ Tên <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="hoTen" maxlength="50" required>
+                                <div class="text-danger mt-1" id="hoTenError" style="display: none;">Vui lòng nhập họ tên.</div>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="matKhau" class="form-label">Mật Khẩu <span class="text-danger">*</span></label>
+                                <input type="password" class="form-control" id="matKhau" required>
+                                <div class="text-danger mt-1" id="matKhauError" style="display: none;">Vui lòng nhập mật khẩu.</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="nhapLaiMatKhau" class="form-label">Nhập Lại Mật Khẩu <span class="text-danger">*</span></label>
+                                <input type="password" class="form-control" id="nhapLaiMatKhau" required>
+                                <div class="text-danger mt-1" id="nhapLaiMatKhauError" style="display: none;">Mật khẩu không khớp.</div>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="email" class="form-label">Email <span class="text-danger">*</span></label>
+                                <input type="email" class="form-control" id="email" maxlength="100" required>
+                                <div class="text-danger mt-1" id="emailError" style="display: none;">Vui lòng nhập email hợp lệ.</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="soDienThoai" class="form-label">Số Điện Thoại</label>
+                                <input type="text" class="form-control" id="soDienThoai" maxlength="20">
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="diaChi" class="form-label">Địa Chỉ</label>
+                            <input type="text" class="form-control" id="diaChi" maxlength="255">
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="vaiTro" class="form-label">Vai Trò <span class="text-danger">*</span></label>
+                                <select class="form-select" id="vaiTro" required>
+                                    <option value="NhanVien">Nhân viên</option>
+                                    <option value="Admin">Admin</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="trangThai" class="form-label">Trạng Thái <span class="text-danger">*</span></label>
+                                <select class="form-select" id="trangThai" required>
+                                    <option value="HoatDong">Hoạt động</option>
+                                    <option value="Cam">Cấm</option>
+                                </select>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <button type="button" class="btn btn-primary" id="saveEmployee">Lưu</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Xem thông tin nhân viên -->
+    <div class="modal fade" id="viewEmployeeModal" tabindex="-1" aria-labelledby="viewEmployeeModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="viewEmployeeModalLabel">Thông Tin Nhân Viên</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <dl class="row">
+                        <dt class="col-sm-4">Mã nhân viên:</dt>
+                        <dd class="col-sm-8" id="viewMaNhanVien"></dd>
+                        
+                        <dt class="col-sm-4">Tên đăng nhập:</dt>
+                        <dd class="col-sm-8" id="viewTenDangNhap"></dd>
+                        
+                        <dt class="col-sm-4">Họ tên:</dt>
+                        <dd class="col-sm-8" id="viewHoTen"></dd>
+                        
+                        <dt class="col-sm-4">Email:</dt>
+                        <dd class="col-sm-8" id="viewEmail"></dd>
+                        
+                        <dt class="col-sm-4">Số điện thoại:</dt>
+                        <dd class="col-sm-8" id="viewSoDienThoai"></dd>
+                        
+                        <dt class="col-sm-4">Địa chỉ:</dt>
+                        <dd class="col-sm-8" id="viewDiaChi"></dd>
+                        
+                        <dt class="col-sm-4">Vai trò:</dt>
+                        <dd class="col-sm-8" id="viewVaiTro"></dd>
+                        
+                        <dt class="col-sm-4">Trạng thái:</dt>
+                        <dd class="col-sm-8" id="viewTrangThai"></dd>
+                        
+                        <dt class="col-sm-4">Ngày tạo:</dt>
+                        <dd class="col-sm-8" id="viewNgayTao"></dd>
+                    </dl>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Sửa thông tin nhân viên -->
+    <div class="modal fade" id="editEmployeeModal" tabindex="-1" aria-labelledby="editEmployeeModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editEmployeeModalLabel">Chỉnh Sửa Nhân Viên</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="editEmployeeForm">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="editMaNhanVien" class="form-label">Mã Nhân Viên</label>
+                                <input type="text" class="form-control" id="editMaNhanVien" readonly>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="editTenDangNhap" class="form-label">Tên Đăng Nhập</label>
+                                <input type="text" class="form-control" id="editTenDangNhap" readonly>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="editHoTen" class="form-label">Họ Tên <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="editHoTen" maxlength="50" required>
+                                <div class="text-danger mt-1" id="editHoTenError" style="display: none;">Vui lòng nhập họ tên.</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="editDiaChi" class="form-label">Địa Chỉ</label>
+                                <input type="text" class="form-control" id="editDiaChi" maxlength="255">
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="editEmail" class="form-label">Email <span class="text-danger">*</span></label>
+                                <input type="email" class="form-control" id="editEmail" maxlength="100" required>
+                                <div class="text-danger mt-1" id="editEmailError" style="display: none;">Vui lòng nhập email hợp lệ.</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="editSoDienThoai" class="form-label">Số Điện Thoại</label>
+                                <input type="text" class="form-control" id="editSoDienThoai" maxlength="20">
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="editVaiTro" class="form-label">Vai Trò <span class="text-danger">*</span></label>
+                                <select class="form-select" id="editVaiTro" required>
+                                    <option value="NhanVien">Nhân viên</option>
+                                    <option value="Admin">Admin</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="editTrangThai" class="form-label">Trạng Thái <span class="text-danger">*</span></label>
+                                <select class="form-select" id="editTrangThai" required>
+                                    <option value="HoatDong">Hoạt động</option>
+                                    <option value="Cam">Cấm</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="editMatKhau" class="form-label">Mật Khẩu Mới (để trống nếu không thay đổi)</label>
+                                <input type="password" class="form-control" id="editMatKhau">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="editNhapLaiMatKhau" class="form-label">Nhập Lại Mật Khẩu Mới</label>
+                                <input type="password" class="form-control" id="editNhapLaiMatKhau">
+                                <div class="text-danger mt-1" id="editNhapLaiMatKhauError" style="display: none;">Mật khẩu không khớp.</div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <button type="button" class="btn btn-primary" id="updateEmployee">Lưu</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Xác nhận xóa -->
+    <div class="modal fade" id="confirmDeleteModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Xác nhận xóa</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p id="deleteMessage"></p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <button type="button" class="btn btn-danger" id="confirmDelete">Xóa</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal thông báo không thể xóa -->
+    <div class="modal fade" id="cannotDeleteModal" tabindex="-1" aria-labelledby="cannotDeleteModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-warning">
+                    <h5 class="modal-title" id="cannotDeleteModalLabel">Không thể xóa</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+                </div>
+                <div class="modal-body">
+                    Nhân viên này đã thực hiện đơn nhập hàng. Không thể xóa.
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Xóa thành công -->
+    <div class="modal fade" id="deleteSuccessModal" tabindex="-1" aria-labelledby="deleteSuccessModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title" id="deleteSuccessModalLabel">Thành công</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+                </div>
+                <div class="modal-body">
+                    Đã xóa nhân viên thành công!
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Đóng</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Thêm thành công -->
+    <div class="modal fade" id="addSuccessModal" tabindex="-1" aria-labelledby="addSuccessModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title" id="addSuccessModalLabel">Thành công</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+                </div>
+                <div class="modal-body">
+                    Đã thêm nhân viên thành công!
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Đóng</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Sửa thành công -->
+    <div class="modal fade" id="editSuccessModal" tabindex="-1" aria-labelledby="editSuccessModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title" id="editSuccessModalLabel">Thành công</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+                </div>
+                <div class="modal-body">
+                    Đã sửa thông tin nhân viên thành công!
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Đóng</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal thông báo nhân viên đang thực hiện đơn nhập hàng -->
+    <div class="modal fade" id="employeeInUseModal" tabindex="-1" aria-labelledby="employeeInUseModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-warning">
+                    <h5 class="modal-title" id="employeeInUseModalLabel">Không thể xóa</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Không thể xóa các nhân viên sau vì đã thực hiện đơn nhập hàng:</p>
+                    <div id="employeeInUseList" class="alert alert-warning">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
+
+<script src="~/Scripts/nhanvien.js">
+    
+</script>

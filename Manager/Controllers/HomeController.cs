@@ -38,7 +38,46 @@ namespace Manager.Controllers
         {
             return View();
         }
+        public static string EncryptPassword(string plainText, string key)
+        {
+            using (Aes aes = Aes.Create())
+            {
+                aes.Key = Encoding.UTF8.GetBytes(key.PadRight(32).Substring(0, 32));
+                aes.IV = new byte[16];
 
+                using (var encryptor = aes.CreateEncryptor(aes.Key, aes.IV))
+                {
+                    byte[] plainBytes = Encoding.UTF8.GetBytes(plainText);
+                    byte[] encryptedBytes = encryptor.TransformFinalBlock(plainBytes, 0, plainBytes.Length);
+
+                    return Convert.ToBase64String(encryptedBytes);
+                }
+            }
+        }
+        //Giai ma
+        public static string DecryptPassword(string encryptedText, string key)
+        {
+            using (Aes aes = Aes.Create())
+            {
+                aes.Key = Encoding.UTF8.GetBytes(key.PadRight(32).Substring(0, 32));
+                aes.IV = new byte[16];
+                aes.Padding = PaddingMode.PKCS7;
+
+                using (var decryptor = aes.CreateDecryptor(aes.Key, aes.IV))
+                {
+                    try
+                    {
+                        byte[] encryptedBytes = Convert.FromBase64String(encryptedText);
+                        byte[] decryptedBytes = decryptor.TransformFinalBlock(encryptedBytes, 0, encryptedBytes.Length);
+                        return Encoding.UTF8.GetString(decryptedBytes);
+                    }
+                    catch (CryptographicException ex)
+                    {
+                        throw new Exception("Giải mã thất bại: Dữ liệu không hợp lệ hoặc khóa sai.", ex);
+                    }
+                }
+            }
+        }
         [HttpPost]
         public ActionResult Login(string username, string password)
         {
@@ -48,23 +87,42 @@ namespace Manager.Controllers
                 return View("Index");
             }
 
-            // Tìm người dùng với tên đăng nhập và vai trò Admin
+            // Tìm người dùng với tên đăng nhập
             var user = data.NhanViens.FirstOrDefault(u => 
                 u.TenDangNhap == username && 
                 u.TrangThai == "HoatDong");
 
             if (user != null)
             {
-                // Kiểm tra mật khẩu (trong thực tế nên sử dụng hash)
-                if (user.MatKhau == password)
+                try
                 {
-                    // Lưu thông tin người dùng vào Session
-                    Session["UserID"] = user.MaNhanVien;
-                    Session["UserName"] = user.HoTen;
-                    Session["Role"] = user.VaiTro;
+                    // Giải mã mật khẩu và so sánh
+                    string decryptedPassword = DecryptPassword(user.MatKhau, "mysecretkey");
+                    
+                    if (decryptedPassword == password)
+                    {
+                        // Lưu thông tin người dùng vào Session
+                        Session["UserID"] = user.MaNhanVien;
+                        Session["UserName"] = user.HoTen;
+                        Session["Role"] = user.VaiTro;
 
-                    // Chuyển hướng đến trang Dashboard
-                    return RedirectToAction("Dashboard");
+                        // Chuyển hướng đến trang Dashboard
+                        return RedirectToAction("Dashboard");
+                    }
+                }
+                catch (Exception)
+                {
+                    // Xử lý lỗi giải mã (có thể là mật khẩu đã được lưu dạng text trước đó)
+                    if (user.MatKhau == password)
+                    {
+                        // Lưu thông tin người dùng vào Session
+                        Session["UserID"] = user.MaNhanVien;
+                        Session["UserName"] = user.HoTen;
+                        Session["Role"] = user.VaiTro;
+
+                        // Chuyển hướng đến trang Dashboard
+                        return RedirectToAction("Dashboard");
+                    }
                 }
             }
 
@@ -1198,15 +1256,15 @@ namespace Manager.Controllers
                     MaKhachHang = "KH" + GenerateRandomString(6);
                 } while (data.KhachHangs.Any(k => k.MaKhachHang == MaKhachHang));
 
-                // Mã hóa mật khẩu (trong thực tế nên sử dụng thư viện mã hóa tốt hơn)
-                string matKhauHash = MatKhau; // Trong thực tế, đây là nơi bạn sẽ hash mật khẩu
+                // Mã hóa mật khẩu
+                string matKhauMaHoa = EncryptPassword(MatKhau, "mysecretkey");
 
                 var khachHang = new KhachHang
                 {
                     MaKhachHang = MaKhachHang,
                     TenDangNhap = TenDangNhap,
                     HoTen = HoTen,
-                    MatKhauHash = matKhauHash,
+                    MatKhauHash = matKhauMaHoa,
                     Email = Email,
                     SoDienThoai = SoDienThoai,
                     DiaChi = DiaChi,
@@ -1252,8 +1310,9 @@ namespace Manager.Controllers
                 // Nếu có mật khẩu mới thì cập nhật
                 if (!string.IsNullOrEmpty(MatKhau))
                 {
-                    // Mã hóa mật khẩu (trong thực tế nên sử dụng thư viện mã hóa tốt hơn)
-                    khachHang.MatKhauHash = MatKhau; // Trong thực tế, đây là nơi bạn sẽ hash mật khẩu
+                    // Mã hóa mật khẩu
+                    string matKhauMaHoa = EncryptPassword(MatKhau, "mysecretkey");
+                    khachHang.MatKhauHash = matKhauMaHoa;
                 }
 
                 data.SubmitChanges();
@@ -1483,46 +1542,209 @@ namespace Manager.Controllers
             return View(nhanViens);
         }
 
-
         [HttpPost]
-        public JsonResult TaoVoucher(Voucher voucher)
+        public JsonResult TaoNhanVien(string TenDangNhap, string HoTen, string DiaChi, string MatKhau, string Email, string SoDienThoai, string TrangThai, string VaiTro)
         {
             try
             {
-                // Kiểm tra mã code đã tồn tại chưa
-                if (data.Vouchers.Any(v => v.MaVoucherCode == voucher.MaVoucherCode))
+                // Kiểm tra tên đăng nhập đã tồn tại chưa
+                if (data.NhanViens.Any(nv => nv.TenDangNhap == TenDangNhap))
                 {
-                    return Json(new { success = false, message = "Mã voucher code đã tồn tại" });
+                    return Json(new { success = false, message = "Tên đăng nhập đã tồn tại" });
                 }
 
-                // Kiểm tra ngày bắt đầu phải lớn hơn ngày hiện tại
-                if (voucher.NgayBatDau <= DateTime.Now.Date)
+                // Kiểm tra email đã tồn tại chưa
+                if (data.NhanViens.Any(nv => nv.Email == Email))
                 {
-                    return Json(new { success = false, message = "Ngày bắt đầu phải lớn hơn ngày hiện tại" });
+                    return Json(new { success = false, message = "Email đã tồn tại" });
                 }
 
-                // Kiểm tra ngày kết thúc phải lớn hơn ngày bắt đầu
-                if (voucher.NgayKetThuc <= voucher.NgayBatDau)
+                // Tạo mã nhân viên tự động
+                string MaNhanVien;
+                do
                 {
-                    return Json(new { success = false, message = "Ngày kết thúc phải lớn hơn ngày bắt đầu" });
-                }
+                    MaNhanVien = "NV" + GenerateRandomString(6);
+                } while (data.NhanViens.Any(nv => nv.MaNhanVien == MaNhanVien));
 
-                // Lấy mã voucher lớn nhất và tăng thêm 1
-                int maxMaVoucher = data.Vouchers.Any() ? data.Vouchers.Max(v => v.MaVoucher) : 0;
-                voucher.MaVoucher = maxMaVoucher + 1;
+                // Mã hóa mật khẩu
+                string matKhauMaHoa = EncryptPassword(MatKhau, "mysecretkey");
+                
+                var nhanVien = new NhanVien
+                {
+                    MaNhanVien = MaNhanVien,
+                    TenDangNhap = TenDangNhap,
+                    HoTen = HoTen,
+                    DiaChi = DiaChi,
+                    MatKhau = matKhauMaHoa,
+                    Email = Email,
+                    SoDienThoai = SoDienThoai,
+                    NgayTao = DateTime.Now,
+                    TrangThai = TrangThai,
+                    VaiTro = VaiTro
+                };
 
-                // Thiết lập các giá trị mặc định
-                voucher.SoLuongDaDung = 0;
-                voucher.NgayTao = DateTime.Now;
-
-                data.Vouchers.InsertOnSubmit(voucher);
+                data.NhanViens.InsertOnSubmit(nhanVien);
                 data.SubmitChanges();
 
                 return Json(new { success = true });
             }
             catch (Exception ex)
             {
-                return Json(new { success = false, message = "Có lỗi xảy ra khi thêm voucher: " + ex.Message });
+                return Json(new { success = false, message = "Có lỗi xảy ra khi thêm nhân viên: " + ex.Message });
+            }
+        }
+
+        [HttpPost]
+        public JsonResult SuaNhanVien(string MaNhanVien, string HoTen, string DiaChi, string Email, string SoDienThoai, string TrangThai, string VaiTro, string MatKhau = null)
+        {
+            try
+            {
+                var nhanVien = data.NhanViens.FirstOrDefault(nv => nv.MaNhanVien == MaNhanVien);
+                if (nhanVien == null)
+                {
+                    return Json(new { success = false, message = "Không tìm thấy nhân viên" });
+                }
+
+                // Kiểm tra email đã tồn tại chưa (nếu có thay đổi)
+                if (nhanVien.Email != Email && data.NhanViens.Any(nv => nv.Email == Email))
+                {
+                    return Json(new { success = false, message = "Email đã tồn tại" });
+                }
+
+                // Cập nhật thông tin nhân viên
+                nhanVien.HoTen = HoTen;
+                nhanVien.DiaChi = DiaChi;
+                nhanVien.Email = Email;
+                nhanVien.SoDienThoai = SoDienThoai;
+                nhanVien.TrangThai = TrangThai;
+                nhanVien.VaiTro = VaiTro;
+
+                // Cập nhật mật khẩu nếu có
+                if (!string.IsNullOrEmpty(MatKhau))
+                {
+                    // Mã hóa mật khẩu
+                    string matKhauMaHoa = EncryptPassword(MatKhau, "mysecretkey");
+                    nhanVien.MatKhau = matKhauMaHoa;
+                }
+
+                data.SubmitChanges();
+
+                return Json(new { success = true });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Có lỗi xảy ra khi sửa nhân viên: " + ex.Message });
+            }
+        }
+
+        [HttpPost]
+        public JsonResult XoaMotNhanVien(string id)
+        {
+            try
+            {
+                // Kiểm tra nhân viên có tồn tại không
+                var nhanVien = data.NhanViens.FirstOrDefault(nv => nv.MaNhanVien == id);
+                if (nhanVien == null)
+                {
+                    return Json(new { success = false, message = "Không tìm thấy nhân viên" });
+                }
+
+                // Kiểm tra nhân viên có liên quan đến đơn nhập hàng không
+                if (data.NhapHangs.Any(nh => nh.MaNhanVien == id))
+                {
+                    return Json(new { success = false, reason = "coDonNhap", message = "Nhân viên này đã thực hiện đơn nhập hàng. Không thể xóa." });
+                }
+
+                data.NhanViens.DeleteOnSubmit(nhanVien);
+                data.SubmitChanges();
+
+                return Json(new { success = true });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Có lỗi xảy ra khi xóa nhân viên: " + ex.Message });
+            }
+        }
+
+        [HttpPost]
+        public JsonResult XoaNhieuNhanVien(string[] ids)
+        {
+            try
+            {
+                if (ids == null || ids.Length == 0)
+                {
+                    return Json(new { success = false, message = "Không có nhân viên nào được chọn để xóa" });
+                }
+
+                // Kiểm tra nhân viên có liên quan đến đơn nhập hàng không
+                var nhanVienCoDonNhap = new List<string>();
+                foreach (var id in ids)
+                {
+                    if (data.NhapHangs.Any(nh => nh.MaNhanVien == id))
+                    {
+                        var tenNhanVien = data.NhanViens
+                            .Where(nv => nv.MaNhanVien == id)
+                            .Select(nv => nv.HoTen)
+                            .FirstOrDefault();
+                        nhanVienCoDonNhap.Add(tenNhanVien + " (" + id + ")");
+                    }
+                }
+
+                if (nhanVienCoDonNhap.Any())
+                {
+                    var danhSach = string.Join(", ", nhanVienCoDonNhap);
+                    return Json(new {
+                        success = false,
+                        reason = "coDonNhap",
+                        message = $"Không thể xóa vì các nhân viên sau đã thực hiện đơn nhập hàng: {danhSach}"
+                    });
+                }
+
+                var nhanVienCanXoa = data.NhanViens.Where(nv => ids.Contains(nv.MaNhanVien));
+                if (nhanVienCanXoa.Any())
+                {
+                    data.NhanViens.DeleteAllOnSubmit(nhanVienCanXoa);
+                    data.SubmitChanges();
+                    return Json(new { success = true });
+                }
+                else
+                {
+                    return Json(new { success = false, message = "Không tìm thấy nhân viên cần xóa" });
+                }
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Có lỗi xảy ra khi xóa nhân viên: " + ex.Message });
+            }
+        }
+
+        [HttpGet]
+        public JsonResult LayThongTinNhanVien(string id)
+        {
+            try
+            {
+                var nhanVien = data.NhanViens.FirstOrDefault(nv => nv.MaNhanVien == id);
+                if (nhanVien == null)
+                {
+                    return Json(new { success = false, message = "Không tìm thấy nhân viên" }, JsonRequestBehavior.AllowGet);
+                }
+
+                return Json(new
+                {
+                    MaNhanVien = nhanVien.MaNhanVien,
+                    TenDangNhap = nhanVien.TenDangNhap,
+                    HoTen = nhanVien.HoTen,
+                    DiaChi = nhanVien.DiaChi,
+                    Email = nhanVien.Email,
+                    SoDienThoai = nhanVien.SoDienThoai,
+                    TrangThai = nhanVien.TrangThai,
+                    VaiTro = nhanVien.VaiTro,
+                    NgayTao = nhanVien.NgayTao
+                }, JsonRequestBehavior.AllowGet);
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Lỗi: " + ex.Message }, JsonRequestBehavior.AllowGet);
             }
         }
 
@@ -1982,5 +2204,47 @@ namespace Manager.Controllers
             }
         }
         #endregion
+
+        [HttpPost]
+        public JsonResult TaoVoucher(Voucher voucher)
+        {
+            try
+            {
+                // Kiểm tra mã code đã tồn tại chưa
+                if (data.Vouchers.Any(v => v.MaVoucherCode == voucher.MaVoucherCode))
+                {
+                    return Json(new { success = false, message = "Mã voucher code đã tồn tại" });
+                }
+
+                // Kiểm tra ngày bắt đầu phải lớn hơn ngày hiện tại
+                if (voucher.NgayBatDau <= DateTime.Now.Date)
+                {
+                    return Json(new { success = false, message = "Ngày bắt đầu phải lớn hơn ngày hiện tại" });
+                }
+
+                // Kiểm tra ngày kết thúc phải lớn hơn ngày bắt đầu
+                if (voucher.NgayKetThuc <= voucher.NgayBatDau)
+                {
+                    return Json(new { success = false, message = "Ngày kết thúc phải lớn hơn ngày bắt đầu" });
+                }
+
+                // Lấy mã voucher lớn nhất và tăng thêm 1
+                int maxMaVoucher = data.Vouchers.Any() ? data.Vouchers.Max(v => v.MaVoucher) : 0;
+                voucher.MaVoucher = maxMaVoucher + 1;
+
+                // Thiết lập các giá trị mặc định
+                voucher.SoLuongDaDung = 0;
+                voucher.NgayTao = DateTime.Now;
+
+                data.Vouchers.InsertOnSubmit(voucher);
+                data.SubmitChanges();
+
+                return Json(new { success = true });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Có lỗi xảy ra khi thêm voucher: " + ex.Message });
+            }
+        }
     }
 }
