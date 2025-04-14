@@ -1451,6 +1451,7 @@ namespace Manager.Controllers
             var donHangs = data.DonHangs.ToList();  // data là DbContext
             return View(donHangs);
         }
+        
         public ActionResult ChiTietDonBanHang(string id)
         {
             if (Session["UserID"] == null)
@@ -1473,7 +1474,171 @@ namespace Manager.Controllers
 
             return View(viewModel);
         }
+        
+        [HttpGet]
+        public JsonResult LayThongTinDonHang(string id)
+        {
+            try
+            {
+                var donHang = data.DonHangs.FirstOrDefault(d => d.MaDonHang == id);
+                if (donHang == null)
+                {
+                    return Json(null, JsonRequestBehavior.AllowGet);
+                }
 
+                return Json(new
+                {
+                    donHang.MaDonHang,
+                    donHang.MaKhachHang,
+                    donHang.TongTien,
+                    donHang.TrangThaiDonHang,
+                    donHang.TrangThaiThanhToan,
+                    NgayTao = donHang.NgayTao?.ToString("dd/MM/yyyy HH:mm")
+                }, JsonRequestBehavior.AllowGet);
+            }
+            catch (Exception)
+            {
+                return Json(null, JsonRequestBehavior.AllowGet);
+            }
+        }
+        
+        [HttpPost]
+        public JsonResult CapNhatDonHang(string MaDonHang, string TrangThaiDonHang, string TrangThaiThanhToan)
+        {
+            try
+            {
+                var donHang = data.DonHangs.FirstOrDefault(d => d.MaDonHang == MaDonHang);
+                if (donHang == null)
+                {
+                    return Json(new { success = false, message = "Không tìm thấy đơn hàng" });
+                }
+
+                donHang.TrangThaiDonHang = TrangThaiDonHang;
+                donHang.TrangThaiThanhToan = TrangThaiThanhToan;
+                
+                // Cập nhật trạng thái thanh toán nếu đơn hàng đã thanh toán
+                if (TrangThaiThanhToan == "DaThanhToan")
+                {
+                    var thanhToan = data.ThanhToans.FirstOrDefault(t => t.MaDonHang == MaDonHang);
+                    if (thanhToan != null)
+                    {
+                        thanhToan.TrangThai = "ThanhCong";
+                        thanhToan.NgayThanhToan = DateTime.Now;
+                    }
+                }
+                
+                // Cập nhật trạng thái giao hàng nếu đơn hàng đã giao
+                if (TrangThaiDonHang == "DaGiao" || TrangThaiDonHang == "HoanThanh")
+                {
+                    var giaoHang = data.GiaoHangs.FirstOrDefault(g => g.MaDonHang == MaDonHang);
+                    if (giaoHang != null)
+                    {
+                        giaoHang.TrangThaiGiaoHang = TrangThaiDonHang == "DaGiao" ? "DaGiao" : "DaGiao";
+                        giaoHang.NgayNhanHang = DateTime.Now;
+                    }
+                }
+
+                data.SubmitChanges();
+                return Json(new { success = true });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Có lỗi xảy ra: " + ex.Message });
+            }
+        }
+        
+        [HttpPost]
+        public JsonResult XoaDonHang(string id)
+        {
+            try
+            {
+                var donHang = data.DonHangs.FirstOrDefault(d => d.MaDonHang == id);
+                if (donHang == null)
+                {
+                    return Json(new { success = false, message = "Không tìm thấy đơn hàng" });
+                }
+
+                // Xóa thanh toán liên quan
+                var thanhToan = data.ThanhToans.FirstOrDefault(t => t.MaDonHang == id);
+                if (thanhToan != null)
+                {
+                    data.ThanhToans.DeleteOnSubmit(thanhToan);
+                }
+
+                // Xóa giao hàng liên quan
+                var giaoHang = data.GiaoHangs.FirstOrDefault(g => g.MaDonHang == id);
+                if (giaoHang != null)
+                {
+                    data.GiaoHangs.DeleteOnSubmit(giaoHang);
+                }
+
+                // Xóa chi tiết đơn hàng
+                var chiTiet = data.ChiTietDonHangs.Where(c => c.MaDonHang == id).ToList();
+                if (chiTiet.Any())
+                {
+                    data.ChiTietDonHangs.DeleteAllOnSubmit(chiTiet);
+                }
+
+                // Xóa đơn hàng
+                data.DonHangs.DeleteOnSubmit(donHang);
+                data.SubmitChanges();
+
+                return Json(new { success = true });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Có lỗi xảy ra: " + ex.Message });
+            }
+        }
+        
+        [HttpPost]
+        public JsonResult XoaNhieuDonHang(string[] ids)
+        {
+            try
+            {
+                if (ids == null || ids.Length == 0)
+                {
+                    return Json(new { success = false, message = "Không có đơn hàng nào được chọn" });
+                }
+
+                foreach (var id in ids)
+                {
+                    if (string.IsNullOrEmpty(id)) continue;
+
+                    // Xóa thanh toán liên quan
+                    var thanhToan = data.ThanhToans.FirstOrDefault(t => t.MaDonHang == id);
+                    if (thanhToan != null)
+                    {
+                        data.ThanhToans.DeleteOnSubmit(thanhToan);
+                    }
+
+                    // Xóa giao hàng liên quan
+                    var giaoHang = data.GiaoHangs.FirstOrDefault(g => g.MaDonHang == id);
+                    if (giaoHang != null)
+                    {
+                        data.GiaoHangs.DeleteOnSubmit(giaoHang);
+                    }
+
+                    // Xóa chi tiết đơn hàng
+                    var chiTiet = data.ChiTietDonHangs.Where(c => c.MaDonHang == id).ToList();
+                    if (chiTiet.Any())
+                    {
+                        data.ChiTietDonHangs.DeleteAllOnSubmit(chiTiet);
+                    }
+                }
+
+                // Xóa đơn hàng
+                var donHangs = data.DonHangs.Where(d => ids.Contains(d.MaDonHang)).ToList();
+                data.DonHangs.DeleteAllOnSubmit(donHangs);
+                
+                data.SubmitChanges();
+                return Json(new { success = true });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Có lỗi xảy ra: " + ex.Message });
+            }
+        }
         #endregion
 
         #region DonNhapHang
@@ -1484,9 +1649,15 @@ namespace Manager.Controllers
             {
                 return RedirectToAction("Index");
             }
-            var nhapHangs = data.NhapHangs.ToList(); 
+            var nhapHangs = data.NhapHangs.ToList();
+            
+            // Lấy danh sách nhà cung cấp và biến thể để hiển thị trong dropdown
+            ViewBag.NhaCungCaps = data.NhaCungCaps.ToList();
+            ViewBag.BienThes = data.BienTheHangHoas.ToList();
+            
             return View(nhapHangs);
         }
+        
         public ActionResult ChiTietNhapHang(string id)
         {
             // Kiểm tra đăng nhập
@@ -1506,6 +1677,205 @@ namespace Manager.Controllers
 
             ViewBag.NhapHang = nhapHang;
             return View(chiTiet);
+        }
+        
+        [HttpPost]
+        public JsonResult TaoNhapHang(NhapHangViewModel model)
+        {
+            try
+            {
+                if (model == null || string.IsNullOrEmpty(model.MaNhaCungCap) || model.ChiTietNhapHangs == null || !model.ChiTietNhapHangs.Any())
+                {
+                    return Json(new { success = false, message = "Dữ liệu không hợp lệ" });
+                }
+
+                // Tạo mã nhập hàng tự động
+                string maNhapHang;
+                do
+                {
+                    maNhapHang = "NH" + GenerateRandomString(6);
+                } while (data.NhapHangs.Any(n => n.MaNhapHang == maNhapHang));
+                
+                // Lấy mã nhân viên đang đăng nhập
+                string maNhanVien = Session["UserID"].ToString();
+
+                // Tạo phiếu nhập mới
+                var nhapHang = new NhapHang
+                {
+                    MaNhapHang = maNhapHang,
+                    MaNhaCungCap = model.MaNhaCungCap,
+                    MaNhanVien = maNhanVien,
+                    TongTien = model.TongTien,
+                    NgayNhap = DateTime.Now
+                };
+                data.NhapHangs.InsertOnSubmit(nhapHang);
+
+                // Tạo chi tiết nhập hàng
+                foreach (var item in model.ChiTietNhapHangs)
+                {
+                    string maChiTiet;
+                    do
+                    {
+                        maChiTiet = "CTNH" + GenerateRandomString(6);
+                    } while (data.ChiTietNhapHangs.Any(c => c.MaChiTietNhapHang == maChiTiet));
+
+                    var chiTiet = new ChiTietNhapHang
+                    {
+                        MaChiTietNhapHang = maChiTiet,
+                        MaNhapHang = maNhapHang,
+                        MaBienThe = item.MaBienThe,
+                        SoLuong = item.SoLuong,
+                        DonGia = item.DonGia
+                    };
+                    data.ChiTietNhapHangs.InsertOnSubmit(chiTiet);
+                    
+                    // Cập nhật số lượng tồn kho của biến thể
+                    var bienThe = data.BienTheHangHoas.FirstOrDefault(b => b.MaBienThe == item.MaBienThe);
+                    if (bienThe != null)
+                    {
+                        bienThe.SoLuongTonKho += item.SoLuong;
+                    }
+                }
+
+                data.SubmitChanges();
+                return Json(new { success = true });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Có lỗi xảy ra: " + ex.Message });
+            }
+        }
+
+        [HttpGet]
+        public JsonResult LayThongTinNhapHang(string id)
+        {
+            try
+            {
+                var nhapHang = data.NhapHangs.FirstOrDefault(n => n.MaNhapHang == id);
+                if (nhapHang == null)
+                {
+                    return Json(null, JsonRequestBehavior.AllowGet);
+                }
+
+                return Json(new
+                {
+                    nhapHang.MaNhapHang,
+                    nhapHang.MaNhaCungCap,
+                    nhapHang.MaNhanVien,
+                    nhapHang.TongTien,
+                    NgayNhap = nhapHang.NgayNhap?.ToString("dd/MM/yyyy HH:mm")
+                }, JsonRequestBehavior.AllowGet);
+            }
+            catch (Exception)
+            {
+                return Json(null, JsonRequestBehavior.AllowGet);
+            }
+        }
+
+        [HttpPost]
+        public JsonResult CapNhatNhapHang(string MaNhapHang, string MaNhaCungCap)
+        {
+            try
+            {
+                var nhapHang = data.NhapHangs.FirstOrDefault(n => n.MaNhapHang == MaNhapHang);
+                if (nhapHang == null)
+                {
+                    return Json(new { success = false, message = "Không tìm thấy phiếu nhập" });
+                }
+
+                nhapHang.MaNhaCungCap = MaNhaCungCap;
+                data.SubmitChanges();
+                return Json(new { success = true });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Có lỗi xảy ra: " + ex.Message });
+            }
+        }
+
+        [HttpPost]
+        public JsonResult XoaNhapHang(string id)
+        {
+            try
+            {
+                var nhapHang = data.NhapHangs.FirstOrDefault(n => n.MaNhapHang == id);
+                if (nhapHang == null)
+                {
+                    return Json(new { success = false, message = "Không tìm thấy phiếu nhập" });
+                }
+                
+                // Lấy chi tiết nhập hàng để điều chỉnh lại số lượng tồn kho
+                var chiTiet = data.ChiTietNhapHangs.Where(c => c.MaNhapHang == id).ToList();
+                foreach (var item in chiTiet)
+                {
+                    var bienThe = data.BienTheHangHoas.FirstOrDefault(b => b.MaBienThe == item.MaBienThe);
+                    if (bienThe != null)
+                    {
+                        bienThe.SoLuongTonKho -= item.SoLuong;
+                        // Đảm bảo số lượng tồn không âm
+                        if (bienThe.SoLuongTonKho < 0)
+                            bienThe.SoLuongTonKho = 0;
+                    }
+                }
+
+                // Xóa chi tiết nhập hàng (các ràng buộc CASCADE sẽ tự động xóa)
+                data.ChiTietNhapHangs.DeleteAllOnSubmit(chiTiet);
+                
+                // Xóa phiếu nhập
+                data.NhapHangs.DeleteOnSubmit(nhapHang);
+                data.SubmitChanges();
+
+                return Json(new { success = true });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Có lỗi xảy ra: " + ex.Message });
+            }
+        }
+
+        [HttpPost]
+        public JsonResult XoaNhieuNhapHang(string[] ids)
+        {
+            try
+            {
+                if (ids == null || ids.Length == 0)
+                {
+                    return Json(new { success = false, message = "Không có phiếu nhập nào được chọn" });
+                }
+
+                foreach (var id in ids)
+                {
+                    if (string.IsNullOrEmpty(id)) continue;
+
+                    // Lấy chi tiết nhập hàng để điều chỉnh lại số lượng tồn kho
+                    var chiTiet = data.ChiTietNhapHangs.Where(c => c.MaNhapHang == id).ToList();
+                    foreach (var item in chiTiet)
+                    {
+                        var bienThe = data.BienTheHangHoas.FirstOrDefault(b => b.MaBienThe == item.MaBienThe);
+                        if (bienThe != null)
+                        {
+                            bienThe.SoLuongTonKho -= item.SoLuong;
+                            // Đảm bảo số lượng tồn không âm
+                            if (bienThe.SoLuongTonKho < 0)
+                                bienThe.SoLuongTonKho = 0;
+                        }
+                    }
+
+                    // Xóa chi tiết nhập hàng (các ràng buộc CASCADE sẽ tự động xóa)
+                    data.ChiTietNhapHangs.DeleteAllOnSubmit(chiTiet);
+                }
+
+                // Xóa phiếu nhập
+                var nhapHangs = data.NhapHangs.Where(n => ids.Contains(n.MaNhapHang)).ToList();
+                data.NhapHangs.DeleteAllOnSubmit(nhapHangs);
+                
+                data.SubmitChanges();
+                return Json(new { success = true });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Có lỗi xảy ra: " + ex.Message });
+            }
         }
         #endregion
 
