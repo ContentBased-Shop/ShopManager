@@ -8,104 +8,106 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js" ></script>
-
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
     <div class="d-flex" id="wrapper">
         <!-- Sidebar -->
-        <div class="border-end bg-dark" id="sidebar-wrapper">
-            <div class="sidebar-heading text-white text-center py-4 fw-bold border-bottom">
-                <a href="/home/Dashboard">
-                    <img src="~/Content/img/logo.png" style="width: 50px;" />
-                    <div>SWOO</div>
+        <div class="border-end bg-gradient" id="sidebar-wrapper">
+            <div class="sidebar-heading text-white text-center py-4 fw-bold border-bottom" id="primeTechHeader">
+                <a href="/home/Dashboard" class="text-decoration-none text-white d-flex flex-column align-items-center">
+                    <img src="~/Content/img/logo.png" style="width: 50px; border-radius:30%" />
+                    <div class="brand-text mt-1">PrimeTech</div>
                 </a>
             </div>
+
             <div class="list-group list-group-flush">
                 <!-- Dashboard -->
-                <a href="/Home/Dashboard" class="list-group-item list-group-item-action bg-dark text-white">
+                <a href="/Home/Dashboard" class="list-group-item list-group-item-action sidebar-item">
                     <i class="bi bi-speedometer2"></i> Dashboard
                 </a>
 
                 <!-- Quản lý sản phẩm -->
-                <a class="list-group-item list-group-item-action bg-dark text-white" data-bs-toggle="collapse" href="#collapseProduct">
+                <a class="list-group-item list-group-item-action sidebar-item" data-bs-toggle="collapse" href="#collapseProduct">
                     <i class="bi bi-box-seam"></i> Quản lý sản phẩm
                 </a>
                 <div class="collapse ps-3" id="collapseProduct">
-                    <a href="/Home/DanhSachHangHoa" class="list-group-item list-group-item-action bg-dark text-white">Danh sách sản phẩm</a>
-                    <a href="/Home/TaoHangHoa" class="list-group-item list-group-item-action bg-dark text-white">Thêm sản phẩm</a>
-                    <a href="/Home/DanhSachDanhMuc" class="list-group-item list-group-item-action bg-dark text-white">Danh mục</a>
-                    <a href="/Home/DanhSachThuongHieu" class="list-group-item list-group-item-action bg-dark text-white">Thương hiệu</a>
+                    <a href="/Home/DanhSachHangHoa" class="list-group-item list-group-item-action sidebar-item">Danh sách sản phẩm</a>
+                    <a href="/Home/TaoHangHoa" class="list-group-item list-group-item-action sidebar-item">Thêm sản phẩm</a>
+                    <a href="/Home/DanhSachDanhMuc" class="list-group-item list-group-item-action sidebar-item">Danh mục</a>
+                    <a href="/Home/DanhSachThuongHieu" class="list-group-item list-group-item-action sidebar-item">Thương hiệu</a>
                 </div>
 
                 <!-- Quản lý đơn hàng -->
-                <a class="list-group-item list-group-item-action bg-dark text-white" data-bs-toggle="collapse" href="#collapseOrder">
+                <a class="list-group-item list-group-item-action sidebar-item" data-bs-toggle="collapse" href="#collapseOrder">
                     <i class="bi bi-receipt"></i> Quản lý đơn hàng
                 </a>
                 <div class="collapse ps-3" id="collapseOrder">
-                    <a href="/Home/DanhSachDonBanHang" class="list-group-item list-group-item-action bg-dark text-white">Đơn hàng bán</a>
-                    <a href="/Home/DanhSachNhapHang" class="list-group-item list-group-item-action bg-dark text-white">Đơn hàng nhập</a>
-                    <a href="/Home/DanhSachNhaCungCap" class="list-group-item list-group-item-action bg-dark text-white">Nhà cung cấp</a>
+                    <a href="/Home/DanhSachDonBanHang" class="list-group-item list-group-item-action sidebar-item">Đơn hàng bán</a>
+                    <a href="/Home/DanhSachNhapHang" class="list-group-item list-group-item-action sidebar-item">Đơn hàng nhập</a>
+                    <a href="/Home/DanhSachNhaCungCap" class="list-group-item list-group-item-action sidebar-item">Nhà cung cấp</a>
                 </div>
 
                 <!-- Quản lý khách hàng -->
-                <a class="list-group-item list-group-item-action bg-dark text-white" data-bs-toggle="collapse" href="#collapseCustomer">
+                <a class="list-group-item list-group-item-action sidebar-item" data-bs-toggle="collapse" href="#collapseCustomer">
                     <i class="bi bi-people"></i> Quản lý khách hàng
                 </a>
                 <div class="collapse ps-3" id="collapseCustomer">
-                    <a href="/Home/DanhSachKhachHang" class="list-group-item list-group-item-action bg-dark text-white">Danh sách khách hàng</a>
-                    <a href="/Home/DanhSachDanhGia" class="list-group-item list-group-item-action bg-dark text-white">Đánh giá sản phẩm</a>
+                    <a href="/Home/DanhSachKhachHang" class="list-group-item list-group-item-action sidebar-item">Danh sách khách hàng</a>
+                    <a href="/Home/DanhSachDanhGia" class="list-group-item list-group-item-action sidebar-item">Đánh giá sản phẩm</a>
                 </div>
 
                 <!-- Quản lý khuyến mãi -->
-                <a class="list-group-item list-group-item-action bg-dark text-white" data-bs-toggle="collapse" href="#collapsePromotion">
+                <a class="list-group-item list-group-item-action sidebar-item" data-bs-toggle="collapse" href="#collapsePromotion">
                     <i class="bi bi-gift"></i> Quản lý khuyến mãi
                 </a>
                 <div class="collapse ps-3" id="collapsePromotion">
-                    <a href="/Home/DanhSachVoucher" class="list-group-item list-group-item-action bg-dark text-white">Voucher</a>
+                    <a href="/Home/DanhSachVoucher" class="list-group-item list-group-item-action sidebar-item">Voucher</a>
                 </div>
 
                 <!-- Quản lý nhân viên -->
-                <a class="list-group-item list-group-item-action bg-dark text-white" data-bs-toggle="collapse" href="#collapseStaff">
+                <a class="list-group-item list-group-item-action sidebar-item" data-bs-toggle="collapse" href="#collapseStaff">
                     <i class="bi bi-person-badge"></i> Quản lý nhân viên
                 </a>
                 <div class="collapse ps-3" id="collapseStaff">
-                    <a href="/Home/DanhSachNhanVien" class="list-group-item list-group-item-action bg-dark text-white">Danh sách nhân viên</a>
+                    <a href="/Home/DanhSachNhanVien" class="list-group-item list-group-item-action sidebar-item">Danh sách nhân viên</a>
                 </div>
 
                 <!-- Báo cáo thống kê -->
-                <a class="list-group-item list-group-item-action bg-dark text-white" data-bs-toggle="collapse" href="#collapseReport">
+                <a class="list-group-item list-group-item-action sidebar-item" data-bs-toggle="collapse" href="#collapseReport">
                     <i class="bi bi-graph-up"></i> Báo cáo thống kê
                 </a>
                 <div class="collapse ps-3" id="collapseReport">
-                    <a href="/Home/BaoCaoDoanhThu" class="list-group-item list-group-item-action bg-dark text-white">Báo cáo doanh thu</a>
-                    <a href="/Home/BaoCaoSanPham" class="list-group-item list-group-item-action bg-dark text-white">Báo cáo sản phẩm</a>
-                    <a href="/Home/BaoCaoKhachHang" class="list-group-item list-group-item-action bg-dark text-white">Báo cáo khách hàng</a>
+                    <a href="/Home/BaoCaoDoanhThu" class="list-group-item list-group-item-action sidebar-item">Báo cáo doanh thu</a>
+                    <a href="/Home/BaoCaoSanPham" class="list-group-item list-group-item-action sidebar-item">Báo cáo sản phẩm</a>
+                    <a href="/Home/BaoCaoKhachHang" class="list-group-item list-group-item-action sidebar-item">Báo cáo khách hàng</a>
                 </div>
             </div>
         </div>
 
+        <!-- Toggle Button -->
+        <button class="menu-toggle-btn" id="menu-toggle"><i class="bi bi-chevron-left"></i></button>
+
         <!-- Page Content -->
         <div id="page-content-wrapper" class="w-100">
             <!-- Header -->
-            <nav class="navbar navbar-expand-lg navbar-light bg-light border-bottom">
+            <nav style="background-color: #DBFFCB " class="navbar navbar-expand-lg navbar-light border-bottom shadow-sm" >
                 <div class="container-fluid">
-                    <button class="btn btn-primary" id="menu-toggle">></button>
-                    <nav class="navbar navbar-expand-lg navbar-light bg-light">
-                        <div class="container-fluid">
-                            <div class="ms-3 d-flex align-items-center">
-                                @if (Session["UserName"] != null)
-                                {
-                                    <span class="navbar-text me-3 fw-semibold">Xin chào, @Session["UserName"]</span>
-                                    <a href="@Url.Action("Logout", "Home")" class="btn btn-outline-danger btn-sm">Đăng xuất</a>
-                                }
-                            </div>
+                    <!-- Các phần bên trái của navbar nếu có (logo, menu, v.v.) -->
+                    <!-- Phần bên phải -->
+                    @if (Session["UserName"] != null)
+                    {
+                        <div class="d-flex align-items-center ms-auto">
+                            <span class="navbar-text me-3 fw-semibold">Xin chào, @Session["UserName"]</span>
+                            <a href="@Url.Action("Logout", "Home")" class="btn btn-outline-danger btn-sm">Đăng xuất</a>
                         </div>
-                    </nav>
+                    }
                 </div>
             </nav>
 
+
             <!-- Main Content -->
-            <div class="container-fluid mt-4">
+            <div class="container-fluid p-4">
                 @RenderBody()
             </div>
         </div>
@@ -113,37 +115,119 @@
 
     <!-- Sidebar toggle script -->
     <script>
-        document.getElementById("menu-toggle").addEventListener("click", function () {
-            document.getElementById("wrapper").classList.toggle("toggled");
+        $(document).ready(function() {
+            $("#menu-toggle").click(function() {
+                $("#wrapper").toggleClass("toggled");
+                if ($("#wrapper").hasClass("toggled")) {
+                    $(this).html('<i class="bi bi-chevron-right"></i>');
+                } else {
+                    $(this).html('<i class="bi bi-chevron-left"></i>');
+                }
+            });
         });
     </script>
 
     <style>
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f8f9fa;
+        }
+
         #wrapper.toggled #sidebar-wrapper {
             margin-left: -250px;
+        }
+
+        #wrapper.toggled .menu-toggle-btn {
+            left: 0;
         }
 
         #sidebar-wrapper {
             width: 250px;
             min-height: 100vh;
             transition: margin 0.25s ease-out;
+            background: linear-gradient(135deg, #4158D0, #C850C0);
+            position: relative;
         }
 
         #page-content-wrapper {
             flex: 1;
+            background-color: #f8f9fa;
+        }
+
+        .menu-toggle-btn {
+            position: absolute;
+            left: 250px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 30px;
+            height: 30px;
+            border-top-right-radius: 50%;
+            border-bottom-right-radius: 50%;
+            background-color: #fff;
+            color: #4158D0;
+            border: 1px solid #ddd;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            transition: left 0.25s ease-out;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            padding: 0;
         }
 
         .list-group-item {
             border: none;
+            padding: 12px 15px;
+            transition: all 0.3s;
         }
 
-            .list-group-item:hover {
-                background-color: #343a40;
+        .sidebar-item {
+            background: transparent;
+            color: #000;
+            border-radius: 0;
+        }
+
+            .sidebar-item:hover {
+                background-color: rgba(255,255,255,0.1);
+                color: #328E6E;
             }
 
         .collapse {
-            background-color: #212529;
+            background-color: rgba(0,0,0,0.1);
         }
+
+        .sidebar-heading {
+            background: rgba(0,0,0,0.2);
+            color: #000; /* Thêm dòng này nếu muốn đổi màu chữ tiêu đề sidebar */
+        }
+
+        .card {
+            border-radius: 10px;
+            border: none;
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+        }
+        #primeTechHeader {
+            background-color: #1ABA1A;
+            border-bottom: 3px solid #ffffff20;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            letter-spacing: 1px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+            #primeTechHeader .brand-text {
+                font-size: 1.2rem;
+                font-weight: 700;
+                color: #ffffff;
+            }
+
+            #primeTechHeader img {
+                filter: drop-shadow(0 0 3px #ffffff80);
+            }
+            #primeTechHeader a:hover {
+                text-shadow: 0 0 5px #fff, 0 0 10px #fff;
+            }
+
     </style>
 </body>
 </html>
