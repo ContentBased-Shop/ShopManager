@@ -84,16 +84,9 @@ namespace Manager.Models
     partial void InsertVoucher(Voucher instance);
     partial void UpdateVoucher(Voucher instance);
     partial void DeleteVoucher(Voucher instance);
-        #endregion
-
-        public SHOPDataContext() :
-         base("Data Source=ACERNITRO5;Initial Catalog=CuaHang2;Persist Security Info=True;Use" +
-                  "r ID=sa;Password=123;Encrypt=True;TrustServerCertificate=True", mappingSource)
-        {
-            OnCreated();
-        }
-
-        public SHOPDataContext(string connection) : 
+    #endregion
+		
+		public SHOPDataContext(string connection) : 
 				base(connection, mappingSource)
 		{
 			OnCreated();
