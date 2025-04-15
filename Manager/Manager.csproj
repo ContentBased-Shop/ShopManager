@@ -134,6 +134,7 @@
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
     <Compile Include="Models\ChiTietDonHangViewModel.cs" />
+    <Compile Include="Models\NhapHangViewModel.cs" />
     <Compile Include="Models\SHOP.designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>

@@ -1705,7 +1705,7 @@ namespace Manager.Controllers
                     MaNhapHang = maNhapHang,
                     MaNhaCungCap = model.MaNhaCungCap,
                     MaNhanVien = maNhanVien,
-                    TongTien = model.TongTien,
+                    TongTien = (double)model.TongTien,
                     NgayNhap = DateTime.Now
                 };
                 data.NhapHangs.InsertOnSubmit(nhapHang);
@@ -1725,7 +1725,7 @@ namespace Manager.Controllers
                         MaNhapHang = maNhapHang,
                         MaBienThe = item.MaBienThe,
                         SoLuong = item.SoLuong,
-                        DonGia = item.DonGia
+                        DonGia = (double)item.DonGia
                     };
                     data.ChiTietNhapHangs.InsertOnSubmit(chiTiet);
                     
@@ -2264,7 +2264,7 @@ namespace Manager.Controllers
                     MaHangHoa = MaHangHoa,
                     MauSac = MauSac,
                     DungLuong = DungLuong,
-                    Gia = Gia,
+                    Gia = (double)Gia,
                     SoLuongTonKho = SoLuongTonKho
                 };
 
@@ -2292,7 +2292,7 @@ namespace Manager.Controllers
 
                 bienThe.MauSac = MauSac;
                 bienThe.DungLuong = DungLuong;
-                bienThe.Gia = Gia;
+                bienThe.Gia = (double)Gia;
                 bienThe.SoLuongTonKho = SoLuongTonKho;
 
                 data.SubmitChanges();
