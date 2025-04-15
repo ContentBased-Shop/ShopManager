@@ -3,6 +3,7 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
+
 <div class="container-fluid">
     <div class="row mb-4">
         <div class="col">
@@ -21,7 +22,7 @@
                             <i class="bi bi-box-seam fs-4"></i>
                         </div>
                     </div>
-                    <h2 class="fw-bold mb-2">150</h2>
+                    <h2 class="fw-bold mb-2">@ViewBag.TongSanPham</h2>
                     <span class="badge bg-success-light text-success">+12 tuần này</span>
                 </div>
             </div>
@@ -35,7 +36,7 @@
                             <i class="bi bi-cart-check fs-4"></i>
                         </div>
                     </div>
-                    <h2 class="fw-bold mb-2">25</h2>
+                    <h2 class="fw-bold mb-2">@ViewBag.DonHangMoi</h2>
                     <span class="badge bg-success-light text-success">+5 hôm nay</span>
                 </div>
             </div>
@@ -49,7 +50,7 @@
                             <i class="bi bi-people fs-4"></i>
                         </div>
                     </div>
-                    <h2 class="fw-bold mb-2">100</h2>
+                    <h2 class="fw-bold mb-2">@ViewBag.TongKhachHang</h2>
                     <span class="badge bg-success-light text-success">+8 tuần này</span>
                 </div>
             </div>
@@ -63,7 +64,7 @@
                             <i class="bi bi-currency-dollar fs-4"></i>
                         </div>
                     </div>
-                    <h2 class="fw-bold mb-2">50.5M</h2>
+                    <h2 class="fw-bold mb-2">@(ViewBag.DoanhThu.ToString("N0"))đ</h2>
                     <span class="badge bg-success-light text-success">+15% tháng này</span>
                 </div>
             </div>
@@ -89,30 +90,42 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr>
-                                    <td class="py-3">#DH001</td>
-                                    <td class="py-3">Nguyễn Văn A</td>
-                                    <td class="py-3 fw-medium">1,500,000đ</td>
-                                    <td class="py-3"><span class="badge bg-success">Đã hoàn thành</span></td>
-                                </tr>
-                                <tr>
-                                    <td class="py-3">#DH002</td>
-                                    <td class="py-3">Trần Thị B</td>
-                                    <td class="py-3 fw-medium">2,300,000đ</td>
-                                    <td class="py-3"><span class="badge bg-warning text-dark">Đang xử lý</span></td>
-                                </tr>
-                                <tr>
-                                    <td class="py-3">#DH003</td>
-                                    <td class="py-3">Lê Văn C</td>
-                                    <td class="py-3 fw-medium">3,200,000đ</td>
-                                    <td class="py-3"><span class="badge bg-primary">Đang giao</span></td>
-                                </tr>
-                                <tr>
-                                    <td class="py-3">#DH004</td>
-                                    <td class="py-3">Phạm Thị D</td>
-                                    <td class="py-3 fw-medium">1,800,000đ</td>
-                                    <td class="py-3"><span class="badge bg-danger">Đã hủy</span></td>
-                                </tr>
+                                @foreach (var donHang in ViewBag.DonHangGanDay)
+                                {
+                                    var khachHang = donHang.KhachHang;
+                                    <tr>
+                                        <td class="py-3">#@donHang.MaDonHang</td>
+                                        <td class="py-3">@khachHang.HoTen</td>
+                                        <td class="py-3 fw-medium">@donHang.TongTien.ToString("N0")đ</td>
+                                        <td class="py-3">
+                                            @{
+                                                var badgeClass = "";
+                                                var statusText = "";
+                                                if (donHang.TrangThaiDonHang == "HoanThanh")
+                                                {
+                                                    badgeClass = "bg-success";
+                                                    statusText = "Đã hoàn thành";
+                                                }
+                                                else if (donHang.TrangThaiDonHang == "DangXuLy")
+                                                {
+                                                    badgeClass = "bg-warning text-dark";
+                                                    statusText = "Đang xử lý";
+                                                }
+                                                else if (donHang.TrangThaiDonHang == "DaGiao")
+                                                {
+                                                    badgeClass = "bg-primary";
+                                                    statusText = "Đang giao";
+                                                }
+                                                else if (donHang.TrangThaiDonHang == "DaHuy")
+                                                {
+                                                    badgeClass = "bg-danger";
+                                                    statusText = "Đã hủy";
+                                                }
+                                            }
+                                            <span class="badge @badgeClass">@statusText</span>
+                                        </td>
+                                    </tr>
+                                }
                             </tbody>
                         </table>
                     </div>
@@ -136,26 +149,14 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr>
-                                    <td class="py-3">Áo thun nam</td>
-                                    <td class="py-3 fw-medium">50</td>
-                                    <td class="py-3 fw-medium">5,000,000đ</td>
-                                </tr>
-                                <tr>
-                                    <td class="py-3">Quần jean nữ</td>
-                                    <td class="py-3 fw-medium">35</td>
-                                    <td class="py-3 fw-medium">3,500,000đ</td>
-                                </tr>
-                                <tr>
-                                    <td class="py-3">Giày thể thao</td>
-                                    <td class="py-3 fw-medium">28</td>
-                                    <td class="py-3 fw-medium">8,400,000đ</td>
-                                </tr>
-                                <tr>
-                                    <td class="py-3">Túi xách nữ</td>
-                                    <td class="py-3 fw-medium">22</td>
-                                    <td class="py-3 fw-medium">6,600,000đ</td>
-                                </tr>
+                                @foreach (var sp in ViewBag.SanPhamBanChay)
+                                {
+                                    <tr>
+                                        <td class="py-3">@sp.TenHangHoa</td>
+                                        <td class="py-3 fw-medium">@sp.SoLuongBan</td>
+                                        <td class="py-3 fw-medium">@sp.DoanhThu.ToString("N0")đ</td>
+                                    </tr>
+                                }
                             </tbody>
                         </table>
                     </div>

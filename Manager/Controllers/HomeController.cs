@@ -29,6 +29,41 @@ namespace Manager.Controllers
             {
                 return RedirectToAction("Index");
             }
+
+            // Lấy dữ liệu thống kê
+            ViewBag.TongSanPham = data.HangHoas.Count();
+            ViewBag.DonHangMoi = data.DonHangs.Count(d => d.NgayTao.Value.Date == DateTime.Today);
+            ViewBag.TongKhachHang = data.KhachHangs.Count();
+            ViewBag.DoanhThu = Math.Max(data.DonHangs.Where(d => d.TrangThaiDonHang == "HoanThanh").Sum(d => d.TongTien), 0.0);
+    
+            // Lấy danh sách đơn hàng gần đây kèm theo thông tin khách hàng
+            var donHangGanDay = data.DonHangs
+                .OrderByDescending(d => d.NgayTao)
+                .Take(4)
+                .ToList();
+                
+            // Lấy thông tin khách hàng cho mỗi đơn hàng
+            foreach (var donHang in donHangGanDay)
+            {
+                donHang.KhachHang = data.KhachHangs.FirstOrDefault(k => k.MaKhachHang == donHang.MaKhachHang);
+            }
+            
+            ViewBag.DonHangGanDay = donHangGanDay;
+
+            // Lấy sản phẩm bán chạy
+            var sanPhamBanChay = data.ChiTietDonHangs
+     .GroupBy(ct => ct.BienTheHangHoa.HangHoa)
+     .Select(g => new SanPhamBanChayModel
+     {
+         TenHangHoa = g.Key.TenHangHoa,
+         SoLuongBan = g.Sum(ct => ct.SoLuong),
+         DoanhThu = (double)g.Sum(ct => ct.SoLuong * ct.DonGia)
+     })
+     .OrderByDescending(x => x.SoLuongBan)
+     .Take(4)
+     .ToList();
+            ViewBag.SanPhamBanChay = sanPhamBanChay;
+
             return View();
         }
         #endregion
