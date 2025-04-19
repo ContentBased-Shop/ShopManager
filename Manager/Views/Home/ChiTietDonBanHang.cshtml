@@ -37,7 +37,7 @@
                     </div>
                     <div class="mb-2 row">
                         <label class="col-sm-4 fw-bold">Tổng tiền:</label>
-                        <div class="col-sm-8">@Model.DonHang.TongTien.ToString("N0") ₫</div>
+                        <div class="col-sm-8">@((Model.DonHang.TongTien ?? 0).ToString("N0")) ₫</div>
                     </div>
                     <div class="mb-2 row">
                         <label class="col-sm-4 fw-bold">Trạng thái đơn hàng:</label>
@@ -242,7 +242,7 @@
                     <tbody>
                         @{
                             int stt = 1;
-                            decimal tongTien = 0;
+                            double? tongTien = 0;
                         }
                         @foreach (var item in Model.ChiTietDonHangs)
                         {
@@ -252,16 +252,15 @@
                                 <td class="text-center">@stt</td>
                                 <td>@item.MaBienThe</td>
                                 <td class="text-center">@item.SoLuong</td>
-                                <td class="text-end">@item.DonGia.ToString("N0") ₫</td>
-                                <td class="text-end">@thanhTien.ToString("N0") ₫</td>
-                            </tr>
+                                <td class="text-end">@((item.DonGia ?? 0).ToString("N0")) ₫</td>
+                                <td class="text-end">@((thanhTien ?? 0).ToString("N0")) ₫</td>                            </tr>
                             stt++;
                         }
                     </tbody>
                     <tfoot>
                         <tr class="fw-bold">
                             <td colspan="4" class="text-end">Tổng cộng:</td>
-                            <td class="text-end">@tongTien.ToString("N0") ₫</td>
+                            <td class="text-end">@((tongTien ?? 0).ToString("N0")) ₫</td>
                         </tr>
                     </tfoot>
                 </table>

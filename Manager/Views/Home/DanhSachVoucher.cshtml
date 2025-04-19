@@ -59,15 +59,15 @@
                         <td class="ten-voucher">@v.TenVoucher</td>
                         <td>
                             @(v.LoaiGiamGia == "TienMat"
-                                ? v.GiaTriGiamGia.ToString("N0") + "₫"
-                                : v.GiaTriGiamGia.ToString("N0") + "%")
+        ? (v.GiaTriGiamGia ?? 0).ToString("N0") + "₫"
+        : (v.GiaTriGiamGia ?? 0).ToString("N0") + "%")
                         </td>
-                        <td>@(v.DonHangToiThieu.ToString("N0") + "₫")</td>
+                        <td>@((v.DonHangToiThieu ?? 0).ToString("N0")) ₫</td>
                         <td>@v.SoLuong</td>
                         <td>@v.SoLuongDaDung</td>
                         <td>
-                            <div>@v.NgayBatDau.ToString("dd/MM/yyyy")</div>
-                            <div>@v.NgayKetThuc.ToString("dd/MM/yyyy")</div>
+                            <div>@(v.NgayBatDau.Value.ToString("dd/MM/yyyy") ?? "")</div>
+                            <div>@(v.NgayKetThuc.Value.ToString("dd/MM/yyyy") ?? "")</div>
                         </td>
                         <td>
                             @if (v.TrangThai == "HoatDong")
@@ -84,8 +84,8 @@
                             }
                         </td>
                         <td>
-                            <a href="#" class="btn btn-sm btn-primary btn-edit" 
-                               data-id="@v.MaVoucher" 
+                            <a href="#" class="btn btn-sm btn-primary btn-edit"
+                               data-id="@v.MaVoucher"
                                data-code="@v.MaVoucherCode"
                                data-name="@v.TenVoucher"
                                data-desc="@v.MoTa"
@@ -93,17 +93,17 @@
                                data-value="@v.GiaTriGiamGia"
                                data-min="@v.DonHangToiThieu"
                                data-quantity="@v.SoLuong"
-                               data-start="@v.NgayBatDau.ToString("yyyy-MM-dd")"
-                               data-end="@v.NgayKetThuc.ToString("yyyy-MM-dd")"
+                               data-start="@(v.NgayBatDau != null ? v.NgayBatDau.Value.ToString("yyyy-MM-dd") : "")"
+                               data-end="@(v.NgayKetThuc != null ? v.NgayKetThuc.Value.ToString("yyyy-MM-dd") : "")"
                                data-status="@v.TrangThai"
-                               data-bs-toggle="modal" 
+                               data-bs-toggle="modal"
                                data-bs-target="#editVoucherModal">
                                 <i class="bi bi-pencil-square"></i>
                             </a>
-                            <a href="#" class="btn btn-sm btn-warning btn-delete" 
-                               data-id="@v.MaVoucher" 
+                            <a href="#" class="btn btn-sm btn-warning btn-delete"
+                               data-id="@v.MaVoucher"
                                data-code="@v.MaVoucherCode"
-                               data-bs-toggle="modal" 
+                               data-bs-toggle="modal"
                                data-bs-target="#confirmDeleteModal">
                                 <i class="bi bi-trash3"></i>
                             </a>

@@ -34,8 +34,11 @@ namespace Manager.Controllers
             ViewBag.TongSanPham = data.HangHoas.Count();
             ViewBag.DonHangMoi = data.DonHangs.Count(d => d.NgayTao.Value.Date == DateTime.Today);
             ViewBag.TongKhachHang = data.KhachHangs.Count();
-            ViewBag.DoanhThu = Math.Max(data.DonHangs.Where(d => d.TrangThaiDonHang == "HoanThanh").Sum(d => d.TongTien), 0.0);
-    
+            ViewBag.DoanhThu = Math.Max(data.DonHangs
+                .Where(d => d.TrangThaiDonHang == "HoanThanh")
+                .Sum(d => d.TongTien) ?? 0.0, 0.0);
+
+
             // Lấy danh sách đơn hàng gần đây kèm theo thông tin khách hàng
             var donHangGanDay = data.DonHangs
                 .OrderByDescending(d => d.NgayTao)
@@ -56,7 +59,7 @@ namespace Manager.Controllers
      .Select(g => new SanPhamBanChayModel
      {
          TenHangHoa = g.Key.TenHangHoa,
-         SoLuongBan = g.Sum(ct => ct.SoLuong),
+         SoLuongBan = g.Sum(ct => ct.SoLuong) ?? 0,
          DoanhThu = (double)g.Sum(ct => ct.SoLuong * ct.DonGia)
      })
      .OrderByDescending(x => x.SoLuongBan)
@@ -2299,7 +2302,7 @@ namespace Manager.Controllers
                     MaHangHoa = MaHangHoa,
                     MauSac = MauSac,
                     DungLuong = DungLuong,
-                    Gia = (double)Gia,
+                    GiaGoc = (double)Gia,
                     SoLuongTonKho = SoLuongTonKho
                 };
 
@@ -2327,7 +2330,7 @@ namespace Manager.Controllers
 
                 bienThe.MauSac = MauSac;
                 bienThe.DungLuong = DungLuong;
-                bienThe.Gia = (double)Gia;
+                bienThe.GiaGoc = (double)Gia;
                 bienThe.SoLuongTonKho = SoLuongTonKho;
 
                 data.SubmitChanges();

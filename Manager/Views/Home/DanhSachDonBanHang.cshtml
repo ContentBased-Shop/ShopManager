@@ -52,7 +52,7 @@
                         </td>
                         <td>@item.MaDonHang</td>
                         <td>@item.MaKhachHang</td>
-                        <td class="text-end">@item.TongTien.ToString("N0") ₫</td>
+                        <td class="text-end">@((item.TongTien ?? 0 ).ToString("N0")) ₫</td>
                         <td class="text-center">
                             @{
                                 var badgeClass = "";
