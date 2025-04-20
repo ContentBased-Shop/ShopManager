@@ -25,7 +25,7 @@
 
     <div class="card border-0 shadow-sm">
         <div class="card-body p-4">
-            <form id="formTaoHangHoa">
+            <form id="formTaoHangHoa" enctype="multipart/form-data">
                 <div class="row g-4">
                     <!-- Column Left -->
                     <div class="col-md-6">
@@ -55,6 +55,24 @@
                                     <option value="@thuongHieu.MaThuongHieu">@thuongHieu.TenThuongHieu</option>
                                 }
                             </select>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Hình ảnh sản phẩm</label>
+                            <div class="input-group">
+                                <input type="file" class="form-control" id="hinhAnh" name="HinhAnh" accept="image/*" />
+                                <label class="input-group-text" for="hinhAnh"><i class="bi bi-upload"></i></label>
+                            </div>
+                            <div class="form-text">Chọn hình ảnh đại diện cho sản phẩm (JPG, PNG)</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <div id="imagePreview" class="mt-2 d-none">
+                                <img src="#" alt="Xem trước hình ảnh" class="img-thumbnail" style="max-height: 200px;" />
+                                <button type="button" class="btn btn-sm btn-danger mt-1" id="btnRemoveImage">
+                                    <i class="bi bi-trash"></i> Xóa hình
+                                </button>
+                            </div>
                         </div>
 
                         <button type="button" id="btnTaoHangHoa" class="btn btn-success mt-3">
@@ -97,6 +115,24 @@
 
 <script>
     $(document).ready(function () {
+        // Xem trước hình ảnh
+        $('#hinhAnh').change(function () {
+            if (this.files && this.files[0]) {
+                var reader = new FileReader();
+                reader.onload = function (e) {
+                    $('#imagePreview img').attr('src', e.target.result);
+                    $('#imagePreview').removeClass('d-none');
+                }
+                reader.readAsDataURL(this.files[0]);
+            }
+        });
+        
+        // Xóa hình xem trước
+        $('#btnRemoveImage').click(function () {
+            $('#hinhAnh').val('');
+            $('#imagePreview').addClass('d-none');
+        });
+    
         // Validate form
         function validateForm() {
             var isValid = true;
@@ -121,17 +157,14 @@
                 return;
             }
             
-            var formData = {
-                TenHangHoa: $('#tenHangHoa').val().trim(),
-                MaDanhMuc: $('#maDanhMuc').val(),
-                MaThuongHieu: $('#maThuongHieu').val(),
-                MoTa: $('#moTa').val().trim()
-            };
+            var formData = new FormData($('#formTaoHangHoa')[0]);
             
             $.ajax({
                 url: '@Url.Action("TaoHangHoa", "Home")',
                 type: 'POST',
                 data: formData,
+                processData: false,
+                contentType: false,
                 success: function (response) {
                     if (response.success) {
                         // Lưu mã hàng hóa vừa tạo
@@ -152,6 +185,7 @@
                         
                         // Reset form
                         $('#formTaoHangHoa')[0].reset();
+                        $('#imagePreview').addClass('d-none');
                     } else {
                         alert(response.message || "Tạo sản phẩm thất bại");
                     }

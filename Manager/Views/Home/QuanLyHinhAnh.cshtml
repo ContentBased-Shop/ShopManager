@@ -1,0 +1,526 @@
+﻿@{
+    ViewBag.Title = "Quản lý hình ảnh";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var hangHoa = ViewBag.HangHoa;
+    var danhSachHinhAnh = ViewBag.DanhSachHinhAnh as List<Manager.Models.HinhAnhHangHoa>;
+}
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
+<style>
+    .img-container {
+        position: relative;
+        margin-bottom: 20px;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+        .img-container:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .img-container img {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+        }
+
+    .img-actions {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: rgba(0,0,0,0.7);
+        padding: 10px;
+        display: flex;
+        justify-content: space-between;
+        opacity: 0;
+        transition: opacity 0.3s;
+    }
+
+    .img-container:hover .img-actions {
+        opacity: 1;
+    }
+
+    .main-img-badge {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background: #28a745;
+        color: white;
+        padding: 4px 10px;
+        font-size: 12px;
+        border-radius: 20px;
+        font-weight: 600;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+
+    .upload-area {
+        border: 2px dashed #ccc;
+        border-radius: 8px;
+        padding: 40px 20px;
+        text-align: center;
+        margin-bottom: 20px;
+        background-color: #f8f9fa;
+        transition: all 0.3s;
+        cursor: pointer;
+    }
+
+        .upload-area:hover, .upload-area.dragover {
+            border-color: #4caf50;
+            background-color: rgba(76, 175, 80, 0.1);
+        }
+
+    .upload-icon {
+        font-size: 48px;
+        color: #6c757d;
+        margin-bottom: 15px;
+    }
+
+    .preview-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 20px;
+    }
+
+    .preview-item {
+        position: relative;
+        width: 120px;
+        height: 120px;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+        .preview-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+    .preview-remove {
+        position: absolute;
+        top: 5px;
+        right: 5px;
+        background: rgba(255,0,0,0.7);
+        color: white;
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+    
+    .upload-progress {
+        margin-top: 20px;
+        display: none;
+    }
+    
+    .upload-count {
+        margin-top: 10px;
+        font-weight: 600;
+    }
+</style>
+
+<div class="container py-4">
+    <h3 class="fw-bold mb-3">Quản lý hình ảnh sản phẩm</h3>
+
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb bg-info bg-opacity-25 px-3 py-2 rounded">
+            <li class="breadcrumb-item"><a href="@Url.Action("Dashboard", "Home")">Trang chủ</a></li>
+            <li class="breadcrumb-item"><a href="@Url.Action("DanhSachHangHoa", "Home")">Sản phẩm</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Quản lý hình ảnh</li>
+        </ol>
+    </nav>
+
+    <!-- Back button -->
+    <a href="@Url.Action("DanhSachHangHoa", "Home")" class="btn btn-primary mb-3">
+        <i class="bi bi-arrow-left-circle"></i> Về danh sách
+    </a>
+
+    <div class="row">
+        <div class="col-md-5">
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white py-3">
+                    <h5 class="card-title mb-0">Thông tin sản phẩm</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        @if (!string.IsNullOrEmpty(hangHoa.HinhAnh))
+                        {
+                            <img src="~/Content/img/hanghoa/@hangHoa.HinhAnh" alt="@hangHoa.TenHangHoa" class="img-thumbnail me-3" style="width: 80px; height: 80px; object-fit: cover;" />
+                        }
+                        else
+                        {
+                            <img src="~/Content/img/hanghoa/no-image.png" alt="Không có hình" class="img-thumbnail me-3" style="width: 80px; height: 80px; object-fit: cover;" />
+                        }
+                        <div>
+                            <h5 class="mb-1">@hangHoa.TenHangHoa</h5>
+                            <p class="text-muted mb-1">Mã: @hangHoa.MaHangHoa</p>
+                            <p class="text-muted mb-0">Danh mục: @(hangHoa.DanhMuc.TenDanhMuc ?? "Chưa phân loại")</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">Tải lên hình ảnh mới</h5>
+                </div>
+                <div class="card-body">
+                    <form id="uploadForm" enctype="multipart/form-data">
+                        <input type="hidden" id="maHangHoa" name="MaHangHoa" value="@hangHoa.MaHangHoa" />
+
+                        <div class="upload-area" id="uploadArea">
+                            <i class="bi bi-cloud-arrow-up upload-icon"></i>
+                            <h5>Kéo và thả hình ảnh vào đây</h5>
+                            <p class="text-muted">hoặc</p>
+                            <button type="button" class="btn btn-outline-primary" id="browseBtn">Chọn nhiều hình ảnh</button>
+                            <input type="file" id="fileInput" name="HinhAnh" accept="image/*" multiple style="display: none;" />
+                        </div>
+
+                        <div id="previewContainer" class="preview-container"></div>
+                        
+                        <div class="upload-progress">
+                            <div class="progress mb-2">
+                                <div class="progress-bar progress-bar-striped progress-bar-animated bg-success" id="uploadProgressBar" role="progressbar" style="width: 0%"></div>
+                            </div>
+                            <div class="upload-count text-center">
+                                <span id="uploadedCount">0</span>/<span id="totalCount">0</span> hình ảnh đã được tải lên
+                            </div>
+                        </div>
+
+                        <button type="button" id="btnUpload" class="btn btn-success w-100 mt-3 d-none">
+                            <i class="bi bi-upload"></i> Tải lên tất cả hình ảnh
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-7">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">Thư viện hình ảnh</h5>
+                    @{
+                        var soLuongHinhAnh = (danhSachHinhAnh != null ? danhSachHinhAnh.Count : 0) + (!string.IsNullOrEmpty(hangHoa.HinhAnh) ? 1 : 0);
+                    }
+                    <span class="badge bg-info">@soLuongHinhAnh hình ảnh</span>
+                    
+                </div>
+                <div class="card-body">
+                    <div class="row" id="imageGallery">
+                        @if (!string.IsNullOrEmpty(hangHoa.HinhAnh))
+                        {
+                            <div class="col-md-4 col-sm-6">
+                                <div class="img-container">
+                                    <div class="main-img-badge">Hình chính</div>
+                                    <img src="~/Content/img/hanghoa/@hangHoa.HinhAnh" alt="@hangHoa.TenHangHoa" />
+                                    <div class="img-actions">
+                                        <button class="btn btn-sm btn-danger btn-delete-image" data-filename="@hangHoa.HinhAnh">
+                                            <i class="bi bi-trash"></i> Xóa
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+
+                        @if (danhSachHinhAnh != null && danhSachHinhAnh.Count > 0)
+                        {
+                            foreach (var hinhAnh in danhSachHinhAnh)
+                            {
+                                <div class="col-md-4 col-sm-6">
+                                    <div class="img-container">
+                                        <img src="~/Content/img/hanghoa/@hinhAnh.UrlAnh" alt="Hình ảnh phụ" />
+                                        <div class="img-actions">
+                                            <button class="btn btn-sm btn-primary btn-set-main" data-filename="@hinhAnh.UrlAnh" data-mahinhanh="@hinhAnh.MaHinhAnh">
+                                                <i class="bi bi-star"></i> Đặt chính
+                                            </button>
+                                            <button class="btn btn-sm btn-danger btn-delete-image" data-filename="@hinhAnh.UrlAnh" data-mahinhanh="@hinhAnh.MaHinhAnh">
+                                                <i class="bi bi-trash"></i> Xóa
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        }
+                    </div>
+
+                    @if (string.IsNullOrEmpty(hangHoa.HinhAnh) && (danhSachHinhAnh == null || danhSachHinhAnh.Count == 0))
+                    {
+                        <div class="text-center py-5">
+                            <i class="bi bi-images" style="font-size: 48px; color: #ccc;"></i>
+                            <p class="text-muted mt-3">Chưa có hình ảnh nào cho sản phẩm này</p>
+                            <p class="text-muted">Tải lên hình ảnh để hiển thị sản phẩm đẹp hơn</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal xác nhận xóa -->
+<div class="modal fade" id="confirmDeleteModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Xác nhận xóa</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Bạn có chắc chắn muốn xóa hình ảnh này?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                <button type="button" class="btn btn-danger" id="confirmDelete">Xóa</button>
+                <input type="hidden" id="fileToDelete" />
+                <input type="hidden" id="maHinhAnhToDelete" />
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal thông báo thành công -->
+<div class="modal fade" id="successModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title">Thành công</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p id="successMessage">Thao tác thành công!</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Đóng</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function() {
+        // Upload area click to browse
+        $('#browseBtn').click(function() {
+            $('#fileInput').click();
+        });
+
+        $('#uploadArea').on('click', function(e) {
+            if (e.target === this || $(e.target).hasClass('upload-icon') || $(e.target).is('h5') || $(e.target).is('p')) {
+                $('#fileInput').click();
+            }
+        });
+
+        // Drag and drop handling
+        $('#uploadArea').on('dragover', function(e) {
+            e.preventDefault();
+            $(this).addClass('dragover');
+        });
+
+        $('#uploadArea').on('dragleave', function(e) {
+            e.preventDefault();
+            $(this).removeClass('dragover');
+        });
+
+        $('#uploadArea').on('drop', function(e) {
+            e.preventDefault();
+            $(this).removeClass('dragover');
+
+            var files = e.originalEvent.dataTransfer.files;
+            handleFiles(files);
+        });
+
+        // Handle file input change
+        $('#fileInput').change(function() {
+            handleFiles(this.files);
+        });
+
+        // Handle selected files
+        function handleFiles(files) {
+            if (files.length === 0) return;
+
+            $('#previewContainer').empty();
+            $('#btnUpload').removeClass('d-none');
+            
+            // Cập nhật số lượng tổng
+            $('#totalCount').text(files.length);
+
+            for (var i = 0; i < files.length; i++) {
+                if (files[i].type.match('image.*')) {
+                    var reader = new FileReader();
+                    reader.onload = (function(file, index) {
+                        return function(e) {
+                            var div = $('<div class="preview-item" data-index="' + index + '">');
+                            div.append('<img src="' + e.target.result + '" alt="Preview" />');
+                            div.append('<div class="preview-remove"><i class="bi bi-x"></i></div>');
+                            
+                            $('#previewContainer').append(div);
+                        };
+                    })(files[i], i);
+                    
+                    reader.readAsDataURL(files[i]);
+                }
+            }
+        }
+
+        // Remove preview
+        $(document).on('click', '.preview-remove', function() {
+            var previewItem = $(this).parent();
+            var index = previewItem.data('index');
+            previewItem.remove();
+            
+            if ($('#previewContainer').children().length === 0) {
+                $('#btnUpload').addClass('d-none');
+                $('.upload-progress').hide();
+                $('#fileInput').val('');
+            }
+        });
+
+        // Upload multiple images
+        $('#btnUpload').click(function() {
+            var files = $('#fileInput')[0].files;
+            var maHangHoa = $('#maHangHoa').val();
+            
+            if (files.length === 0) {
+                alert('Vui lòng chọn ít nhất một hình ảnh');
+                return;
+            }
+            
+            // Hiển thị thanh tiến trình
+            $('.upload-progress').show();
+            $('#uploadProgressBar').css('width', '0%');
+            $('#uploadedCount').text('0');
+            
+            // Vô hiệu hóa nút tải lên
+            $('#btnUpload').prop('disabled', true).html('<i class="bi bi-hourglass-split"></i> Đang tải lên...');
+            
+            var formData = new FormData();
+            formData.append('MaHangHoa', maHangHoa);
+            
+            // Thêm tất cả files vào formData
+            for (var i = 0; i < files.length; i++) {
+                formData.append('HinhAnh', files[i]);
+            }
+            
+            // Gửi tất cả hình ảnh cùng lúc
+            $.ajax({
+                url: '@Url.Action("UploadMultipleHinhAnh", "Home")',
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(response) {
+                    if (response.success) {
+                        // Hiển thị thông báo thành công
+                        $('#successMessage').text(response.message || 'Tải lên hình ảnh thành công!');
+                        $('#successModal').modal('show');
+                        
+                        // Reset form
+                        $('#btnUpload').prop('disabled', false).addClass('d-none').html('<i class="bi bi-upload"></i> Tải lên tất cả hình ảnh');
+                        $('#previewContainer').empty();
+                        $('#fileInput').val('');
+                        $('.upload-progress').hide();
+                        
+                        // Tải lại trang sau khi đóng modal
+                        $('#successModal').on('hidden.bs.modal', function() {
+                            location.reload();
+                        });
+                    } else {
+                        alert(response.message || 'Lỗi khi tải lên hình ảnh');
+                        $('#btnUpload').prop('disabled', false).html('<i class="bi bi-upload"></i> Tải lên tất cả hình ảnh');
+                    }
+                },
+                error: function() {
+                    alert('Lỗi kết nối đến server');
+                    $('#btnUpload').prop('disabled', false).html('<i class="bi bi-upload"></i> Tải lên tất cả hình ảnh');
+                }
+            });
+        });
+
+        // Delete image
+        $('.btn-delete-image').click(function() {
+            var fileName = $(this).data('filename');
+            var maHinhAnh = $(this).data('mahinhanh') || null;
+            
+            $('#fileToDelete').val(fileName);
+            $('#maHinhAnhToDelete').val(maHinhAnh);
+            $('#confirmDeleteModal').modal('show');
+        });
+
+        $('#confirmDelete').click(function() {
+            var fileName = $('#fileToDelete').val();
+            var maHinhAnh = $('#maHinhAnhToDelete').val() || null;
+            var maHangHoa = $('#maHangHoa').val();
+            
+            $.ajax({
+                url: '@Url.Action("XoaHinhAnh", "Home")',
+                type: 'POST',
+                data: {
+                    MaHangHoa: maHangHoa,
+                    fileName: fileName,
+                    maHinhAnh: maHinhAnh
+                },
+                success: function(response) {
+                    $('#confirmDeleteModal').modal('hide');
+                    
+                    if (response.success) {
+                        $('#successMessage').text('Đã xóa hình ảnh thành công!');
+                        $('#successModal').modal('show');
+                        
+                        // Reload page after closing the success modal
+                        $('#successModal').on('hidden.bs.modal', function() {
+                            location.reload();
+                        });
+                    } else {
+                        alert(response.message || 'Xóa hình ảnh thất bại');
+                    }
+                },
+                error: function() {
+                    alert('Lỗi kết nối đến server');
+                }
+            });
+        });
+
+        // Set as main image
+        $('.btn-set-main').click(function() {
+            var fileName = $(this).data('filename');
+            var maHinhAnh = $(this).data('mahinhanh');
+            var maHangHoa = $('#maHangHoa').val();
+            
+            $.ajax({
+                url: '@Url.Action("DatHinhAnhChinh", "Home")',
+                type: 'POST',
+                data: {
+                    MaHangHoa: maHangHoa,
+                    fileName: fileName,
+                    maHinhAnh: maHinhAnh
+                },
+                success: function(response) {
+                    if (response.success) {
+                        $('#successMessage').text('Đã đặt làm hình ảnh chính!');
+                        $('#successModal').modal('show');
+                        
+                        // Reload page after closing the success modal
+                        $('#successModal').on('hidden.bs.modal', function() {
+                            location.reload();
+                        });
+                    } else {
+                        alert(response.message || 'Đặt làm hình ảnh chính thất bại');
+                    }
+                },
+                error: function() {
+                    alert('Lỗi kết nối đến server');
+                }
+            });
+        });
+    });
+</script> 
