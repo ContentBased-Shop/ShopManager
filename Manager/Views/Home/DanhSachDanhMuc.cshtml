@@ -121,6 +121,10 @@
                 <form id="editCategoryForm">
                     <input type="hidden" id="editMaDanhMuc">
                     <div class="mb-3">
+                        <label for="displayMaDanhMuc" class="form-label">Mã Danh Mục</label>
+                        <input type="text" class="form-control bg-light" id="displayMaDanhMuc" readonly>
+                    </div>
+                    <div class="mb-3">
                         <label for="editTenDanhMuc" class="form-label">Tên Danh Mục</label>
                         <input type="text" class="form-control" id="editTenDanhMuc" maxlength="100" required>
                         <div class="invalid-feedback">Vui lòng nhập tên danh mục</div>
@@ -362,6 +366,7 @@
             var tenDanhMuc = $(this).data("name");
             
             $("#editMaDanhMuc").val(maDanhMuc);
+            $("#displayMaDanhMuc").val(maDanhMuc);
             $("#editTenDanhMuc").val(tenDanhMuc);
         });
 

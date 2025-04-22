@@ -2321,7 +2321,8 @@ namespace Manager.Controllers
         }
 
         [HttpPost]
-        public JsonResult TaoBienTheHangHoa(string MaHangHoa, string MauSac, string DungLuong, decimal Gia, int SoLuongTonKho)
+        public JsonResult TaoBienTheHangHoa(string MaHangHoa, string MauSac, string DungLuong, string CPU, 
+            string RAM, string KichThuocManHinh, string LoaiBoNho, decimal Gia, decimal? GiaKhuyenMai, int SoLuongTonKho)
         {
             try
             {
@@ -2345,7 +2346,12 @@ namespace Manager.Controllers
                     MaHangHoa = MaHangHoa,
                     MauSac = MauSac,
                     DungLuong = DungLuong,
+                    CPU = CPU,
+                    RAM = RAM,
+                    KichThuocManHinh = KichThuocManHinh,
+                    LoaiBoNho = LoaiBoNho,
                     GiaGoc = (double)Gia,
+                    GiaKhuyenMai = GiaKhuyenMai.HasValue ? (double)GiaKhuyenMai.Value : (double?)null,
                     SoLuongTonKho = SoLuongTonKho
                 };
 
@@ -2361,7 +2367,8 @@ namespace Manager.Controllers
         }
 
         [HttpPost]
-        public JsonResult SuaBienTheHangHoa(string MaBienThe, string MauSac, string DungLuong, decimal Gia, int SoLuongTonKho)
+        public JsonResult SuaBienTheHangHoa(string MaBienThe, string MauSac, string DungLuong, string CPU, 
+            string RAM, string KichThuocManHinh, string LoaiBoNho, decimal Gia, decimal? GiaKhuyenMai, int SoLuongTonKho)
         {
             try
             {
@@ -2373,7 +2380,12 @@ namespace Manager.Controllers
 
                 bienThe.MauSac = MauSac;
                 bienThe.DungLuong = DungLuong;
+                bienThe.CPU = CPU;
+                bienThe.RAM = RAM;
+                bienThe.KichThuocManHinh = KichThuocManHinh;
+                bienThe.LoaiBoNho = LoaiBoNho;
                 bienThe.GiaGoc = (double)Gia;
+                bienThe.GiaKhuyenMai = GiaKhuyenMai.HasValue ? (double)GiaKhuyenMai.Value : (double?)null;
                 bienThe.SoLuongTonKho = SoLuongTonKho;
 
                 data.SubmitChanges();

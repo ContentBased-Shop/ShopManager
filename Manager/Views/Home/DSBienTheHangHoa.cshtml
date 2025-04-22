@@ -44,8 +44,13 @@
                     <th>Mã biến thể</th>
                     <th>Màu sắc</th>
                     <th>Dung lượng</th>
-                    <th>Giá</th>
-                    <th>Số lượng tồn kho</th>
+                    <th>CPU</th>
+                    <th>RAM</th>
+                    <th>Màn hình</th>
+                    <th>Loại bộ nhớ</th>
+                    <th>Giá gốc</th>
+                    <th>Giá KM</th>
+                    <th>Tồn kho</th>
                     <th>Thao tác</th>
                 </tr>
             </thead>
@@ -59,12 +64,19 @@
                         <td class="ma-bien-the">@item.MaBienThe</td>
                         <td class="mau-sac">@(item.MauSac ?? "Không có")</td>
                         <td class="dung-luong">@(item.DungLuong ?? "Không có")</td>
+                        <td class="cpu">@(item.CPU ?? "Không có")</td>
+                        <td class="ram">@(item.RAM ?? "Không có")</td>
+                        <td class="kich-thuoc-man-hinh">@(item.KichThuocManHinh ?? "Không có")</td>
+                        <td class="loai-bo-nho">@(item.LoaiBoNho ?? "Không có")</td>
                         <td>@(item.GiaGoc != null ? item.GiaGoc.Value.ToString("N0") + " VNĐ" : "0 VNĐ")</td>
+                        <td>@(item.GiaKhuyenMai != null ? item.GiaKhuyenMai.Value.ToString("N0") + " VNĐ" : "Không có")</td>
                         <td>@item.SoLuongTonKho</td>
                         <td>
                             <button class="btn btn-sm btn-primary btn-edit" data-id="@item.MaBienThe"
                                     data-mausac="@item.MauSac" data-dungluong="@item.DungLuong"
-                                    data-gia="@item.GiaGoc" data-soluong="@item.SoLuongTonKho"
+                                    data-cpu="@item.CPU" data-ram="@item.RAM" 
+                                    data-kichthuocmanhinh="@item.KichThuocManHinh" data-loaibonho="@item.LoaiBoNho"
+                                    data-gia="@item.GiaGoc" data-giakhuyenmai="@item.GiaKhuyenMai" data-soluong="@item.SoLuongTonKho"
                                     data-bs-toggle="modal" data-bs-target="#editVariantModal">
                                 <i class="bi bi-pencil-square"></i>
                             </button>
@@ -157,7 +169,7 @@
 
     <!-- Modal Tạo mới biến thể -->
     <div class="modal fade" id="createVariantModal" tabindex="-1" aria-labelledby="createVariantModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
+        <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="createVariantModalLabel">Thêm Biến Thể Mới</h5>
@@ -167,20 +179,65 @@
                     <form id="createVariantForm">
                         <input type="hidden" id="maHangHoa" name="MaHangHoa" value="@ViewBag.MaHangHoa" />
                         
-                        <div class="mb-3">
-                            <label for="mauSac" class="form-label">Màu Sắc</label>
-                            <input type="text" class="form-control" id="mauSac" name="MauSac" maxlength="50">
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="dungLuong" class="form-label">Dung Lượng</label>
-                            <input type="text" class="form-control" id="dungLuong" name="DungLuong" maxlength="50">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="mauSac" class="form-label">Màu Sắc</label>
+                                    <input type="text" class="form-control" id="mauSac" name="MauSac" maxlength="50">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="dungLuong" class="form-label">Dung Lượng</label>
+                                    <input type="text" class="form-control" id="dungLuong" name="DungLuong" maxlength="50">
+                                </div>
+                            </div>
                         </div>
                         
-                        <div class="mb-3">
-                            <label for="gia" class="form-label">Giá <span class="text-danger">*</span></label>
-                            <input type="number" class="form-control" id="gia" name="Gia" required>
-                            <div class="text-danger mt-1" id="giaError" style="display: none;">Vui lòng nhập giá cho biến thể.</div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="cpu" class="form-label">CPU</label>
+                                    <input type="text" class="form-control" id="cpu" name="CPU" maxlength="100">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="ram" class="form-label">RAM</label>
+                                    <input type="text" class="form-control" id="ram" name="RAM" maxlength="50">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="kichThuocManHinh" class="form-label">Kích Thước Màn Hình</label>
+                                    <input type="text" class="form-control" id="kichThuocManHinh" name="KichThuocManHinh" maxlength="50">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="loaiBoNho" class="form-label">Loại Bộ Nhớ</label>
+                                    <input type="text" class="form-control" id="loaiBoNho" name="LoaiBoNho" maxlength="50">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="gia" class="form-label">Giá Gốc <span class="text-danger">*</span></label>
+                                    <input type="number" class="form-control" id="gia" name="Gia" required>
+                                    <div class="text-danger mt-1" id="giaError" style="display: none;">Vui lòng nhập giá cho biến thể.</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="giaKhuyenMai" class="form-label">Giá Khuyến Mãi</label>
+                                    <input type="number" class="form-control" id="giaKhuyenMai" name="GiaKhuyenMai">
+                                </div>
+                            </div>
                         </div>
                         
                         <div class="mb-3">
@@ -218,7 +275,7 @@
 
     <!-- Modal Chỉnh sửa biến thể -->
     <div class="modal fade" id="editVariantModal" tabindex="-1" aria-labelledby="editVariantModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
+        <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="editVariantModalLabel">Chỉnh sửa Biến Thể</h5>
@@ -228,23 +285,68 @@
                     <form id="editVariantForm">
                         <div class="mb-3">
                             <label for="editMaBienThe" class="form-label">Mã Biến Thể</label>
-                            <input type="text" class="form-control" id="editMaBienThe" name="MaBienThe" readonly>
+                            <input type="text" class="form-control bg-light" id="editMaBienThe" name="MaBienThe" readonly>
                         </div>
                         
-                        <div class="mb-3">
-                            <label for="editMauSac" class="form-label">Màu Sắc</label>
-                            <input type="text" class="form-control" id="editMauSac" name="MauSac" maxlength="50">
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="editDungLuong" class="form-label">Dung Lượng</label>
-                            <input type="text" class="form-control" id="editDungLuong" name="DungLuong" maxlength="50">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="editMauSac" class="form-label">Màu Sắc</label>
+                                    <input type="text" class="form-control" id="editMauSac" name="MauSac" maxlength="50">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="editDungLuong" class="form-label">Dung Lượng</label>
+                                    <input type="text" class="form-control" id="editDungLuong" name="DungLuong" maxlength="50">
+                                </div>
+                            </div>
                         </div>
                         
-                        <div class="mb-3">
-                            <label for="editGia" class="form-label">Giá <span class="text-danger">*</span></label>
-                            <input type="number" class="form-control" id="editGia" name="Gia" required>
-                            <div class="text-danger mt-1" id="editGiaError" style="display: none;">Vui lòng nhập giá cho biến thể.</div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="editCPU" class="form-label">CPU</label>
+                                    <input type="text" class="form-control" id="editCPU" name="CPU" maxlength="100">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="editRAM" class="form-label">RAM</label>
+                                    <input type="text" class="form-control" id="editRAM" name="RAM" maxlength="50">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="editKichThuocManHinh" class="form-label">Kích Thước Màn Hình</label>
+                                    <input type="text" class="form-control" id="editKichThuocManHinh" name="KichThuocManHinh" maxlength="50">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="editLoaiBoNho" class="form-label">Loại Bộ Nhớ</label>
+                                    <input type="text" class="form-control" id="editLoaiBoNho" name="LoaiBoNho" maxlength="50">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="editGia" class="form-label">Giá Gốc <span class="text-danger">*</span></label>
+                                    <input type="number" class="form-control" id="editGia" name="Gia" required>
+                                    <div class="text-danger mt-1" id="editGiaError" style="display: none;">Vui lòng nhập giá cho biến thể.</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="editGiaKhuyenMai" class="form-label">Giá Khuyến Mãi</label>
+                                    <input type="number" class="form-control" id="editGiaKhuyenMai" name="GiaKhuyenMai">
+                                </div>
+                            </div>
                         </div>
                         
                         <div class="mb-3">
@@ -289,8 +391,18 @@
                 var maBienThe = $(this).find('.ma-bien-the').text().toLowerCase();
                 var mauSac = $(this).find('.mau-sac').text().toLowerCase();
                 var dungLuong = $(this).find('.dung-luong').text().toLowerCase();
+                var cpu = $(this).find('.cpu').text().toLowerCase();
+                var ram = $(this).find('.ram').text().toLowerCase();
+                var kichThuocManHinh = $(this).find('.kich-thuoc-man-hinh').text().toLowerCase();
+                var loaiBoNho = $(this).find('.loai-bo-nho').text().toLowerCase();
                 
-                if(maBienThe.includes(searchText) || mauSac.includes(searchText) || dungLuong.includes(searchText)) {
+                if(maBienThe.includes(searchText) || 
+                   mauSac.includes(searchText) || 
+                   dungLuong.includes(searchText) ||
+                   cpu.includes(searchText) ||
+                   ram.includes(searchText) ||
+                   kichThuocManHinh.includes(searchText) ||
+                   loaiBoNho.includes(searchText)) {
                     $(this).show();
                 } else {
                     $(this).hide();
@@ -393,7 +505,12 @@
                 MaHangHoa: $('#maHangHoa').val(),
                 MauSac: $('#mauSac').val(),
                 DungLuong: $('#dungLuong').val(),
+                CPU: $('#cpu').val(),
+                RAM: $('#ram').val(),
+                KichThuocManHinh: $('#kichThuocManHinh').val(),
+                LoaiBoNho: $('#loaiBoNho').val(),
                 Gia: $('#gia').val(),
+                GiaKhuyenMai: $('#giaKhuyenMai').val(),
                 SoLuongTonKho: $('#soLuongTonKho').val()
             };
             
@@ -423,13 +540,23 @@
             var maBienThe = $(this).data('id');
             var mauSac = $(this).data('mausac');
             var dungLuong = $(this).data('dungluong');
+            var cpu = $(this).data('cpu');
+            var ram = $(this).data('ram');
+            var kichThuocManHinh = $(this).data('kichthuocmanhinh');
+            var loaiBoNho = $(this).data('loaibonho');
             var gia = $(this).data('gia');
+            var giaKhuyenMai = $(this).data('giakhuyenmai');
             var soLuong = $(this).data('soluong');
             
             $('#editMaBienThe').val(maBienThe);
             $('#editMauSac').val(mauSac);
             $('#editDungLuong').val(dungLuong);
+            $('#editCPU').val(cpu);
+            $('#editRAM').val(ram);
+            $('#editKichThuocManHinh').val(kichThuocManHinh);
+            $('#editLoaiBoNho').val(loaiBoNho);
             $('#editGia').val(gia);
+            $('#editGiaKhuyenMai').val(giaKhuyenMai);
             $('#editSoLuongTonKho').val(soLuong);
         });
         
@@ -443,7 +570,12 @@
                 MaBienThe: $('#editMaBienThe').val(),
                 MauSac: $('#editMauSac').val(),
                 DungLuong: $('#editDungLuong').val(),
+                CPU: $('#editCPU').val(),
+                RAM: $('#editRAM').val(),
+                KichThuocManHinh: $('#editKichThuocManHinh').val(),
+                LoaiBoNho: $('#editLoaiBoNho').val(),
                 Gia: $('#editGia').val(),
+                GiaKhuyenMai: $('#editGiaKhuyenMai').val(),
                 SoLuongTonKho: $('#editSoLuongTonKho').val()
             };
             
