@@ -100,14 +100,36 @@
                         <div class="invalid-feedback">Vui lòng nhập số điện thoại</div>
                     </div>
                     <div class="mb-3">
-                        <label for="diaChiDayDu" class="form-label">Địa Chỉ Đầy Đủ</label>
-                        <textarea class="form-control" id="diaChiDayDu" rows="3" required></textarea>
-                        <div class="invalid-feedback">Vui lòng nhập địa chỉ</div>
+                        <label for="tinhThanh" class="form-label">Tỉnh/Thành phố</label>
+                        <select class="form-select" id="tinhThanh" required>
+                            <option value="">Chọn Tỉnh/Thành phố</option>
+                        </select>
+                        <div class="invalid-feedback">Vui lòng chọn tỉnh/thành phố</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="quanHuyen" class="form-label">Quận/Huyện</label>
+                        <select class="form-select" id="quanHuyen" required disabled>
+                            <option value="">Chọn Quận/Huyện</option>
+                        </select>
+                        <div class="invalid-feedback">Vui lòng chọn quận/huyện</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="phuongXa" class="form-label">Phường/Xã</label>
+                        <select class="form-select" id="phuongXa" required disabled>
+                            <option value="">Chọn Phường/Xã</option>
+                        </select>
+                        <div class="invalid-feedback">Vui lòng chọn phường/xã</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="diaChiCuThe" class="form-label">Địa Chỉ Cụ Thể (Số nhà, đường...)</label>
+                        <textarea class="form-control" id="diaChiCuThe" rows="2" required></textarea>
+                        <div class="invalid-feedback">Vui lòng nhập địa chỉ cụ thể</div>
                     </div>
                     <div class="mb-3 form-check">
                         <input type="checkbox" class="form-check-input" id="laMacDinh">
                         <label class="form-check-label" for="laMacDinh">Đặt làm địa chỉ mặc định</label>
                     </div>
+                    <input type="hidden" id="diaChiDayDu">
                 </form>
             </div>
             <div class="modal-footer">
@@ -140,14 +162,36 @@
                         <div class="invalid-feedback">Vui lòng nhập số điện thoại</div>
                     </div>
                     <div class="mb-3">
-                        <label for="editDiaChiDayDu" class="form-label">Địa Chỉ Đầy Đủ</label>
-                        <textarea class="form-control" id="editDiaChiDayDu" rows="3" required></textarea>
-                        <div class="invalid-feedback">Vui lòng nhập địa chỉ</div>
+                        <label for="editTinhThanh" class="form-label">Tỉnh/Thành phố</label>
+                        <select class="form-select" id="editTinhThanh" required>
+                            <option value="">Chọn Tỉnh/Thành phố</option>
+                        </select>
+                        <div class="invalid-feedback">Vui lòng chọn tỉnh/thành phố</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="editQuanHuyen" class="form-label">Quận/Huyện</label>
+                        <select class="form-select" id="editQuanHuyen" required disabled>
+                            <option value="">Chọn Quận/Huyện</option>
+                        </select>
+                        <div class="invalid-feedback">Vui lòng chọn quận/huyện</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="editPhuongXa" class="form-label">Phường/Xã</label>
+                        <select class="form-select" id="editPhuongXa" required disabled>
+                            <option value="">Chọn Phường/Xã</option>
+                        </select>
+                        <div class="invalid-feedback">Vui lòng chọn phường/xã</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="editDiaChiCuThe" class="form-label">Địa Chỉ Cụ Thể (Số nhà, đường...)</label>
+                        <textarea class="form-control" id="editDiaChiCuThe" rows="2" required></textarea>
+                        <div class="invalid-feedback">Vui lòng nhập địa chỉ cụ thể</div>
                     </div>
                     <div class="mb-3 form-check">
                         <input type="checkbox" class="form-check-input" id="editLaMacDinh">
                         <label class="form-check-label" for="editLaMacDinh">Đặt làm địa chỉ mặc định</label>
                     </div>
+                    <input type="hidden" id="editDiaChiDayDu">
                 </form>
             </div>
             <div class="modal-footer">
@@ -236,6 +280,169 @@
 
 <script>
     $(document).ready(function () {
+        // Lấy danh sách tỉnh thành từ API khi trang được tải
+        fetchProvinces();
+
+        function fetchProvinces() {
+            $.ajax({
+                url: 'https://provinces.open-api.vn/api/',
+                type: 'GET',
+                dataType: 'json',
+                success: function (response) {
+                    if (response && response.length > 0) {
+                        loadProvinceDropdown('#tinhThanh', response);
+                        loadProvinceDropdown('#editTinhThanh', response);
+                    }
+                },
+                error: function (error) {
+                    console.error('Lỗi khi lấy danh sách tỉnh/thành phố:', error);
+                }
+            });
+        }
+
+        function loadProvinceDropdown(selector, provinces) {
+            const dropdown = $(selector);
+            dropdown.empty();
+            dropdown.append('<option value="">Chọn Tỉnh/Thành phố</option>');
+            
+            provinces.forEach(function(province) {
+                dropdown.append(`<option value="${province.code}">${province.name}</option>`);
+            });
+        }
+
+        // Xử lý sự kiện khi chọn tỉnh/thành phố
+        $('#tinhThanh').change(function() {
+            const provinceCode = $(this).val();
+            if (provinceCode) {
+                fetchDistricts(provinceCode, '#quanHuyen');
+                $('#quanHuyen').prop('disabled', false);
+                $('#phuongXa').prop('disabled', true).empty().append('<option value="">Chọn Phường/Xã</option>');
+            } else {
+                $('#quanHuyen').prop('disabled', true).empty().append('<option value="">Chọn Quận/Huyện</option>');
+                $('#phuongXa').prop('disabled', true).empty().append('<option value="">Chọn Phường/Xã</option>');
+            }
+            updateFullAddress();
+        });
+
+        $('#editTinhThanh').change(function() {
+            const provinceCode = $(this).val();
+            if (provinceCode) {
+                fetchDistricts(provinceCode, '#editQuanHuyen');
+                $('#editQuanHuyen').prop('disabled', false);
+                $('#editPhuongXa').prop('disabled', true).empty().append('<option value="">Chọn Phường/Xã</option>');
+            } else {
+                $('#editQuanHuyen').prop('disabled', true).empty().append('<option value="">Chọn Quận/Huyện</option>');
+                $('#editPhuongXa').prop('disabled', true).empty().append('<option value="">Chọn Phường/Xã</option>');
+            }
+            updateEditFullAddress();
+        });
+
+        // Xử lý sự kiện khi chọn quận/huyện
+        $('#quanHuyen').change(function() {
+            const districtCode = $(this).val();
+            if (districtCode) {
+                fetchWards(districtCode, '#phuongXa');
+                $('#phuongXa').prop('disabled', false);
+            } else {
+                $('#phuongXa').prop('disabled', true).empty().append('<option value="">Chọn Phường/Xã</option>');
+            }
+            updateFullAddress();
+        });
+
+        $('#editQuanHuyen').change(function() {
+            const districtCode = $(this).val();
+            if (districtCode) {
+                fetchWards(districtCode, '#editPhuongXa');
+                $('#editPhuongXa').prop('disabled', false);
+            } else {
+                $('#editPhuongXa').prop('disabled', true).empty().append('<option value="">Chọn Phường/Xã</option>');
+            }
+            updateEditFullAddress();
+        });
+
+        // Xử lý sự kiện khi chọn phường/xã
+        $('#phuongXa').change(function() {
+            updateFullAddress();
+        });
+
+        $('#editPhuongXa').change(function() {
+            updateEditFullAddress();
+        });
+
+        // Xử lý sự kiện khi nhập địa chỉ cụ thể
+        $('#diaChiCuThe').on('input', function() {
+            updateFullAddress();
+        });
+
+        $('#editDiaChiCuThe').on('input', function() {
+            updateEditFullAddress();
+        });
+
+        function fetchDistricts(provinceCode, selector) {
+            $.ajax({
+                url: `https://provinces.open-api.vn/api/p/${provinceCode}?depth=2`,
+                type: 'GET',
+                dataType: 'json',
+                success: function (response) {
+                    if (response && response.districts) {
+                        const dropdown = $(selector);
+                        dropdown.empty();
+                        dropdown.append('<option value="">Chọn Quận/Huyện</option>');
+                        
+                        response.districts.forEach(function(district) {
+                            dropdown.append(`<option value="${district.code}">${district.name}</option>`);
+                        });
+                    }
+                },
+                error: function (error) {
+                    console.error('Lỗi khi lấy danh sách quận/huyện:', error);
+                }
+            });
+        }
+
+        function fetchWards(districtCode, selector) {
+            $.ajax({
+                url: `https://provinces.open-api.vn/api/d/${districtCode}?depth=2`,
+                type: 'GET',
+                dataType: 'json',
+                success: function (response) {
+                    if (response && response.wards) {
+                        const dropdown = $(selector);
+                        dropdown.empty();
+                        dropdown.append('<option value="">Chọn Phường/Xã</option>');
+                        
+                        response.wards.forEach(function(ward) {
+                            dropdown.append(`<option value="${ward.code}">${ward.name}</option>`);
+                        });
+                    }
+                },
+                error: function (error) {
+                    console.error('Lỗi khi lấy danh sách phường/xã:', error);
+                }
+            });
+        }
+
+        // Cập nhật địa chỉ đầy đủ khi thay đổi bất kỳ thành phần nào
+        function updateFullAddress() {
+            const diaChiCuThe = $('#diaChiCuThe').val().trim();
+            const phuongXa = $('#phuongXa option:selected').text() !== 'Chọn Phường/Xã' ? $('#phuongXa option:selected').text() : '';
+            const quanHuyen = $('#quanHuyen option:selected').text() !== 'Chọn Quận/Huyện' ? $('#quanHuyen option:selected').text() : '';
+            const tinhThanh = $('#tinhThanh option:selected').text() !== 'Chọn Tỉnh/Thành phố' ? $('#tinhThanh option:selected').text() : '';
+            
+            const parts = [diaChiCuThe, phuongXa, quanHuyen, tinhThanh].filter(part => part !== '');
+            $('#diaChiDayDu').val(parts.join(', '));
+        }
+
+        function updateEditFullAddress() {
+            const diaChiCuThe = $('#editDiaChiCuThe').val().trim();
+            const phuongXa = $('#editPhuongXa option:selected').text() !== 'Chọn Phường/Xã' ? $('#editPhuongXa option:selected').text() : '';
+            const quanHuyen = $('#editQuanHuyen option:selected').text() !== 'Chọn Quận/Huyện' ? $('#editQuanHuyen option:selected').text() : '';
+            const tinhThanh = $('#editTinhThanh option:selected').text() !== 'Chọn Tỉnh/Thành phố' ? $('#editTinhThanh option:selected').text() : '';
+            
+            const parts = [diaChiCuThe, phuongXa, quanHuyen, tinhThanh].filter(part => part !== '');
+            $('#editDiaChiDayDu').val(parts.join(', '));
+        }
+
         // Xử lý tìm kiếm
         $("#searchInput").on("keyup", function () {
             var value = $(this).val().toLowerCase();
@@ -269,7 +476,35 @@
             }
 
             if (diaChiDayDu === "") {
-                $("#diaChiDayDu").addClass("is-invalid");
+                // Kiểm tra từng trường thành phần địa chỉ
+                if ($("#tinhThanh").val() === "") {
+                    $("#tinhThanh").addClass("is-invalid");
+                    isValid = false;
+                } else {
+                    $("#tinhThanh").removeClass("is-invalid");
+                }
+                
+                if ($("#quanHuyen").val() === "") {
+                    $("#quanHuyen").addClass("is-invalid");
+                    isValid = false;
+                } else {
+                    $("#quanHuyen").removeClass("is-invalid");
+                }
+                
+                if ($("#phuongXa").val() === "") {
+                    $("#phuongXa").addClass("is-invalid");
+                    isValid = false;
+                } else {
+                    $("#phuongXa").removeClass("is-invalid");
+                }
+                
+                if ($("#diaChiCuThe").val().trim() === "") {
+                    $("#diaChiCuThe").addClass("is-invalid");
+                    isValid = false;
+                } else {
+                    $("#diaChiCuThe").removeClass("is-invalid");
+                }
+                
                 isValid = false;
             } else {
                 $("#diaChiDayDu").removeClass("is-invalid");
@@ -319,6 +554,11 @@
             $("#editSoDienThoai").val(soDienThoai);
             $("#editDiaChiDayDu").val(diaChiDayDu);
             $("#editLaMacDinh").prop("checked", laMacDinh);
+            
+            // Đoạn này là phân tích địa chỉ đầy đủ để hiển thị vào các trường tương ứng
+            // Vì không có cấu trúc địa chỉ cụ thể từ phía server nên chúng ta sẽ giữ nguyên trong trường diaChiDayDu
+            // và hiển thị trong phần diaChiCuThe cho người dùng chỉnh sửa
+            $("#editDiaChiCuThe").val(diaChiDayDu);
         });
 
         // Xử lý khi nhấn nút Lưu trong form chỉnh sửa
@@ -326,7 +566,7 @@
             var maDiaChi = $("#editMaDiaChi").val();
             var tenNguoiNhan = $("#editTenNguoiNhan").val().trim();
             var soDienThoai = $("#editSoDienThoai").val().trim();
-            var diaChiDayDu = $("#editDiaChiDayDu").val().trim();
+            var diaChiDayDu = $("#editDiaChiDayDu").val().trim() || $("#editDiaChiCuThe").val().trim();
             var laMacDinh = $("#editLaMacDinh").prop("checked");
 
             // Kiểm tra dữ liệu
@@ -346,10 +586,15 @@
             }
 
             if (diaChiDayDu === "") {
-                $("#editDiaChiDayDu").addClass("is-invalid");
+                // Kiểm tra địa chỉ cụ thể nếu đang dùng form mới
+                if ($("#editTinhThanh").val() !== "" && $("#editDiaChiCuThe").val().trim() === "") {
+                    $("#editDiaChiCuThe").addClass("is-invalid");
+                    isValid = false;
+                } else {
+                    $("#editDiaChiCuThe").removeClass("is-invalid");
+                }
+                
                 isValid = false;
-            } else {
-                $("#editDiaChiDayDu").removeClass("is-invalid");
             }
 
             if (!isValid) return;
@@ -506,11 +751,18 @@
         // Reset form khi đóng modal
         $("#createAddressModal").on("hidden.bs.modal", function () {
             $("#createAddressForm")[0].reset();
-            $("#tenNguoiNhan, #soDienThoai, #diaChiDayDu").removeClass("is-invalid");
+            $("#tenNguoiNhan, #soDienThoai, #diaChiCuThe, #tinhThanh, #quanHuyen, #phuongXa").removeClass("is-invalid");
+            $("#quanHuyen, #phuongXa").prop('disabled', true);
+            $("#quanHuyen").empty().append('<option value="">Chọn Quận/Huyện</option>');
+            $("#phuongXa").empty().append('<option value="">Chọn Phường/Xã</option>');
+            $("#diaChiDayDu").val('');
         });
 
         $("#editAddressModal").on("hidden.bs.modal", function () {
-            $("#editTenNguoiNhan, #editSoDienThoai, #editDiaChiDayDu").removeClass("is-invalid");
+            $("#editTenNguoiNhan, #editSoDienThoai, #editDiaChiCuThe, #editTinhThanh, #editQuanHuyen, #editPhuongXa").removeClass("is-invalid");
+            $("#editQuanHuyen, #editPhuongXa").prop('disabled', true);
+            $("#editQuanHuyen").empty().append('<option value="">Chọn Quận/Huyện</option>');
+            $("#editPhuongXa").empty().append('<option value="">Chọn Phường/Xã</option>');
         });
     });
 </script>
