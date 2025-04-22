@@ -145,21 +145,23 @@
                 <div class="modal-body">
                     <form id="createBrandForm">
                         <div class="mb-3">
-                            <label for="tenThuongHieu" class="form-label">Tên Thương Hiệu</label>
+                            <label for="tenThuongHieu" class="form-label">Tên Thương Hiệu <span class="text-danger">*</span></label>
                             <input type="text" class="form-control" id="tenThuongHieu" maxlength="100" required>
                             <div class="text-danger mt-1" id="tenThuongHieuError" style="display: none;">Vui lòng nhập tên thương hiệu.</div>
                         </div>
 
                         <div class="mb-3">
-                            <label for="moTa" class="form-label">Mô Tả</label>
-                            <textarea class="form-control" id="moTa" maxlength="255"></textarea>
+                            <label for="moTa" class="form-label">Mô Tả <span class="text-danger">*</span></label>
+                            <textarea class="form-control" id="moTa" maxlength="255" required></textarea>
+                            <div class="text-danger mt-1" id="moTaError" style="display: none;">Vui lòng nhập mô tả.</div>
                         </div>
                         <div class="mb-3">
-                            <label for="logo" class="form-label">Logo</label>
-                            <input type="file" class="form-control" id="logo" accept="image/*">
+                            <label for="logo" class="form-label">Logo <span class="text-danger">*</span></label>
+                            <input type="file" class="form-control" id="logo" accept="image/*" required>
+                            <div class="text-danger mt-1" id="logoError" style="display: none;">Vui lòng chọn file hình ảnh cho logo.</div>
                         </div>
                         <div class="mb-3">
-                            <label for="trangThai" class="form-label">Trạng Thái</label>
+                            <label for="trangThai" class="form-label">Trạng Thái <span class="text-danger">*</span></label>
                             <select class="form-select" id="trangThai" required>
                                 <option value="true">Hiển thị</option>
                                 <option value="false">Ẩn</option>
@@ -224,21 +226,23 @@
                             <input type="text" class="form-control bg-light" id="editMaThuongHieu" readonly>
                         </div>
                         <div class="mb-3">
-                            <label for="editTenThuongHieu" class="form-label">Tên Thương Hiệu</label>
+                            <label for="editTenThuongHieu" class="form-label">Tên Thương Hiệu <span class="text-danger">*</span></label>
                             <input type="text" class="form-control" id="editTenThuongHieu" maxlength="100" required>
                             <div class="text-danger mt-1" id="editTenThuongHieuError" style="display: none;">Vui lòng nhập tên thương hiệu.</div>
                         </div>
                         <div class="mb-3">
-                            <label for="editMoTa" class="form-label">Mô Tả</label>
-                            <textarea class="form-control" id="editMoTa" maxlength="255"></textarea>
+                            <label for="editMoTa" class="form-label">Mô Tả <span class="text-danger">*</span></label>
+                            <textarea class="form-control" id="editMoTa" maxlength="255" required></textarea>
+                            <div class="text-danger mt-1" id="editMoTaError" style="display: none;">Vui lòng nhập mô tả.</div>
                         </div>
                         <div class="mb-3">
                             <label for="editLogo" class="form-label">Logo</label>
                             <input type="file" class="form-control" id="editLogo" accept="image/*">
+                            <div class="text-danger mt-1" id="editLogoError" style="display: none;">Vui lòng chọn file hình ảnh cho logo.</div>
                         </div>
                         <div class="mb-3">
-                            <label for="trangThaiEdit">Trạng thái</label>
-                            <select class="form-select" id="trangThaiEdit" name="TrangThai">
+                            <label for="trangThaiEdit" class="form-label">Trạng thái <span class="text-danger">*</span></label>
+                            <select class="form-select" id="trangThaiEdit" name="TrangThai" required>
                                 <option value="true">Hiển thị</option>
                                 <option value="false">Ẩn</option>
                             </select>
@@ -397,24 +401,15 @@
         });
 
         $('#saveBrand').click(function () {
-            const tenThuongHieuInput = document.getElementById("tenThuongHieu");
-            const errorLabel = document.getElementById("tenThuongHieuError");
-            const tenThuongHieu = tenThuongHieuInput.value.trim();
-
-            if (tenThuongHieu === "") {
-                errorLabel.style.display = "block";
-                tenThuongHieuInput.classList.add("is-invalid");
-                tenThuongHieuInput.focus();
-                return; // ❌ Không gửi request nếu không nhập tên
-            } else {
-                errorLabel.style.display = "none";
-                tenThuongHieuInput.classList.remove("is-invalid");
+            // Kiểm tra form hợp lệ
+            if (!validateCreateForm()) {
+                return;
             }
 
             var formData = new FormData();
             formData.append('MaThuongHieu', $('#maThuongHieu').val());
-            formData.append('TenThuongHieu', tenThuongHieu);
-            formData.append('MoTa', $('#moTa').val());
+            formData.append('TenThuongHieu', $('#tenThuongHieu').val().trim());
+            formData.append('MoTa', $('#moTa').val().trim());
             formData.append('Logo', $('#logo')[0].files[0]);
             formData.append('TrangThai', $('#trangThai').val());
 
@@ -471,25 +466,18 @@
 
             // Xử lý sự kiện khi nhấn nút Lưu trong modal chỉnh sửa
             $('#updateBrand').click(function () {
-                const tenThuongHieuInput = document.getElementById("editTenThuongHieu");
-                const errorLabel = document.getElementById("editTenThuongHieuError");
-                const tenThuongHieu = tenThuongHieuInput.value.trim();
-
-                if (tenThuongHieu === "") {
-                    errorLabel.style.display = "block";
-                    tenThuongHieuInput.classList.add("is-invalid");
-                    tenThuongHieuInput.focus();
-                    return; // ❌ Không gửi request nếu không nhập tên
-                } else {
-                    errorLabel.style.display = "none";
-                    tenThuongHieuInput.classList.remove("is-invalid");
+                // Kiểm tra form hợp lệ
+                if (!validateEditForm()) {
+                    return;
                 }
 
                 var formData = new FormData();
                 formData.append('MaThuongHieu', $('#editMaThuongHieu').val());
-                formData.append('TenThuongHieu', tenThuongHieu);
-                formData.append('MoTa', $('#editMoTa').val());
-                formData.append('Logo', $('#editLogo')[0].files[0] || logo); // Giữ lại logo cũ nếu không chọn logo mới
+                formData.append('TenThuongHieu', $('#editTenThuongHieu').val().trim());
+                formData.append('MoTa', $('#editMoTa').val().trim());
+                if ($('#editLogo')[0].files[0]) {
+                    formData.append('Logo', $('#editLogo')[0].files[0]);
+                }
                 formData.append('TrangThai', $('#trangThaiEdit').val());
                 
                 $.ajax({
@@ -514,6 +502,88 @@
                     }
                 });
             });
+        });
+
+        // Validate form thêm mới
+        function validateCreateForm() {
+            var isValid = true;
+            
+            // Kiểm tra tên thương hiệu
+            var tenThuongHieu = $('#tenThuongHieu').val().trim();
+            if (tenThuongHieu === "") {
+                $('#tenThuongHieu').addClass('is-invalid');
+                $('#tenThuongHieuError').show();
+                isValid = false;
+            } else {
+                $('#tenThuongHieu').removeClass('is-invalid');
+                $('#tenThuongHieuError').hide();
+            }
+            
+            // Kiểm tra mô tả
+            var moTa = $('#moTa').val().trim();
+            if (moTa === "") {
+                $('#moTa').addClass('is-invalid');
+                $('#moTaError').show();
+                isValid = false;
+            } else {
+                $('#moTa').removeClass('is-invalid');
+                $('#moTaError').hide();
+            }
+            
+            // Kiểm tra logo
+            var logo = $('#logo')[0].files[0];
+            if (!logo) {
+                $('#logo').addClass('is-invalid');
+                $('#logoError').show();
+                isValid = false;
+            } else {
+                $('#logo').removeClass('is-invalid');
+                $('#logoError').hide();
+            }
+            
+            return isValid;
+        }
+        
+        // Validate form sửa
+        function validateEditForm() {
+            var isValid = true;
+            
+            // Kiểm tra tên thương hiệu
+            var tenThuongHieu = $('#editTenThuongHieu').val().trim();
+            if (tenThuongHieu === "") {
+                $('#editTenThuongHieu').addClass('is-invalid');
+                $('#editTenThuongHieuError').show();
+                isValid = false;
+            } else {
+                $('#editTenThuongHieu').removeClass('is-invalid');
+                $('#editTenThuongHieuError').hide();
+            }
+            
+            // Kiểm tra mô tả
+            var moTa = $('#editMoTa').val().trim();
+            if (moTa === "") {
+                $('#editMoTa').addClass('is-invalid');
+                $('#editMoTaError').show();
+                isValid = false;
+            } else {
+                $('#editMoTa').removeClass('is-invalid');
+                $('#editMoTaError').hide();
+            }
+            
+            return isValid;
+        }
+        
+        // Reset form khi đóng modal
+        $("#createBrandModal").on("hidden.bs.modal", function() {
+            $("#createBrandForm")[0].reset();
+            $('#tenThuongHieu, #moTa, #logo').removeClass('is-invalid');
+            $('#tenThuongHieuError, #moTaError, #logoError').hide();
+        });
+
+        $("#editBrandModal").on("hidden.bs.modal", function() {
+            $('#editTenThuongHieu, #editMoTa, #editLogo').removeClass('is-invalid');
+            $('#editTenThuongHieuError, #editMoTaError, #editLogoError').hide();
+            $('#currentLogo').remove();
         });
     });
     </script>

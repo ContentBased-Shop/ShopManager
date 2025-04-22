@@ -160,31 +160,34 @@
                 <div class="modal-body">
                     <form id="createCustomerForm">
                         <div class="mb-3">
-                            <label for="tenDangNhap" class="form-label">Tên Đăng Nhập</label>
+                            <label for="tenDangNhap" class="form-label">Tên Đăng Nhập <span class="text-danger">*</span></label>
                             <input type="text" class="form-control" id="tenDangNhap" maxlength="50" required>
                             <div class="text-danger mt-1" id="tenDangNhapError" style="display: none;">Vui lòng nhập tên đăng nhập.</div>
                         </div>
                         <div class="mb-3">
-                            <label for="hoTen" class="form-label">Họ Tên</label>
-                            <input type="text" class="form-control" id="hoTen" maxlength="50">
+                            <label for="hoTen" class="form-label">Họ Tên <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="hoTen" maxlength="50" required>
+                            <div class="text-danger mt-1" id="hoTenError" style="display: none;">Vui lòng nhập họ tên.</div>
                         </div>
                         <div class="mb-3">
-                            <label for="matKhau" class="form-label">Mật Khẩu</label>
+                            <label for="matKhau" class="form-label">Mật Khẩu <span class="text-danger">*</span></label>
                             <input type="password" class="form-control" id="matKhau" maxlength="50" required>
                             <div class="text-danger mt-1" id="matKhauError" style="display: none;">Vui lòng nhập mật khẩu.</div>
                         </div>
                         <div class="mb-3">
-                            <label for="email" class="form-label">Email</label>
+                            <label for="email" class="form-label">Email <span class="text-danger">*</span></label>
                             <input type="email" class="form-control" id="email" maxlength="100" required>
                             <div class="text-danger mt-1" id="emailError" style="display: none;">Vui lòng nhập email hợp lệ.</div>
                         </div>
                         <div class="mb-3">
-                            <label for="soDienThoai" class="form-label">Số Điện Thoại</label>
-                            <input type="text" class="form-control" id="soDienThoai" maxlength="20">
+                            <label for="soDienThoai" class="form-label">Số Điện Thoại <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="soDienThoai" maxlength="20" pattern="^[0-9]+$" required>
+                            <div class="text-danger mt-1" id="soDienThoaiError" style="display: none;">Vui lòng nhập số điện thoại hợp lệ (chỉ nhập số).</div>
                         </div>
                         <div class="mb-3">
-                            <label for="diaChi" class="form-label">Địa Chỉ</label>
-                            <input type="text" class="form-control" id="diaChi" maxlength="50">
+                            <label for="diaChi" class="form-label">Địa Chỉ <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="diaChi" maxlength="255" required>
+                            <div class="text-danger mt-1" id="diaChiError" style="display: none;">Vui lòng nhập địa chỉ.</div>
                         </div>
                         <div class="mb-3">
                             <label for="trangThai" class="form-label">Trạng Thái</label>
@@ -251,28 +254,31 @@
                     <form id="editCustomerForm">
                         <div class="mb-3">
                             <label for="editMaKhachHang" class="form-label">Mã Khách Hàng</label>
-                            <input type="text" class="form-control" id="editMaKhachHang" readonly>
+                            <input type="text" class="form-control bg-light" id="editMaKhachHang" readonly>
                         </div>
                         <div class="mb-3">
                             <label for="editTenDangNhap" class="form-label">Tên Đăng Nhập</label>
-                            <input type="text" class="form-control" id="editTenDangNhap" readonly>
+                            <input type="text" class="form-control bg-light" id="editTenDangNhap" readonly>
                         </div>
                         <div class="mb-3">
-                            <label for="editHoTen" class="form-label">Họ Tên</label>
-                            <input type="text" class="form-control" id="editHoTen" maxlength="50">
+                            <label for="editHoTen" class="form-label">Họ Tên <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="editHoTen" maxlength="50" required>
+                            <div class="text-danger mt-1" id="editHoTenError" style="display: none;">Vui lòng nhập họ tên.</div>
                         </div>
                         <div class="mb-3">
-                            <label for="editEmail" class="form-label">Email</label>
+                            <label for="editEmail" class="form-label">Email <span class="text-danger">*</span></label>
                             <input type="email" class="form-control" id="editEmail" maxlength="100" required>
                             <div class="text-danger mt-1" id="editEmailError" style="display: none;">Vui lòng nhập email hợp lệ.</div>
                         </div>
                         <div class="mb-3">
-                            <label for="editSoDienThoai" class="form-label">Số Điện Thoại</label>
-                            <input type="text" class="form-control" id="editSoDienThoai" maxlength="20">
+                            <label for="editSoDienThoai" class="form-label">Số Điện Thoại <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="editSoDienThoai" maxlength="20" pattern="^[0-9]+$" required>
+                            <div class="text-danger mt-1" id="editSoDienThoaiError" style="display: none;">Vui lòng nhập số điện thoại hợp lệ (chỉ nhập số).</div>
                         </div>
                         <div class="mb-3">
-                            <label for="editDiaChi" class="form-label">Địa Chỉ</label>
-                            <input type="text" class="form-control" id="editDiaChi" maxlength="50">
+                            <label for="editDiaChi" class="form-label">Địa Chỉ <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="editDiaChi" maxlength="255" required>
+                            <div class="text-danger mt-1" id="editDiaChiError" style="display: none;">Vui lòng nhập địa chỉ.</div>
                         </div>
                         <div class="mb-3">
                             <label for="editTrangThai" class="form-label">Trạng Thái</label>
