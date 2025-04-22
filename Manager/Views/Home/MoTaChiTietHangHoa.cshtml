@@ -1,0 +1,233 @@
+﻿@{
+    ViewBag.Title = "Mô tả chi tiết sản phẩm";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var hangHoa = ViewBag.HangHoa;
+    var moTaChiTiet = ViewBag.MoTaChiTiet;
+}
+
+<link href="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-bs4.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
+
+<div class="container py-4">
+    <h3 class="fw-bold mb-3">Mô tả chi tiết sản phẩm</h3>
+
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb bg-info bg-opacity-25 px-3 py-2 rounded">
+            <li class="breadcrumb-item"><a href="@Url.Action("Dashboard", "Home")">Trang chủ</a></li>
+            <li class="breadcrumb-item"><a href="@Url.Action("DanhSachHangHoa", "Home")">Sản phẩm</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Mô tả chi tiết</li>
+        </ol>
+    </nav>
+
+    <!-- Back button -->
+    <a href="@Url.Action("DanhSachHangHoa", "Home")" class="btn btn-primary mb-3">
+        <i class="bi bi-arrow-left-circle"></i> Về danh sách
+    </a>
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white py-3">
+                    <h5 class="card-title mb-0">Thông tin sản phẩm</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        @if (!string.IsNullOrEmpty(hangHoa.HinhAnh))
+                        {
+                            <img src="~/Content/img/hanghoa/@hangHoa.HinhAnh" alt="@hangHoa.TenHangHoa" class="img-thumbnail me-3" style="width: 80px; height: 80px; object-fit: cover;" />
+                        }
+                        else
+                        {
+                            <img src="~/Content/img/hanghoa/no-image.png" alt="Không có hình" class="img-thumbnail me-3" style="width: 80px; height: 80px; object-fit: cover;" />
+                        }
+                        <div>
+                            <h5 class="mb-1">@hangHoa.TenHangHoa</h5>
+                            <p class="text-muted mb-1">Mã: @hangHoa.MaHangHoa</p>
+                            <p class="text-muted mb-0">Danh mục: @(hangHoa.DanhMuc.TenDanhMuc ?? "Chưa phân loại")</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">Mô tả chi tiết</h5>
+                    @if (moTaChiTiet != null && moTaChiTiet.NgayCapNhat != null)
+                    {
+                        <span class="badge bg-info">Cập nhật lần cuối: @moTaChiTiet.NgayCapNhat.ToString("dd/MM/yyyy HH:mm")</span>
+                    }
+                </div>
+                <div class="card-body">
+                    <form id="formMoTaChiTiet">
+                        <input type="hidden" id="maHangHoa" name="MaHangHoa" value="@hangHoa.MaHangHoa" />
+
+                        <div class="mb-3">
+                            <label for="tieuDe" class="form-label">Tiêu đề mô tả</label>
+                            <input type="text" class="form-control" id="tieuDe" name="TieuDe" value="@(moTaChiTiet != null ? moTaChiTiet.TieuDe : "")" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="noiDung" class="form-label">Nội dung mô tả</label>
+                            <textarea id="noiDung" name="NoiDung" class="form-control summernote">@(moTaChiTiet != null ? moTaChiTiet.NoiDung : "")</textarea>
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <button type="button" id="btnSave" class="btn btn-success">
+                                <i class="bi bi-save"></i> Lưu mô tả
+                            </button>
+                            @if (moTaChiTiet != null)
+                            {
+                                <button type="button" id="btnDelete" class="btn btn-danger">
+                                    <i class="bi bi-trash"></i> Xóa mô tả
+                                </button>
+                            }
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal thành công -->
+<div class="modal fade" id="successModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title">Thành công</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p id="successMessage">Thao tác thành công!</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Đóng</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal xác nhận xóa -->
+<div class="modal fade" id="confirmDeleteModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Xác nhận xóa</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Bạn có chắc chắn muốn xóa mô tả chi tiết của sản phẩm này?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                <button type="button" class="btn btn-danger" id="confirmDelete">Xóa</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Summernote JS -->
+<script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-bs4.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/lang/summernote-vi-VN.js"></script>
+
+<script>
+    $(document).ready(function () {
+        // Khởi tạo Summernote
+        $('.summernote').summernote({
+            height: 400,
+            lang: 'vi-VN',
+            toolbar: [
+                ['style', ['style']],
+                ['font', ['bold', 'italic', 'underline', 'clear']],
+                ['fontname', ['fontname']],
+                ['color', ['color']],
+                ['para', ['ul', 'ol', 'paragraph']],
+                ['table', ['table']],
+                ['insert', ['link', 'picture', 'video']],
+                ['view', ['fullscreen', 'codeview', 'help']]
+            ],
+            callbacks: {
+                onImageUpload: function (files) {
+                    // Upload image functionality could be added here
+                    for (let i = 0; i < files.length; i++) {
+                        let reader = new FileReader();
+                        reader.onloadend = function () {
+                            let img = document.createElement('img');
+                            img.src = reader.result;
+                            $('.summernote').summernote('insertNode', img);
+                        }
+                        reader.readAsDataURL(files[i]);
+                    }
+                }
+            }
+        });
+
+        // Lưu mô tả chi tiết
+        $('#btnSave').click(function () {
+            if (!$('#tieuDe').val()) {
+                alert('Vui lòng nhập tiêu đề mô tả');
+                return;
+            }
+
+            var formData = {
+                MaHangHoa: $('#maHangHoa').val(),
+                TieuDe: $('#tieuDe').val(),
+                NoiDung: $('.summernote').summernote('code')
+            };
+
+            $.ajax({
+                url: '@Url.Action("LuuMoTaChiTiet", "Home")',
+                type: 'POST',
+                data: formData,
+                success: function (response) {
+                    if (response.success) {
+                        $('#successMessage').text(response.message || 'Đã lưu mô tả chi tiết thành công!');
+                        $('#successModal').modal('show');
+
+                        // Refresh page after closing the success modal
+                        $('#successModal').on('hidden.bs.modal', function () {
+                            location.reload();
+                        });
+                    } else {
+                        alert(response.message || 'Có lỗi xảy ra khi lưu mô tả chi tiết');
+                    }
+                },
+                error: function () {
+                    alert('Lỗi kết nối đến server');
+                }
+            });
+        });
+
+        // Xóa mô tả chi tiết
+        $('#btnDelete').click(function () {
+            $('#confirmDeleteModal').modal('show');
+        });
+
+        $('#confirmDelete').click(function () {
+            $.ajax({
+                url: '@Url.Action("XoaMoTaChiTiet", "Home")',
+                type: 'POST',
+                data: { MaHangHoa: $('#maHangHoa').val() },
+                success: function (response) {
+                    $('#confirmDeleteModal').modal('hide');
+
+                    if (response.success) {
+                        $('#successMessage').text(response.message || 'Đã xóa mô tả chi tiết thành công!');
+                        $('#successModal').modal('show');
+
+                        // Refresh page after closing the success modal
+                        $('#successModal').on('hidden.bs.modal', function () {
+                            location.reload();
+                        });
+                    } else {
+                        alert(response.message || 'Có lỗi xảy ra khi xóa mô tả chi tiết');
+                    }
+                },
+                error: function () {
+                    alert('Lỗi kết nối đến server');
+                }
+            });
+        });
+    });
+</script> 

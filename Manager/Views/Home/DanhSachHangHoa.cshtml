@@ -80,6 +80,9 @@
                             <a href="@Url.Action("QuanLyHinhAnh", "Home", new { maHangHoa = item.MaHangHoa })" class="btn btn-sm btn-info">
                                 <i class="bi bi-images"></i>
                             </a>
+                            <a href="@Url.Action("MoTaChiTietHangHoa", "Home", new { maHangHoa = item.MaHangHoa })" class="btn btn-sm btn-warning" title="Mô tả chi tiết">
+                                <i class="bi bi-file-richtext"></i>
+                            </a>
                             <a href="#" class="btn btn-sm btn-danger btn-delete" data-id="@item.MaHangHoa" data-name="@item.TenHangHoa" data-bs-toggle="modal" data-bs-target="#confirmDeleteModal">
                                 <i class="bi bi-trash3"></i>
                             </a>

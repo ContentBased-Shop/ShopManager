@@ -2965,5 +2965,105 @@ namespace Manager.Controllers
                 return Json(new { success = false, message = "Lỗi: " + ex.Message });
             }
         }
+
+        // Quản lý mô tả chi tiết hàng hóa
+        public ActionResult MoTaChiTietHangHoa(string maHangHoa)
+        {
+            HangHoa hangHoa = data.HangHoas.SingleOrDefault(h => h.MaHangHoa == maHangHoa);
+            if (hangHoa == null)
+            {
+                return RedirectToAction("DanhSachHangHoa");
+            }
+            
+            ViewBag.HangHoa = hangHoa;
+            
+            // Lấy thông tin mô tả chi tiết của hàng hóa nếu có
+            var moTaChiTiet = data.MoTaChiTietHangHoas.FirstOrDefault(m => m.MaHangHoa == maHangHoa);
+            if (moTaChiTiet != null)
+            {
+                ViewBag.MoTaChiTiet = moTaChiTiet;
+            }
+            
+            return View();
+        }
+        
+        [HttpPost]
+        [ValidateInput(false)]
+        public JsonResult LuuMoTaChiTiet(string MaHangHoa, string TieuDe, string NoiDung)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(MaHangHoa))
+                {
+                    return Json(new { success = false, message = "Mã sản phẩm không hợp lệ" });
+                }
+                
+                HangHoa hangHoa = data.HangHoas.SingleOrDefault(h => h.MaHangHoa == MaHangHoa);
+                if (hangHoa == null)
+                {
+                    return Json(new { success = false, message = "Không tìm thấy sản phẩm" });
+                }
+                
+                // Kiểm tra xem đã có mô tả chi tiết chưa
+                var moTaChiTiet = data.MoTaChiTietHangHoas.FirstOrDefault(m => m.MaHangHoa == MaHangHoa);
+                
+                if (moTaChiTiet == null)
+                {
+                    // Thêm mới
+                    moTaChiTiet = new MoTaChiTietHangHoa
+                    {
+                        MaHangHoa = MaHangHoa,
+                        TieuDe = TieuDe,
+                        NoiDung = NoiDung,
+                        NgayTao = DateTime.Now,
+                        NgayCapNhat = DateTime.Now
+                    };
+                    
+                    data.MoTaChiTietHangHoas.InsertOnSubmit(moTaChiTiet);
+                }
+                else
+                {
+                    // Cập nhật
+                    moTaChiTiet.TieuDe = TieuDe;
+                    moTaChiTiet.NoiDung = NoiDung;
+                    moTaChiTiet.NgayCapNhat = DateTime.Now;
+                }
+                
+                data.SubmitChanges();
+                
+                return Json(new { success = true, message = "Đã lưu mô tả chi tiết thành công" });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Lỗi: " + ex.Message });
+            }
+        }
+        
+        [HttpPost]
+        public JsonResult XoaMoTaChiTiet(string MaHangHoa)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(MaHangHoa))
+                {
+                    return Json(new { success = false, message = "Mã sản phẩm không hợp lệ" });
+                }
+                
+                var moTaChiTiet = data.MoTaChiTietHangHoas.FirstOrDefault(m => m.MaHangHoa == MaHangHoa);
+                if (moTaChiTiet == null)
+                {
+                    return Json(new { success = false, message = "Không tìm thấy mô tả chi tiết" });
+                }
+                
+                data.MoTaChiTietHangHoas.DeleteOnSubmit(moTaChiTiet);
+                data.SubmitChanges();
+                
+                return Json(new { success = true, message = "Đã xóa mô tả chi tiết thành công" });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Lỗi: " + ex.Message });
+            }
+        }
     }
 }

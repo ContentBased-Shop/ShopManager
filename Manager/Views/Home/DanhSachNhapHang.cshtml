@@ -142,7 +142,7 @@
                                         <option value="">-- Chọn biến thể --</option>
                                         @foreach (var bt in ViewBag.BienThes ?? new List<Manager.Models.BienTheHangHoa>())
                                         {
-                                            <option value="@bt.MaBienThe" data-gia="@bt.Gia">@bt.MaHangHoa - @bt.MauSac - @bt.DungLuong</option>
+                                            <option value="@bt.MaBienThe" data-gia="@bt.GiaGoc">@bt.MaHangHoa - @bt.MauSac - @bt.DungLuong</option>
                                         }
                                     </select>
                                 </div>
