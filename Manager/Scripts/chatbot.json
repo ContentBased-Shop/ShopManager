@@ -1,9 +1,9 @@
 {
-  "greetings": [ "xin chào", "hello", "hi", "chào", "hey" ],
+  "greetings": [ "xin chào", "hello", "hi", "chào", "hey", "yo", "hola", "bonjour" ],
   "responses": [
     {
-      "keywords": [ "sản phẩm", "hàng hóa", "danh mục", "thương hiệu" ],
-      "reply": "Bạn đang quan tâm đến quản lý sản phẩm. Đây là các liên kết hữu ích:",
+      "keywords": [ "sản phẩm", "hàng hóa", "danh mục", "thương hiệu", "mặt hàng", "item" ],
+      "reply": "📦 Có vẻ bạn muốn quản lý sản phẩm? Dưới đây là các lựa chọn bạn có thể truy cập:",
       "links": [
         {
           "text": "Danh sách sản phẩm",
@@ -21,21 +21,23 @@
           "text": "Quản lý thương hiệu",
           "url": "/Home/DanhSachThuongHieu"
         }
-      ]
+      ],
+      "quick_replies": [ "Thêm sản phẩm", "Danh mục sản phẩm", "Xem thương hiệu" ]
     },
     {
-      "keywords": [ "đơn hàng", "bán hàng", "đơn bán" ],
-      "reply": "Bạn đang quan tâm đến quản lý đơn bán hàng. Đây là liên kết cần thiết:",
+      "keywords": [ "bán hàng", "đơn hàng", "đơn bán", "giao dịch bán" ],
+      "reply": "🧾 Bạn đang quan tâm đến đơn bán hàng? Đây là liên kết hỗ trợ:",
       "links": [
         {
           "text": "Quản lý đơn bán hàng",
           "url": "/Home/DanhSachDonBanHang"
         }
-      ]
+      ],
+      "quick_replies": [ "Xem đơn bán", "Đơn hàng gần đây" ]
     },
     {
-      "keywords": [ "nhập hàng", "đơn nhập", "nhà cung cấp" ],
-      "reply": "Bạn đang quan tâm đến quản lý nhập hàng. Đây là các liên kết hữu ích:",
+      "keywords": [ "nhập hàng", "đơn nhập", "nhà cung cấp", "giao hàng đến", "mua hàng" ],
+      "reply": "📥 Đây là các mục liên quan đến quản lý nhập hàng:",
       "links": [
         {
           "text": "Quản lý đơn nhập hàng",
@@ -45,11 +47,12 @@
           "text": "Quản lý nhà cung cấp",
           "url": "/Home/DanhSachNhaCungCap"
         }
-      ]
+      ],
+      "quick_replies": [ "Xem đơn nhập", "Nhà cung cấp" ]
     },
     {
-      "keywords": [ "khách hàng", "đánh giá" ],
-      "reply": "Bạn đang quan tâm đến quản lý khách hàng. Đây là các liên kết hữu ích:",
+      "keywords": [ "khách hàng", "đánh giá", "feedback", "phản hồi", "người mua" ],
+      "reply": "👥 Đây là các công cụ bạn có thể dùng để quản lý khách hàng:",
       "links": [
         {
           "text": "Danh sách khách hàng",
@@ -59,31 +62,34 @@
           "text": "Đánh giá sản phẩm",
           "url": "/Home/DanhSachDanhGia"
         }
-      ]
+      ],
+      "quick_replies": [ "Xem khách hàng", "Phản hồi sản phẩm" ]
     },
     {
-      "keywords": [ "khuyến mãi", "voucher", "giảm giá" ],
-      "reply": "Bạn đang quan tâm đến quản lý khuyến mãi. Đây là liên kết cần thiết:",
+      "keywords": [ "khuyến mãi", "voucher", "mã giảm giá", "giảm giá" ],
+      "reply": "🎁 Quản lý các chương trình khuyến mãi tại đây:",
       "links": [
         {
           "text": "Quản lý voucher",
           "url": "/Home/DanhSachVoucher"
         }
-      ]
+      ],
+      "quick_replies": [ "Xem voucher", "Thêm mã giảm giá" ]
     },
     {
-      "keywords": [ "nhân viên", "nhân sự", "người dùng" ],
-      "reply": "Bạn đang quan tâm đến quản lý nhân viên. Đây là liên kết cần thiết:",
+      "keywords": [ "nhân viên", "nhân sự", "người dùng", "tài khoản nhân viên" ],
+      "reply": "🧑‍💼 Bạn muốn xem hoặc quản lý nhân sự? Đây là liên kết:",
       "links": [
         {
           "text": "Danh sách nhân viên",
           "url": "/Home/DanhSachNhanVien"
         }
-      ]
+      ],
+      "quick_replies": [ "Danh sách nhân viên", "Thêm nhân viên mới" ]
     },
     {
-      "keywords": [ "báo cáo", "thống kê", "doanh thu" ],
-      "reply": "Bạn đang quan tâm đến báo cáo thống kê. Đây là các liên kết hữu ích:",
+      "keywords": [ "báo cáo", "thống kê", "doanh thu", "phân tích" ],
+      "reply": "📊 Dưới đây là các báo cáo bạn có thể theo dõi:",
       "links": [
         {
           "text": "Báo cáo doanh thu",
@@ -97,8 +103,9 @@
           "text": "Báo cáo khách hàng",
           "url": "/Home/BaoCaoKhachHang"
         }
-      ]
+      ],
+      "quick_replies": [ "Báo cáo doanh thu", "Sản phẩm bán chạy", "Khách hàng trung thành" ]
     }
   ],
-  "fallback": "Xin lỗi, tôi không hiểu yêu cầu của bạn. Vui lòng liên hệ quản trị viên theo số 0123456789 để được hỗ trợ trực tiếp."
+  "fallback": "😥 Xin lỗi, tôi chưa hiểu yêu cầu của bạn. Bạn có thể thử lại bằng từ khóa rõ ràng hơn, hoặc liên hệ quản trị viên qua số 0123456789 để được hỗ trợ trực tiếp."
 }
