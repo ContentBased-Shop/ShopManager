@@ -1,0 +1,104 @@
+{
+  "greetings": [ "xin chào", "hello", "hi", "chào", "hey" ],
+  "responses": [
+    {
+      "keywords": [ "sản phẩm", "hàng hóa", "danh mục", "thương hiệu" ],
+      "reply": "Bạn đang quan tâm đến quản lý sản phẩm. Đây là các liên kết hữu ích:",
+      "links": [
+        {
+          "text": "Danh sách sản phẩm",
+          "url": "/Home/DanhSachHangHoa"
+        },
+        {
+          "text": "Thêm sản phẩm mới",
+          "url": "/Home/TaoHangHoa"
+        },
+        {
+          "text": "Quản lý danh mục",
+          "url": "/Home/DanhSachDanhMuc"
+        },
+        {
+          "text": "Quản lý thương hiệu",
+          "url": "/Home/DanhSachThuongHieu"
+        }
+      ]
+    },
+    {
+      "keywords": [ "đơn hàng", "bán hàng", "đơn bán" ],
+      "reply": "Bạn đang quan tâm đến quản lý đơn bán hàng. Đây là liên kết cần thiết:",
+      "links": [
+        {
+          "text": "Quản lý đơn bán hàng",
+          "url": "/Home/DanhSachDonBanHang"
+        }
+      ]
+    },
+    {
+      "keywords": [ "nhập hàng", "đơn nhập", "nhà cung cấp" ],
+      "reply": "Bạn đang quan tâm đến quản lý nhập hàng. Đây là các liên kết hữu ích:",
+      "links": [
+        {
+          "text": "Quản lý đơn nhập hàng",
+          "url": "/Home/DanhSachNhapHang"
+        },
+        {
+          "text": "Quản lý nhà cung cấp",
+          "url": "/Home/DanhSachNhaCungCap"
+        }
+      ]
+    },
+    {
+      "keywords": [ "khách hàng", "đánh giá" ],
+      "reply": "Bạn đang quan tâm đến quản lý khách hàng. Đây là các liên kết hữu ích:",
+      "links": [
+        {
+          "text": "Danh sách khách hàng",
+          "url": "/Home/DanhSachKhachHang"
+        },
+        {
+          "text": "Đánh giá sản phẩm",
+          "url": "/Home/DanhSachDanhGia"
+        }
+      ]
+    },
+    {
+      "keywords": [ "khuyến mãi", "voucher", "giảm giá" ],
+      "reply": "Bạn đang quan tâm đến quản lý khuyến mãi. Đây là liên kết cần thiết:",
+      "links": [
+        {
+          "text": "Quản lý voucher",
+          "url": "/Home/DanhSachVoucher"
+        }
+      ]
+    },
+    {
+      "keywords": [ "nhân viên", "nhân sự", "người dùng" ],
+      "reply": "Bạn đang quan tâm đến quản lý nhân viên. Đây là liên kết cần thiết:",
+      "links": [
+        {
+          "text": "Danh sách nhân viên",
+          "url": "/Home/DanhSachNhanVien"
+        }
+      ]
+    },
+    {
+      "keywords": [ "báo cáo", "thống kê", "doanh thu" ],
+      "reply": "Bạn đang quan tâm đến báo cáo thống kê. Đây là các liên kết hữu ích:",
+      "links": [
+        {
+          "text": "Báo cáo doanh thu",
+          "url": "/Home/BaoCaoDoanhThu"
+        },
+        {
+          "text": "Báo cáo sản phẩm",
+          "url": "/Home/BaoCaoSanPham"
+        },
+        {
+          "text": "Báo cáo khách hàng",
+          "url": "/Home/BaoCaoKhachHang"
+        }
+      ]
+    }
+  ],
+  "fallback": "Xin lỗi, tôi không hiểu yêu cầu của bạn. Vui lòng liên hệ quản trị viên theo số 0123456789 để được hỗ trợ trực tiếp."
+}
