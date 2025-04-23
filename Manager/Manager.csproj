@@ -56,6 +56,7 @@
     <Reference Include="System.Web" />
     <Reference Include="System.Web.Abstractions" />
     <Reference Include="System.Web.Extensions" />
+    <Reference Include="System.Web.Helpers, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL" />
     <Reference Include="System.Web.Routing" />
     <Reference Include="System.Xml" />
     <Reference Include="System.Configuration" />
@@ -144,7 +145,9 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Content\img\hanghoa\iphone15_pro_max.jpg" />
     <Content Include="Content\img\logo.png" />
+    <Content Include="Content\img\logo1.png" />
     <Content Include="Content\img\thuonghieu\apple.png" />
     <Content Include="Content\img\thuonghieu\dell.png" />
     <Content Include="Content\img\thuonghieu\logitech.png" />
@@ -213,6 +216,7 @@
     <None Include="Models\SHOP.dbml.layout">
       <DependentUpon>SHOP.dbml</DependentUpon>
     </None>
+    <Content Include="Scripts\chatbot.json" />
     <None Include="Scripts\jquery-1.8.2.intellisense.js" />
     <Content Include="Scripts\jquery-1.8.2.js" />
     <Content Include="Scripts\jquery-1.8.2.min.js" />
@@ -229,6 +233,7 @@
     <Content Include="Scripts\knockout-2.2.0.debug.js" />
     <Content Include="Scripts\knockout-2.2.0.js" />
     <Content Include="Scripts\modernizr-2.6.2.js" />
+    <Content Include="Scripts\nhacungcap.js" />
     <Content Include="Scripts\nhanvien.js" />
     <Content Include="Scripts\_references.js" />
     <Content Include="Web.config" />
@@ -264,6 +269,11 @@
     <Content Include="Views\Home\DSBienTheHangHoa.cshtml" />
     <Content Include="Views\Home\DiaChiKhach.cshtml" />
     <Content Include="Views\Home\SuaHangHoa.cshtml" />
+    <Content Include="Views\Home\QuanLyHinhAnh.cshtml" />
+    <Content Include="Views\Home\MoTaChiTietHangHoa.cshtml" />
+    <Content Include="Views\Home\BaoCaoDoanhThu.cshtml" />
+    <Content Include="Views\Home\BaoCaoKhachHang.cshtml" />
+    <Content Include="Views\Home\BaoCaoSanPham.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

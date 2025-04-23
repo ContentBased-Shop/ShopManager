@@ -14,6 +14,7 @@ using System.Net.Mail;
 using System.Configuration;
 using Newtonsoft.Json.Linq;
 using System.Web.Configuration;
+using System.Web.Helpers;
 
 namespace Manager.Controllers
 {
@@ -3076,6 +3077,174 @@ namespace Manager.Controllers
             {
                 return Json(new { success = false, message = "Lỗi: " + ex.Message });
             }
+        }
+
+        public ActionResult BaoCaoDoanhThu()
+        {
+            // Kiểm tra đăng nhập
+            if (Session["UserID"] == null)
+            {
+                return RedirectToAction("Index");
+            }
+
+            // Lấy dữ liệu doanh thu
+            var today = DateTime.Today;
+            var startOfMonth = new DateTime(today.Year, today.Month, 1);
+            var endOfMonth = startOfMonth.AddMonths(1).AddDays(-1);
+
+            // Doanh thu hôm nay
+            var doanhThuHomNay = data.DonHangs
+                .Where(d => d.NgayTao.Value.Date == today && d.TrangThaiDonHang == "HoanThanh")
+                .Sum(d => d.TongTien) ?? 0;
+
+            // Doanh thu tuần này
+            var startOfWeek = today.AddDays(-(int)today.DayOfWeek);
+            var endOfWeek = startOfWeek.AddDays(6);
+            var doanhThuTuanNay = data.DonHangs
+                .Where(d => d.NgayTao.Value.Date >= startOfWeek && d.NgayTao.Value.Date <= endOfWeek && d.TrangThaiDonHang == "HoanThanh")
+                .Sum(d => d.TongTien) ?? 0;
+
+            // Doanh thu tháng này
+            var doanhThuThangNay = data.DonHangs
+                .Where(d => d.NgayTao.Value.Date >= startOfMonth && d.NgayTao.Value.Date <= endOfMonth && d.TrangThaiDonHang == "HoanThanh")
+                .Sum(d => d.TongTien) ?? 0;
+
+            // Doanh thu theo từng tháng trong năm nay
+            var doanhThuTheoThang = new double[12];
+            for (int i = 0; i < 12; i++)
+            {
+                var startOfMonthI = new DateTime(today.Year, i + 1, 1);
+                var endOfMonthI = startOfMonthI.AddMonths(1).AddDays(-1);
+                doanhThuTheoThang[i] = (double)(data.DonHangs
+                    .Where(d => d.NgayTao.Value.Date >= startOfMonthI && d.NgayTao.Value.Date <= endOfMonthI && d.TrangThaiDonHang == "HoanThanh")
+                    .Sum(d => d.TongTien) ?? 0);
+            }
+
+            // Doanh thu theo danh mục sản phẩm
+            var doanhThuTheoDanhMuc = data.ChiTietDonHangs
+                .Where(ct => ct.DonHang.TrangThaiDonHang == "HoanThanh")
+                .GroupBy(ct => ct.BienTheHangHoa.HangHoa.DanhMuc)
+                .Select(g => new
+                {
+                    TenDanhMuc = g.Key.TenDanhMuc,
+                    DoanhThu = (double)g.Sum(ct => ct.SoLuong * ct.DonGia)
+                })
+                .OrderByDescending(x => x.DoanhThu)
+                .Take(5)
+                .ToList();
+
+            // Truyền dữ liệu vào view
+            ViewBag.DoanhThuHomNay = doanhThuHomNay;
+            ViewBag.DoanhThuTuanNay = doanhThuTuanNay;
+            ViewBag.DoanhThuThangNay = doanhThuThangNay;
+            ViewBag.DoanhThuTheoThang = doanhThuTheoThang;
+            ViewBag.DoanhThuTheoDanhMuc = doanhThuTheoDanhMuc;
+
+            return View();
+        }
+
+        public ActionResult BaoCaoSanPham()
+        {
+            // Kiểm tra đăng nhập
+            if (Session["UserID"] == null)
+            {
+                return RedirectToAction("Index");
+            }
+
+            // Thống kê tổng số sản phẩm
+            ViewBag.TongSoSanPham = data.HangHoas.Count();
+            
+            // Thống kê số biến thể
+            ViewBag.TongSoBienThe = data.BienTheHangHoas.Count();
+            
+            // Thống kê sản phẩm theo danh mục
+            ViewBag.SanPhamTheoDanhMuc = data.HangHoas
+                .GroupBy(h => h.DanhMuc)
+                .Select(g => new
+                {
+                    TenDanhMuc = g.Key.TenDanhMuc,
+                    SoLuong = g.Count()
+                })
+                .OrderByDescending(x => x.SoLuong)
+                .ToList();
+            
+            // Thống kê sản phẩm theo thương hiệu
+            ViewBag.SanPhamTheoThuongHieu = data.HangHoas
+                .GroupBy(h => h.ThuongHieu)
+                .Select(g => new
+                {
+                    TenThuongHieu = g.Key.TenThuongHieu,
+                    SoLuong = g.Count()
+                })
+                .OrderByDescending(x => x.SoLuong)
+                .ToList();
+            
+            // Top 10 sản phẩm bán chạy nhất
+            ViewBag.SanPhamBanChayNhat = data.ChiTietDonHangs
+                .GroupBy(ct => ct.BienTheHangHoa.HangHoa)
+                .Select(g => new SanPhamBanChayModel
+                {
+                    TenHangHoa = g.Key.TenHangHoa,
+                    SoLuongBan = g.Sum(ct => ct.SoLuong) ?? 0,
+                    DoanhThu = (double)g.Sum(ct => ct.SoLuong * ct.DonGia)
+                })
+                .OrderByDescending(x => x.SoLuongBan)
+                .Take(10)
+                .ToList();
+            
+            // Sản phẩm tồn kho nhiều nhất
+            ViewBag.SanPhamTonKhoNhieuNhat = data.BienTheHangHoas
+                .OrderByDescending(bt => bt.SoLuongTonKho)
+                .Take(10)
+                .ToList();
+            
+            return View();
+        }
+
+        public ActionResult BaoCaoKhachHang()
+        {
+            // Kiểm tra đăng nhập
+            if (Session["UserID"] == null)
+            {
+                return RedirectToAction("Index");
+            }
+
+            // Thống kê tổng số khách hàng
+            ViewBag.TongSoKhachHang = data.KhachHangs.Count();
+            
+            // Khách hàng mới trong tháng
+            var startOfMonth = new DateTime(DateTime.Today.Year, DateTime.Today.Month, 1);
+            ViewBag.KhachHangMoiThangNay = data.KhachHangs
+                .Count(k => k.NgayTao >= startOfMonth);
+            
+            // Top 10 khách hàng mua nhiều nhất
+            ViewBag.TopKhachHang = data.DonHangs
+                .Where(d => d.TrangThaiDonHang == "HoanThanh")
+                .GroupBy(d => d.KhachHang)
+                .Select(g => new
+                {
+                    MaKhachHang = g.Key.MaKhachHang,
+                    HoTen = g.Key.HoTen,
+                    SoDienThoai = g.Key.SoDienThoai,
+                    Email = g.Key.Email,
+                    TongDonHang = g.Count(),
+                    TongChiTieu = (double)g.Sum(d => d.TongTien)
+                })
+                .OrderByDescending(x => x.TongChiTieu)
+                .Take(10)
+                .ToList();
+            
+            // Thống kê số lượng khách hàng theo tháng trong năm nay
+            var khachHangTheoThang = new int[12];
+            for (int i = 0; i < 12; i++)
+            {
+                var startOfMonthI = new DateTime(DateTime.Today.Year, i + 1, 1);
+                var endOfMonthI = startOfMonthI.AddMonths(1).AddDays(-1);
+                khachHangTheoThang[i] = data.KhachHangs.Count(k => k.NgayTao >= startOfMonthI && k.NgayTao <= endOfMonthI);
+            }
+            ViewBag.KhachHangTheoThang = khachHangTheoThang;
+            
+            return View();
         }
     }
 }
