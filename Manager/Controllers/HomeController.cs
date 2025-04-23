@@ -3217,22 +3217,53 @@ namespace Manager.Controllers
             ViewBag.KhachHangMoiThangNay = data.KhachHangs
                 .Count(k => k.NgayTao >= startOfMonth);
             
-            // Top 10 khách hàng mua nhiều nhất
-            ViewBag.TopKhachHang = data.DonHangs
+            // Khách hàng hoạt động và bị cấm
+            ViewBag.KhachHangHoatDong = data.KhachHangs.Count(k => k.TrangThai == "HoatDong");
+            ViewBag.SoKhachHangHoatDong = data.KhachHangs.Count(k => k.TrangThai == "HoatDong");
+            ViewBag.SoKhachHangBiCam = data.KhachHangs.Count(k => k.TrangThai == "Cam");
+            
+            // Tỷ lệ chuyển đổi (khách hàng có ít nhất 1 đơn hàng / tổng số khách hàng)
+            var khachHangCoDonHang = data.DonHangs
+                .Select(d => d.MaKhachHang)
+                .Distinct()
+                .Count();
+            var tongSoKhachHang = data.KhachHangs.Count();
+            ViewBag.TyLeChuyenDoi = tongSoKhachHang > 0 
+                ? Math.Round((double)khachHangCoDonHang / tongSoKhachHang * 100, 1) 
+                : 0;
+            
+            // Top 10 khách hàng mua nhiều nhất - Sử dụng model TopKhachHangViewModel
+            var topKhachHang = new List<TopKhachHangViewModel>();
+            var donHangGrouped = data.DonHangs
                 .Where(d => d.TrangThaiDonHang == "HoanThanh")
-                .GroupBy(d => d.KhachHang)
+                .GroupBy(d => d.MaKhachHang)
                 .Select(g => new
                 {
-                    MaKhachHang = g.Key.MaKhachHang,
-                    HoTen = g.Key.HoTen,
-                    SoDienThoai = g.Key.SoDienThoai,
-                    Email = g.Key.Email,
+                    MaKhachHang = g.Key,
                     TongDonHang = g.Count(),
-                    TongChiTieu = (double)g.Sum(d => d.TongTien)
+                    TongChiTieu = (double)g.Sum(d => d.TongTien ?? 0)
                 })
                 .OrderByDescending(x => x.TongChiTieu)
                 .Take(10)
                 .ToList();
+
+            foreach (var item in donHangGrouped)
+            {
+                var khachHang = data.KhachHangs.FirstOrDefault(k => k.MaKhachHang == item.MaKhachHang);
+                if (khachHang != null)
+                {
+                    topKhachHang.Add(new TopKhachHangViewModel
+                    {
+                        MaKhachHang = item.MaKhachHang,
+                        HoTen = khachHang.HoTen,
+                        Email = khachHang.Email,
+                        SoDienThoai = khachHang.SoDienThoai,
+                        TongDonHang = item.TongDonHang,
+                        TongChiTieu = item.TongChiTieu
+                    });
+                }
+            }
+            ViewBag.TopKhachHang = topKhachHang;
             
             // Thống kê số lượng khách hàng theo tháng trong năm nay
             var khachHangTheoThang = new int[12];
@@ -3243,6 +3274,20 @@ namespace Manager.Controllers
                 khachHangTheoThang[i] = data.KhachHangs.Count(k => k.NgayTao >= startOfMonthI && k.NgayTao <= endOfMonthI);
             }
             ViewBag.KhachHangTheoThang = khachHangTheoThang;
+            
+            // Thống kê tương tác khách hàng
+            ViewBag.TongSoDanhGia = data.DanhGias.Count();
+            
+            // Tính điểm đánh giá trung bình
+            ViewBag.DiemDanhGiaTrungBinh = data.DanhGias.Any() 
+                ? data.DanhGias.Average(d => d.SoSao) 
+                : 0;
+            
+            // Số lượng sản phẩm yêu thích
+            ViewBag.TongSoYeuThich = data.YeuThiches.Count();
+            
+            // Số lượt xem sản phẩm
+            ViewBag.TongSoLuotXem = data.LichSuXems.Count();
             
             return View();
         }

@@ -13,9 +13,9 @@
         </div>
     </div>
 
-    <!-- Thẻ thống kê nhanh -->
+    <!-- Thống kê nhanh -->
     <div class="row mb-4">
-        <div class="col-md-6">
+        <div class="col-md-3">
             <div class="card border-0 shadow-sm">
                 <div class="card-body p-4">
                     <div class="d-flex justify-content-between mb-2">
@@ -30,12 +30,12 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-6">
+        <div class="col-md-3">
             <div class="card border-0 shadow-sm">
                 <div class="card-body p-4">
                     <div class="d-flex justify-content-between mb-2">
                         <div>
-                            <h6 class="text-muted mb-1">Khách hàng mới trong tháng</h6>
+                            <h6 class="text-muted mb-1">Khách hàng mới tháng này</h6>
                             <h3 class="fw-bold mb-0">@ViewBag.KhachHangMoiThangNay</h3>
                         </div>
                         <div class="bg-success bg-opacity-10 rounded-circle p-3">
@@ -45,12 +45,42 @@
                 </div>
             </div>
         </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between mb-2">
+                        <div>
+                            <h6 class="text-muted mb-1">Khách hàng tích cực</h6>
+                            <h3 class="fw-bold mb-0">@ViewBag.KhachHangHoatDong</h3>
+                        </div>
+                        <div class="bg-info bg-opacity-10 rounded-circle p-3">
+                            <i class="bi bi-person-check text-info fs-4"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between mb-2">
+                        <div>
+                            <h6 class="text-muted mb-1">Tỷ lệ chuyển đổi</h6>
+                            <h3 class="fw-bold mb-0">@ViewBag.TyLeChuyenDoi%</h3>
+                        </div>
+                        <div class="bg-warning bg-opacity-10 rounded-circle p-3">
+                            <i class="bi bi-graph-up-arrow text-warning fs-4"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <!-- Biểu đồ khách hàng theo tháng -->
     <div class="row mb-4">
-        <div class="col-12">
-            <div class="card border-0 shadow-sm">
+        <!-- Biểu đồ khách hàng theo tháng -->
+        <div class="col-md-8">
+            <div class="card border-0 shadow-sm h-100">
                 <div class="card-header bg-white border-0 pt-4 pb-0">
                     <h5 class="card-title fw-bold">Khách hàng mới theo tháng</h5>
                 </div>
@@ -59,18 +89,33 @@
                 </div>
             </div>
         </div>
+        
+        <!-- Biểu đồ trạng thái khách hàng -->
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-white border-0 pt-4 pb-0">
+                    <h5 class="card-title fw-bold">Trạng thái khách hàng</h5>
+                </div>
+                <div class="card-body p-4 d-flex justify-content-center align-items-center">
+                    <canvas id="customerStatusChart"></canvas>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <!-- Bảng top 10 khách hàng mua nhiều nhất -->
     <div class="row mb-4">
-        <div class="col-12">
+        <!-- Top 10 khách hàng chi tiêu nhiều nhất -->
+        <div class="col-md-8">
             <div class="card border-0 shadow-sm">
-                <div class="card-header bg-white pt-4 pb-3 border-0">
-                    <h5 class="card-title fw-bold">Top 10 khách hàng chi tiêu nhiều nhất</h5>
+                <div class="card-header bg-white pt-4 pb-3 border-0 d-flex justify-content-between align-items-center">
+                    <h5 class="card-title fw-bold mb-0">Top 10 khách hàng chi tiêu nhiều nhất</h5>
+                    <button class="btn btn-sm btn-outline-primary" id="btnExport">
+                        <i class="bi bi-download me-1"></i> Xuất Excel
+                    </button>
                 </div>
                 <div class="card-body p-0">
                     <div class="table-responsive">
-                        <table class="table table-hover align-middle">
+                        <table class="table table-hover align-middle" id="topCustomersTable">
                             <thead class="table-light">
                                 <tr>
                                     <th class="ps-4">#</th>
@@ -103,11 +148,49 @@
                 </div>
             </div>
         </div>
+        
+        <!-- Thống kê tương tác khách hàng -->
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-white pt-4 pb-3 border-0">
+                    <h5 class="card-title fw-bold">Tương tác khách hàng</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-4">
+                        <h6 class="text-muted mb-2">Tổng số đánh giá</h6>
+                        <div class="d-flex align-items-center">
+                            <h4 class="fw-bold mb-0">@ViewBag.TongSoDanhGia</h4>
+                            <div class="ms-2">
+                                <div class="d-flex align-items-center">
+                                    <div class="rating">
+                                        @for (int i = 1; i <= 5; i++)
+                                        {
+                                            <i class="bi bi-star-fill text-warning"></i>
+                                        }
+                                    </div>
+                                    <span class="ms-2">@ViewBag.DiemDanhGiaTrungBinh.ToString("0.0")/5</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-4">
+                        <h6 class="text-muted mb-2">Sản phẩm yêu thích</h6>
+                        <h4 class="fw-bold">@ViewBag.TongSoYeuThich</h4>
+                    </div>
+                    <div>
+                        <h6 class="text-muted mb-2">Lịch sử xem</h6>
+                        <h4 class="fw-bold">@ViewBag.TongSoLuotXem</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
-<!-- Thêm Chart.js -->
+<!-- Thêm Chart.js và TableExport -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/tableexport@5.2.0/dist/js/tableexport.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.17.0/dist/xlsx.full.min.js"></script>
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {
@@ -138,6 +221,54 @@
                 }
             }
         });
+
+        // Biểu đồ trạng thái khách hàng
+        var statusCtx = document.getElementById('customerStatusChart').getContext('2d');
+        var statusChart = new Chart(statusCtx, {
+            type: 'pie',
+            data: {
+                labels: ['Hoạt động', 'Bị cấm'],
+                datasets: [{
+                    data: [@ViewBag.SoKhachHangHoatDong, @ViewBag.SoKhachHangBiCam],
+                    backgroundColor: [
+                        'rgba(92, 184, 92, 0.7)',
+                        'rgba(217, 83, 79, 0.7)'
+                    ],
+                    borderColor: [
+                        'rgba(92, 184, 92, 1)',
+                        'rgba(217, 83, 79, 1)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                }
+            }
+        });
+
+        // Xuất Excel
+        document.getElementById('btnExport').addEventListener('click', function() {
+            TableExport(document.getElementById('topCustomersTable'), {
+                headers: true,
+                footers: true,
+                formats: ['xlsx'],
+                filename: 'top_khach_hang',
+                bootstrap: true,
+                exportButtons: false,
+                position: 'bottom',
+                ignoreRows: null,
+                ignoreCols: null,
+                trimWhitespace: true,
+                RTL: false,
+                sheetname: 'Top Khách Hàng'
+            });
+        });
     });
 </script>
 
@@ -150,4 +281,13 @@
             transform: translateY(-5px);
             box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
         }
+        
+    .rating {
+        display: flex;
+    }
+    
+    .rating i {
+        font-size: 14px;
+        margin-right: 2px;
+    }
 </style> 

@@ -142,6 +142,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>SHOP.dbml</DependentUpon>
     </Compile>
+    <Compile Include="Models\TopKhachHangViewModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
