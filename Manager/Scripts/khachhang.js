@@ -127,6 +127,20 @@
         });
     });
 
+    // Kiểm tra mật khẩu mạnh
+    function isStrongPassword(password) {
+        if (password.length < 8) return false;
+        // Kiểm tra có ít nhất 1 chữ hoa
+        if (!/[A-Z]/.test(password)) return false;
+        // Kiểm tra có ít nhất 1 chữ thường
+        if (!/[a-z]/.test(password)) return false;
+        // Kiểm tra có ít nhất 1 số
+        if (!/[0-9]/.test(password)) return false;
+        // Kiểm tra có ít nhất 1 ký tự đặc biệt
+        if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) return false;
+        return true;
+    }
+
     // Thêm khách hàng mới
     $('#saveCustomer').click(function () {
         // Kiểm tra dữ liệu
@@ -144,6 +158,12 @@
 
         const matKhauInput = $('#matKhau');
         if (matKhauInput.val().trim() === "") {
+            $('#matKhauError').text("Vui lòng nhập mật khẩu.");
+            $('#matKhauError').show();
+            matKhauInput.addClass("is-invalid");
+            isValid = false;
+        } else if (!isStrongPassword(matKhauInput.val())) {
+            $('#matKhauError').text("Mật khẩu phải có ít nhất 8 ký tự, bao gồm chữ hoa, chữ thường, số và ký tự đặc biệt.");
             $('#matKhauError').show();
             matKhauInput.addClass("is-invalid");
             isValid = false;
@@ -237,6 +257,20 @@
         } else {
             $('#editEmailError').hide();
             emailInput.removeClass("is-invalid");
+        }
+
+        // Nếu đã nhập mật khẩu mới thì kiểm tra mật khẩu mạnh
+        const editMatKhauInput = $('#editMatKhau');
+        if (editMatKhauInput.val().trim() !== "") {
+            if (!isStrongPassword(editMatKhauInput.val())) {
+                $('#editMatKhauError').text("Mật khẩu phải có ít nhất 8 ký tự, bao gồm chữ hoa, chữ thường, số và ký tự đặc biệt.");
+                $('#editMatKhauError').show();
+                editMatKhauInput.addClass("is-invalid");
+                isValid = false;
+            } else {
+                $('#editMatKhauError').hide();
+                editMatKhauInput.removeClass("is-invalid");
+            }
         }
 
         if (!isValid) return;

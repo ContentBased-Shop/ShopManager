@@ -3,15 +3,15 @@
   "WorkspaceRootPath": "D:\\E\\DAI HOC\\HK8\\KhoaLuan\\Code\\Manager\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{B5A91320-AF90-4A21-8251-C7D1F762736C}|Manager\\Manager.csproj|d:\\e\\dai hoc\\hk8\\khoaluan\\code\\manager\\manager\\views\\home\\baocaokhachhang.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
-      "RelativeMoniker": "D:0:0:{B5A91320-AF90-4A21-8251-C7D1F762736C}|Manager\\Manager.csproj|solutionrelative:manager\\views\\home\\baocaokhachhang.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+      "AbsoluteMoniker": "D:0:0:{B5A91320-AF90-4A21-8251-C7D1F762736C}|Manager\\Manager.csproj|d:\\e\\dai hoc\\hk8\\khoaluan\\code\\manager\\manager\\scripts\\khachhang.js||{14D17961-FE51-464D-9111-C4AF11D7D99A}",
+      "RelativeMoniker": "D:0:0:{B5A91320-AF90-4A21-8251-C7D1F762736C}|Manager\\Manager.csproj|solutionrelative:manager\\scripts\\khachhang.js||{14D17961-FE51-464D-9111-C4AF11D7D99A}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{B5A91320-AF90-4A21-8251-C7D1F762736C}|Manager\\Manager.csproj|d:\\e\\dai hoc\\hk8\\khoaluan\\code\\manager\\manager\\models\\topkhachhangviewmodel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{B5A91320-AF90-4A21-8251-C7D1F762736C}|Manager\\Manager.csproj|solutionrelative:manager\\models\\topkhachhangviewmodel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{B5A91320-AF90-4A21-8251-C7D1F762736C}|Manager\\Manager.csproj|d:\\e\\dai hoc\\hk8\\khoaluan\\code\\manager\\manager\\views\\home\\danhsachkhachhang.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{B5A91320-AF90-4A21-8251-C7D1F762736C}|Manager\\Manager.csproj|solutionrelative:manager\\views\\home\\danhsachkhachhang.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{B5A91320-AF90-4A21-8251-C7D1F762736C}|Manager\\Manager.csproj|d:\\e\\dai hoc\\hk8\\khoaluan\\code\\manager\\manager\\controllers\\homecontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "AbsoluteMoniker": "D:0:0:{B5A91320-AF90-4A21-8251-C7D1F762736C}|Manager\\Manager.csproj|D:\\E\\DAI HOC\\HK8\\KhoaLuan\\Code\\Manager\\manager\\controllers\\homecontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{B5A91320-AF90-4A21-8251-C7D1F762736C}|Manager\\Manager.csproj|solutionrelative:manager\\controllers\\homecontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
@@ -27,27 +27,27 @@
             {
               "$type": "Document",
               "DocumentIndex": 0,
-              "Title": "BaoCaoKhachHang.cshtml",
-              "DocumentMoniker": "D:\\E\\DAI HOC\\HK8\\KhoaLuan\\Code\\Manager\\Manager\\Views\\Home\\BaoCaoKhachHang.cshtml",
-              "RelativeDocumentMoniker": "Manager\\Views\\Home\\BaoCaoKhachHang.cshtml",
-              "ToolTip": "D:\\E\\DAI HOC\\HK8\\KhoaLuan\\Code\\Manager\\Manager\\Views\\Home\\BaoCaoKhachHang.cshtml",
-              "RelativeToolTip": "Manager\\Views\\Home\\BaoCaoKhachHang.cshtml",
-              "ViewState": "AQIAAHUAAAAAAAAAAAAAAAAAAAAAAAAA",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2025-04-23T14:04:27.66Z",
+              "Title": "khachhang.js",
+              "DocumentMoniker": "D:\\E\\DAI HOC\\HK8\\KhoaLuan\\Code\\Manager\\Manager\\Scripts\\khachhang.js",
+              "RelativeDocumentMoniker": "Manager\\Scripts\\khachhang.js",
+              "ToolTip": "D:\\E\\DAI HOC\\HK8\\KhoaLuan\\Code\\Manager\\Manager\\Scripts\\khachhang.js",
+              "RelativeToolTip": "Manager\\Scripts\\khachhang.js",
+              "ViewState": "AQIAAHsAAAAAAAAAAAAiwAAAAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001646|",
+              "WhenOpened": "2025-04-24T16:25:34.239Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
               "DocumentIndex": 1,
-              "Title": "TopKhachHangViewModel.cs",
-              "DocumentMoniker": "D:\\E\\DAI HOC\\HK8\\KhoaLuan\\Code\\Manager\\Manager\\Models\\TopKhachHangViewModel.cs",
-              "RelativeDocumentMoniker": "Manager\\Models\\TopKhachHangViewModel.cs",
-              "ToolTip": "D:\\E\\DAI HOC\\HK8\\KhoaLuan\\Code\\Manager\\Manager\\Models\\TopKhachHangViewModel.cs",
-              "RelativeToolTip": "Manager\\Models\\TopKhachHangViewModel.cs",
-              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAkAAAAvAAAA",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-04-23T14:03:59.449Z",
+              "Title": "DanhSachKhachHang.cshtml",
+              "DocumentMoniker": "D:\\E\\DAI HOC\\HK8\\KhoaLuan\\Code\\Manager\\Manager\\Views\\Home\\DanhSachKhachHang.cshtml",
+              "RelativeDocumentMoniker": "Manager\\Views\\Home\\DanhSachKhachHang.cshtml",
+              "ToolTip": "D:\\E\\DAI HOC\\HK8\\KhoaLuan\\Code\\Manager\\Manager\\Views\\Home\\DanhSachKhachHang.cshtml",
+              "RelativeToolTip": "Manager\\Views\\Home\\DanhSachKhachHang.cshtml",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2025-04-24T16:25:22.619Z",
               "EditorCaption": ""
             },
             {
@@ -58,7 +58,7 @@
               "RelativeDocumentMoniker": "Manager\\Controllers\\HomeController.cs",
               "ToolTip": "D:\\E\\DAI HOC\\HK8\\KhoaLuan\\Code\\Manager\\Manager\\Controllers\\HomeController.cs",
               "RelativeToolTip": "Manager\\Controllers\\HomeController.cs",
-              "ViewState": "AQIAAJMMAAAAAAAAAAAjwKAMAAAUAAAA",
+              "ViewState": "AQIAAMwMAAAAAAAAAAAQwI0MAAAMAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-04-23T10:38:55.629Z",
               "EditorCaption": ""

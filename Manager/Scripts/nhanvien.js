@@ -189,6 +189,20 @@
         });
     });
 
+    // Kiểm tra mật khẩu mạnh
+    function isStrongPassword(password) {
+        if (password.length < 8) return false;
+        // Kiểm tra có ít nhất 1 chữ hoa
+        if (!/[A-Z]/.test(password)) return false;
+        // Kiểm tra có ít nhất 1 chữ thường
+        if (!/[a-z]/.test(password)) return false;
+        // Kiểm tra có ít nhất 1 số
+        if (!/[0-9]/.test(password)) return false;
+        // Kiểm tra có ít nhất 1 ký tự đặc biệt
+        if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) return false;
+        return true;
+    }
+
     // Xử lý sự kiện lưu nhân viên mới
     $('#saveEmployee').click(function () {
         // Kiểm tra dữ liệu
@@ -221,6 +235,11 @@
 
         // Kiểm tra mật khẩu
         if ($('#matKhau').val() === "") {
+            $('#matKhauError').text("Vui lòng nhập mật khẩu.");
+            $('#matKhauError').show();
+            isValid = false;
+        } else if (!isStrongPassword($('#matKhau').val())) {
+            $('#matKhauError').text("Mật khẩu phải có ít nhất 8 ký tự, bao gồm chữ hoa, chữ thường, số và ký tự đặc biệt.");
             $('#matKhauError').show();
             isValid = false;
         } else {
@@ -315,12 +334,19 @@
             $('#editEmailError').hide();
         }
 
-        // Kiểm tra mật khẩu nếu có nhập
-        if ($('#editMatKhau').val() !== "" && $('#editMatKhau').val() !== $('#editNhapLaiMatKhau').val()) {
-            $('#editNhapLaiMatKhauError').show();
-            isValid = false;
-        } else {
-            $('#editNhapLaiMatKhauError').hide();
+        // Kiểm tra mật khẩu mới nếu đã nhập
+        if ($('#editMatKhau').val() !== '') {
+            if (!isStrongPassword($('#editMatKhau').val())) {
+                $('#editNhapLaiMatKhauError').text("Mật khẩu phải có ít nhất 8 ký tự, bao gồm chữ hoa, chữ thường, số và ký tự đặc biệt.");
+                $('#editNhapLaiMatKhauError').show();
+                isValid = false;
+            } else if ($('#editMatKhau').val() !== $('#editNhapLaiMatKhau').val()) {
+                $('#editNhapLaiMatKhauError').text("Mật khẩu không khớp.");
+                $('#editNhapLaiMatKhauError').show();
+                isValid = false;
+            } else {
+                $('#editNhapLaiMatKhauError').hide();
+            }
         }
 
         if (!isValid) return;
