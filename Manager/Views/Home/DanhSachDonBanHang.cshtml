@@ -21,9 +21,84 @@
             <input type="text" class="form-control" id="searchInput" placeholder="Tìm kiếm theo mã đơn hàng hoặc mã khách hàng..." />
             <button class="btn btn-primary" id="btnSearch"><i class="bi bi-search"></i> Tìm</button>
         </div>
+        <button id="btnShowFilter" class="btn btn-outline-secondary">
+            <i class="bi bi-funnel"></i> Bộ lọc
+        </button>
         <button id="btnXoaNhieu" class="btn btn-danger d-none" onclick="xoaNhieu()">
             <i class="bi bi-trash3"></i> Xóa đã chọn
         </button>
+    </div>
+
+    <!-- Bộ lọc -->
+    <div class="card mb-3 d-none" id="filterCard">
+        <div class="card-header bg-light">
+            <div class="d-flex justify-content-between align-items-center">
+                <span class="fw-semibold"><i class="bi bi-funnel"></i> Bộ lọc</span>
+                <button class="btn btn-sm btn-link" type="button" id="btnHideFilter">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="row g-3">
+                <!-- Lọc theo khoảng thời gian -->
+                <div class="col-md-6">
+                    <div class="row g-2">
+                        <div class="col-6">
+                            <label class="form-label">Từ ngày</label>
+                            <input type="date" class="form-control" id="filterFromDate">
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label">Đến ngày</label>
+                            <input type="date" class="form-control" id="filterToDate">
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Lọc theo giá trị đơn hàng -->
+                <div class="col-md-6">
+                    <div class="row g-2">
+                        <div class="col-6">
+                            <label class="form-label">Giá trị từ</label>
+                            <input type="number" class="form-control" id="filterMinValue" placeholder="VND">
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label">Đến</label>
+                            <input type="number" class="form-control" id="filterMaxValue" placeholder="VND">
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Lọc theo trạng thái đơn hàng -->
+                <div class="col-md-6">
+                    <label class="form-label">Trạng thái đơn hàng</label>
+                    <select class="form-select" id="filterOrderStatus">
+                        <option value="">Tất cả</option>
+                        <option value="DangXuLy">Đang xử lý</option>
+                        <option value="DaGiao">Đã giao</option>
+                        <option value="HoanThanh">Hoàn thành</option>
+                        <option value="DaHuy">Đã hủy</option>
+                    </select>
+                </div>
+                
+                <!-- Lọc theo trạng thái thanh toán -->
+                <div class="col-md-6">
+                    <label class="form-label">Trạng thái thanh toán</label>
+                    <select class="form-select" id="filterPaymentStatus">
+                        <option value="">Tất cả</option>
+                        <option value="ChoThanhToan">Chờ thanh toán</option>
+                        <option value="DaThanhToan">Đã thanh toán</option>
+                        <option value="DaHuy">Đã hủy</option>
+                    </select>
+                </div>
+                
+                <!-- Nút áp dụng và xóa bộ lọc -->
+                <div class="col-12 text-end">
+                    <button class="btn btn-secondary me-2" id="btnResetFilter"><i class="bi bi-x-circle"></i> Xóa bộ lọc</button>
+                    <button class="btn btn-primary" id="btnApplyFilter"><i class="bi bi-funnel"></i> Áp dụng</button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Table -->
@@ -56,41 +131,56 @@
                         <td class="text-center">
                             @{
                                 var badgeClass = "";
+                                var trangThaiText = "";
                                 switch (item.TrangThaiDonHang)
                                 {
                                     case "DangXuLy":
                                         badgeClass = "bg-warning";
+                                        trangThaiText = "Đang xử lý";
                                         break;
                                     case "DaGiao":
                                         badgeClass = "bg-info";
+                                        trangThaiText = "Đã giao";
                                         break;
                                     case "HoanThanh":
                                         badgeClass = "bg-success";
+                                        trangThaiText = "Hoàn thành";
                                         break;
                                     case "DaHuy":
                                         badgeClass = "bg-danger";
+                                        trangThaiText = "Đã hủy";
+                                        break;
+                                    default:
+                                        trangThaiText = item.TrangThaiDonHang;
                                         break;
                                 }
                             }
-                            <span class="badge @badgeClass">@item.TrangThaiDonHang</span>
+                            <span class="badge @badgeClass">@trangThaiText</span>
                         </td>
                         <td class="text-center">
                             @{
                                 var badgePaymentClass = "";
+                                var trangThaiThanhToanText = "";
                                 switch (item.TrangThaiThanhToan)
                                 {
                                     case "ChoThanhToan":
                                         badgePaymentClass = "bg-warning";
+                                        trangThaiThanhToanText = "Chờ thanh toán";
                                         break;
                                     case "DaThanhToan":
                                         badgePaymentClass = "bg-success";
+                                        trangThaiThanhToanText = "Đã thanh toán";
                                         break;
                                     case "DaHuy":
                                         badgePaymentClass = "bg-danger";
+                                        trangThaiThanhToanText = "Đã hủy";
+                                        break;
+                                    default:
+                                        trangThaiThanhToanText = item.TrangThaiThanhToan;
                                         break;
                                 }
                             }
-                            <span class="badge @badgePaymentClass">@item.TrangThaiThanhToan</span>
+                            <span class="badge @badgePaymentClass">@trangThaiThanhToanText</span>
                         </td>
                         <td>@item.NgayTao.Value.ToString("dd/MM/yyyy HH:mm")</td>
                         <td class="text-center">
@@ -189,6 +279,17 @@
 
     <script>
         $(document).ready(function () {
+            // Xử lý hiển thị/ẩn bộ lọc
+            $('#btnShowFilter').click(function() {
+                $('#filterCard').removeClass('d-none');
+                $(this).addClass('d-none');
+            });
+            
+            $('#btnHideFilter').click(function() {
+                $('#filterCard').addClass('d-none');
+                $('#btnShowFilter').removeClass('d-none');
+            });
+            
             // Xử lý checkbox "Chọn tất cả"
             $('#checkAll').change(function() {
                 $('.check-item').prop('checked', $(this).prop('checked'));
@@ -224,11 +325,113 @@
 
             function searchOrders() {
                 var searchText = $('#searchInput').val().toLowerCase();
+                filterOrders();
+            }
+
+            // Xử lý bộ lọc
+            $('#btnApplyFilter').click(function() {
+                filterOrders();
+            });
+
+            $('#btnResetFilter').click(function() {
+                // Reset các trường lọc
+                $('#filterFromDate').val('');
+                $('#filterToDate').val('');
+                $('#filterMinValue').val('');
+                $('#filterMaxValue').val('');
+                $('#filterOrderStatus').val('');
+                $('#filterPaymentStatus').val('');
+                // Hiển thị lại tất cả đơn hàng
+                $('#orderTable tbody tr').show();
+            });
+
+            function filterOrders() {
+                var searchText = $('#searchInput').val().toLowerCase();
+                var fromDate = $('#filterFromDate').val() ? new Date($('#filterFromDate').val()) : null;
+                var toDate = $('#filterToDate').val() ? new Date($('#filterToDate').val()) : null;
+                var minValue = $('#filterMinValue').val() ? parseFloat($('#filterMinValue').val()) : null;
+                var maxValue = $('#filterMaxValue').val() ? parseFloat($('#filterMaxValue').val()) : null;
+                var orderStatus = $('#filterOrderStatus').val();
+                var paymentStatus = $('#filterPaymentStatus').val();
+
                 $('#orderTable tbody tr').each(function() {
-                    var maDonHang = $(this).find('td:eq(1)').text().toLowerCase();
-                    var maKhachHang = $(this).find('td:eq(2)').text().toLowerCase();
+                    var show = true;
                     
-                    if(maDonHang.includes(searchText) || maKhachHang.includes(searchText)) {
+                    // Lọc theo mã đơn hàng hoặc mã khách hàng
+                    if (searchText) {
+                        var maDonHang = $(this).find('td:eq(1)').text().toLowerCase();
+                        var maKhachHang = $(this).find('td:eq(2)').text().toLowerCase();
+                        
+                        if (!(maDonHang.includes(searchText) || maKhachHang.includes(searchText))) {
+                            show = false;
+                        }
+                    }
+                    
+                    // Lọc theo khoảng thời gian
+                    if (show && (fromDate || toDate)) {
+                        var dateText = $(this).find('td:eq(6)').text().trim();
+                        var parts = dateText.split(/[\s\/\:]/);
+                        var orderDate = new Date(parts[2], parts[1]-1, parts[0], parts[3], parts[4]);
+                        
+                        if (fromDate && orderDate < fromDate) {
+                            show = false;
+                        }
+                        
+                        if (toDate) {
+                            // Thêm 1 ngày vào toDate để bao gồm cả ngày kết thúc
+                            var adjustedToDate = new Date(toDate);
+                            adjustedToDate.setDate(adjustedToDate.getDate() + 1);
+                            if (orderDate > adjustedToDate) {
+                                show = false;
+                            }
+                        }
+                    }
+                    
+                    // Lọc theo giá trị đơn hàng
+                    if (show && (minValue || maxValue)) {
+                        var valueText = $(this).find('td:eq(3)').text().trim();
+                        var value = parseFloat(valueText.replace(/[^\d]/g, ''));
+                        
+                        if (minValue && value < minValue) {
+                            show = false;
+                        }
+                        
+                        if (maxValue && value > maxValue) {
+                            show = false;
+                        }
+                    }
+                    
+                    // Lọc theo trạng thái đơn hàng
+                    if (show && orderStatus) {
+                        var statusElement = $(this).find('td:eq(4) .badge');
+                        var actualStatus = '';
+                        
+                        if (statusElement.text() === 'Đang xử lý') actualStatus = 'DangXuLy';
+                        else if (statusElement.text() === 'Đã giao') actualStatus = 'DaGiao';
+                        else if (statusElement.text() === 'Hoàn thành') actualStatus = 'HoanThanh';
+                        else if (statusElement.text() === 'Đã hủy') actualStatus = 'DaHuy';
+                        
+                        if (actualStatus !== orderStatus) {
+                            show = false;
+                        }
+                    }
+                    
+                    // Lọc theo trạng thái thanh toán
+                    if (show && paymentStatus) {
+                        var paymentElement = $(this).find('td:eq(5) .badge');
+                        var actualPaymentStatus = '';
+                        
+                        if (paymentElement.text() === 'Chờ thanh toán') actualPaymentStatus = 'ChoThanhToan';
+                        else if (paymentElement.text() === 'Đã thanh toán') actualPaymentStatus = 'DaThanhToan';
+                        else if (paymentElement.text() === 'Đã hủy') actualPaymentStatus = 'DaHuy';
+                        
+                        if (actualPaymentStatus !== paymentStatus) {
+                            show = false;
+                        }
+                    }
+                    
+                    // Hiển thị hoặc ẩn dòng
+                    if (show) {
                         $(this).show();
                     } else {
                         $(this).hide();
