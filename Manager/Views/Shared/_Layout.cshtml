@@ -105,6 +105,9 @@
                     {
                         <div class="d-flex align-items-center ms-auto">
                             <span class="navbar-text me-3 fw-semibold">Xin chào, @Session["UserName"]</span>
+                            <button class="btn btn-outline-primary btn-sm me-2" data-bs-toggle="modal" data-bs-target="#changePasswordModal">
+                                <i class="bi bi-key"></i> Đổi mật khẩu
+                            </button>
                             <a href="@Url.Action("Logout", "Home")" class="btn btn-outline-danger btn-sm">Đăng xuất</a>
                         </div>
                     }
@@ -236,6 +239,59 @@
 
     </style>
 
+    <!-- Modal Đổi mật khẩu -->
+    <div class="modal fade" id="changePasswordModal" tabindex="-1" aria-labelledby="changePasswordModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="changePasswordModalLabel">Đổi mật khẩu</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="changePasswordForm">
+                        <div class="mb-3">
+                            <label for="oldPassword" class="form-label">Mật khẩu hiện tại <span class="text-danger">*</span></label>
+                            <input type="password" class="form-control" id="oldPassword" required>
+                            <div class="text-danger mt-1" id="oldPasswordError" style="display: none;">Vui lòng nhập mật khẩu hiện tại.</div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="newPassword" class="form-label">Mật khẩu mới <span class="text-danger">*</span></label>
+                            <input type="password" class="form-control" id="newPassword" required>
+                            <div class="text-danger mt-1" id="newPasswordError" style="display: none;">Mật khẩu phải có ít nhất 8 ký tự, bao gồm chữ hoa, chữ thường, số và ký tự đặc biệt.</div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="confirmNewPassword" class="form-label">Nhập lại mật khẩu mới <span class="text-danger">*</span></label>
+                            <input type="password" class="form-control" id="confirmNewPassword" required>
+                            <div class="text-danger mt-1" id="confirmNewPasswordError" style="display: none;">Mật khẩu nhập lại không khớp.</div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <button type="button" class="btn btn-primary" id="saveNewPassword">Lưu thay đổi</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Đổi mật khẩu thành công -->
+    <div class="modal fade" id="changePasswordSuccessModal" tabindex="-1" aria-labelledby="changePasswordSuccessModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title" id="changePasswordSuccessModalLabel">Thành công</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+                </div>
+                <div class="modal-body">
+                    Đã đổi mật khẩu thành công! Vui lòng đăng nhập lại với mật khẩu mới.
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" id="btnLogoutAfterChangePassword">Đăng nhập lại</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Chatbot Widget -->
     <div id="chatbot-widget" class="chatbot-container">
         <div class="chatbot-header">
@@ -262,140 +318,7 @@
     </button>
 
     <!-- Chatbot Script -->
-    <script>
-        $(document).ready(function() {
-            // Biến và hằng số
-            const chatbotToggle = $("#chatbot-toggle");
-            const chatbotSidebarToggle = $("#chatbot-sidebar-toggle");
-            const chatbotWidget = $("#chatbot-widget");
-            const chatbotClose = $("#chatbot-close");
-            const chatbotSend = $("#chatbot-send");
-            const chatbotText = $("#chatbot-text");
-            const chatbotMessages = $("#chatbot-messages");
-            let scriptData = null;
-
-            // Load kịch bản chatbot từ file JSON
-            $.ajax({
-                url: '/Scripts/chatbot.json',
-                dataType: 'json',
-                async: false,
-                success: function(data) {
-                    scriptData = data;
-                },
-                error: function(xhr, status, error) {
-                    console.error("Không thể tải kịch bản chatbot: " + error);
-                    // Fallback khi không tải được file JSON
-                    scriptData = {
-                        "greetings": ["xin chào", "hello", "hi", "chào", "hey"],
-                        "responses": [],
-                        "fallback": "Xin lỗi, không thể tải kịch bản. Vui lòng liên hệ quản trị viên."
-                    };
-                }
-            });
-
-            // Hiện/ẩn chatbot bằng nút nổi
-            chatbotToggle.click(function() {
-                chatbotWidget.fadeToggle(300);
-            });
-
-            // Hiện/ẩn chatbot từ sidebar
-            chatbotSidebarToggle.click(function(e) {
-                e.preventDefault();
-                chatbotWidget.fadeToggle(300);
-            });
-
-            // Đóng chatbot
-            chatbotClose.click(function() {
-                chatbotWidget.fadeOut(300);
-            });
-
-            // Xử lý gửi tin nhắn
-            chatbotSend.click(sendMessage);
-            chatbotText.keypress(function(e) {
-                if (e.which === 13) {
-                    sendMessage();
-                }
-            });
-
-            // Hàm gửi tin nhắn
-            function sendMessage() {
-                const message = chatbotText.val().trim();
-                if (message === '') return;
-
-                // Hiển thị tin nhắn của người dùng
-                addUserMessage(message);
-                chatbotText.val('');
-
-                // Xử lý phản hồi
-                processResponse(message);
-            }
-
-            // Thêm tin nhắn người dùng vào chatbot
-            function addUserMessage(message) {
-                chatbotMessages.append(`<div class="message user">${message}</div>`);
-                scrollToBottom();
-            }
-
-            // Thêm tin nhắn bot vào chatbot
-            function addBotMessage(message) {
-                chatbotMessages.append(`<div class="message bot">${message}</div>`);
-                scrollToBottom();
-            }
-
-            // Thêm link vào chatbot
-            function addBotLinks(links) {
-                let linksHTML = '';
-                links.forEach(link => {
-                    linksHTML += `<a href="${link.url}" class="chatbot-link">${link.text}</a>`;
-                });
-                chatbotMessages.append(`<div class="message bot">${linksHTML}</div>`);
-                scrollToBottom();
-            }
-
-            // Cuộn xuống dưới cùng của chatbot
-            function scrollToBottom() {
-                chatbotMessages.scrollTop(chatbotMessages[0].scrollHeight);
-            }
-
-            // Xử lý phản hồi dựa trên tin nhắn người dùng
-            function processResponse(message) {
-                if (!scriptData) {
-                    addBotMessage('Xin lỗi, kịch bản chưa được tải. Vui lòng thử lại sau.');
-                    return;
-                }
-
-                // Chuyển tin nhắn về chữ thường để dễ so sánh
-                const lowerMessage = message.toLowerCase();
-
-                // Kiểm tra xem có phải là lời chào
-                for (const greeting of scriptData.greetings) {
-                    if (lowerMessage.includes(greeting)) {
-                        addBotMessage('Xin chào! Tôi có thể giúp gì cho bạn?');
-                        return;
-                    }
-                }
-
-                // Kiểm tra xem có khớp với kịch bản nào không
-                let matched = false;
-                for (const response of scriptData.responses) {
-                    for (const keyword of response.keywords) {
-                        if (lowerMessage.includes(keyword)) {
-                            addBotMessage(response.reply);
-                            addBotLinks(response.links);
-                            matched = true;
-                            break;
-                        }
-                    }
-                    if (matched) break;
-                }
-
-                // Nếu không khớp với kịch bản nào, trả về tin nhắn mặc định
-                if (!matched) {
-                    addBotMessage(scriptData.fallback);
-                }
-            }
-        });
-    </script>
+    <script src="~/Scripts/layout.js"></script>
 
     <!-- Chatbot Style -->
     <style>

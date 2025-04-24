@@ -174,6 +174,57 @@ namespace Manager.Controllers
             Session.Clear();
             return RedirectToAction("Index");
         }
+
+        [HttpPost]
+        public JsonResult DoiMatKhau(string oldPassword, string newPassword)
+        {
+            try
+            {
+                // Kiểm tra người dùng đã đăng nhập chưa
+                if (Session["UserID"] == null)
+                {
+                    return Json(new { success = false, message = "Bạn cần đăng nhập để thực hiện chức năng này" });
+                }
+
+                string maNhanVien = Session["UserID"].ToString();
+                var nhanVien = data.NhanViens.FirstOrDefault(nv => nv.MaNhanVien == maNhanVien);
+
+                if (nhanVien == null)
+                {
+                    return Json(new { success = false, message = "Không tìm thấy thông tin người dùng" });
+                }
+
+                // Kiểm tra mật khẩu cũ có đúng không
+                string decryptedPassword;
+                try
+                {
+                    decryptedPassword = DecryptPassword(nhanVien.MatKhau, "mysecretkey");
+                }
+                catch (Exception)
+                {
+                    // Xử lý trường hợp không giải mã được (có thể mật khẩu chưa được mã hóa)
+                    decryptedPassword = nhanVien.MatKhau;
+                }
+
+                if (decryptedPassword != oldPassword)
+                {
+                    return Json(new { success = false, message = "Mật khẩu hiện tại không đúng" });
+                }
+
+                // Mã hóa mật khẩu mới
+                string matKhauMoiMaHoa = EncryptPassword(newPassword, "mysecretkey");
+
+                // Cập nhật mật khẩu mới
+                nhanVien.MatKhau = matKhauMoiMaHoa;
+                data.SubmitChanges();
+
+                return Json(new { success = true });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Có lỗi xảy ra khi đổi mật khẩu: " + ex.Message });
+            }
+        }
         #endregion
 
         #region DanhMuc
