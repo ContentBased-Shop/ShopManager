@@ -28,6 +28,55 @@
         </button>
     </div>
 
+    <!-- Bộ lọc mở rộng -->
+    <div class="card mb-3">
+        <div class="card-header bg-light">
+            <a class="btn btn-sm p-0 text-primary" data-bs-toggle="collapse" href="#filterCollapse">
+                <i class="bi bi-funnel"></i> Bộ lọc nâng cao
+            </a>
+        </div>
+        <div class="collapse" id="filterCollapse">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3 mb-2">
+                        <label class="form-label">Từ ngày</label>
+                        <input type="date" class="form-control" id="filterFromDate" />
+                    </div>
+                    <div class="col-md-3 mb-2">
+                        <label class="form-label">Đến ngày</label>
+                        <input type="date" class="form-control" id="filterToDate" />
+                    </div>
+                    <div class="col-md-3 mb-2">
+                        <label class="form-label">Giá trị từ</label>
+                        <input type="number" class="form-control" id="filterMinValue" placeholder="VNĐ" />
+                    </div>
+                    <div class="col-md-3 mb-2">
+                        <label class="form-label">Giá trị đến</label>
+                        <input type="number" class="form-control" id="filterMaxValue" placeholder="VNĐ" />
+                    </div>
+                    <div class="col-md-3 mb-2">
+                        <label class="form-label">Nhân viên</label>
+                        <select class="form-select" id="filterEmployee">
+                            <option value="">-- Tất cả nhân viên --</option>
+                            @foreach (var nv in ViewBag.NhanViens ?? new List<Manager.Models.NhanVien>())
+                            {
+                                <option value="@nv.MaNhanVien">@nv.HoTen</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+                <div class="mt-2">
+                    <button class="btn btn-primary" id="btnApplyFilter">
+                        <i class="bi bi-filter"></i> Áp dụng lọc
+                    </button>
+                    <button class="btn btn-outline-secondary" id="btnResetFilter">
+                        <i class="bi bi-arrow-counterclockwise"></i> Đặt lại
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Table -->
     <div class="table-responsive">
         <table class="table table-bordered align-middle" id="importTable">
@@ -52,8 +101,8 @@
                             <input type="checkbox" class="check-item" value="@item.MaNhapHang" />
                         </td>
                         <td>@item.MaNhapHang</td>
-                        <td>@item.MaNhaCungCap</td>
-                        <td>@item.MaNhanVien</td>
+                        <td>@(item.NhaCungCap != null ? string.Format("{0} - {1}", item.NhaCungCap.TenNhaCungCap, item.MaNhaCungCap) : item.MaNhaCungCap)</td>
+                        <td>@(item.NhanVien != null ? string.Format("{0} - {1}", item.NhanVien.HoTen, item.MaNhanVien) : item.MaNhanVien)</td>
                         <td class="text-end">@String.Format("{0:N0}₫", item.TongTien)</td>
                         <td>@item.NgayNhap.Value.ToString("dd/MM/yyyy HH:mm")</td>
                         <td class="text-center">
@@ -255,13 +304,66 @@
                 var searchText = $('#searchInput').val().toLowerCase();
                 $('#importTable tbody tr').each(function() {
                     var maNhapHang = $(this).find('td:eq(1)').text().toLowerCase();
-                    var maNhaCungCap = $(this).find('td:eq(2)').text().toLowerCase();
+                    var nhaCungCap = $(this).find('td:eq(2)').text().toLowerCase();
                     
-                    if(maNhapHang.includes(searchText) || maNhaCungCap.includes(searchText)) {
+                    if(maNhapHang.includes(searchText) || nhaCungCap.includes(searchText)) {
                         $(this).show();
                     } else {
                         $(this).hide();
                     }
+                });
+            }
+
+            // Xử lý lọc nâng cao
+            $('#btnApplyFilter').click(function() {
+                applyFilters();
+            });
+            
+            $('#btnResetFilter').click(function() {
+                $('#filterFromDate').val('');
+                $('#filterToDate').val('');
+                $('#filterMinValue').val('');
+                $('#filterMaxValue').val('');
+                $('#filterEmployee').val('');
+                $('#importTable tbody tr').show();
+            });
+            
+            function applyFilters() {
+                var fromDate = $('#filterFromDate').val() ? new Date($('#filterFromDate').val()) : null;
+                var toDate = $('#filterToDate').val() ? new Date($('#filterToDate').val()) : null;
+                var minValue = parseFloat($('#filterMinValue').val()) || 0;
+                var maxValue = parseFloat($('#filterMaxValue').val()) || Number.MAX_VALUE;
+                var employee = $('#filterEmployee').val();
+                
+                $('#importTable tbody tr').each(function() {
+                    var row = $(this);
+                    var showRow = true;
+                    
+                    // Lọc theo ngày
+                    if (fromDate || toDate) {
+                        var dateStr = row.find('td:eq(5)').text();
+                        var parts = dateStr.split(' ')[0].split('/');
+                        var rowDate = new Date(parts[2], parts[1] - 1, parts[0]);
+                        
+                        if (fromDate && rowDate < fromDate) showRow = false;
+                        if (toDate && rowDate > toDate) showRow = false;
+                    }
+                    
+                    // Lọc theo giá trị
+                    if (showRow) {
+                        var valueStr = row.find('td:eq(4)').text().replace(/\D/g, '');
+                        var value = parseFloat(valueStr);
+                        
+                        if (value < minValue || value > maxValue) showRow = false;
+                    }
+                    
+                    // Lọc theo nhân viên
+                    if (showRow && employee) {
+                        var employeeCell = row.find('td:eq(3)').text();
+                        if (!employeeCell.includes(employee)) showRow = false;
+                    }
+                    
+                    row.toggle(showRow);
                 });
             }
 

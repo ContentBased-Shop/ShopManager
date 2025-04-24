@@ -1787,6 +1787,8 @@ namespace Manager.Controllers
             // Lấy danh sách nhà cung cấp và biến thể để hiển thị trong dropdown
             ViewBag.NhaCungCaps = data.NhaCungCaps.ToList();
             ViewBag.BienThes = data.BienTheHangHoas.ToList();
+            // Lấy danh sách nhân viên cho bộ lọc
+            ViewBag.NhanViens = data.NhanViens.ToList();
             
             return View(nhapHangs);
         }

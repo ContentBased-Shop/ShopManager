@@ -3,12 +3,12 @@
   "WorkspaceRootPath": "D:\\E\\DAI HOC\\HK8\\KhoaLuan\\Code\\Manager\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{B5A91320-AF90-4A21-8251-C7D1F762736C}|Manager\\Manager.csproj|D:\\E\\DAI HOC\\HK8\\KhoaLuan\\Code\\Manager\\manager\\controllers\\homecontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{B5A91320-AF90-4A21-8251-C7D1F762736C}|Manager\\Manager.csproj|solutionrelative:manager\\controllers\\homecontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{B5A91320-AF90-4A21-8251-C7D1F762736C}|Manager\\Manager.csproj|d:\\e\\dai hoc\\hk8\\khoaluan\\code\\manager\\manager\\views\\home\\danhsachnhaphang.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{B5A91320-AF90-4A21-8251-C7D1F762736C}|Manager\\Manager.csproj|solutionrelative:manager\\views\\home\\danhsachnhaphang.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{B5A91320-AF90-4A21-8251-C7D1F762736C}|Manager\\Manager.csproj|d:\\e\\dai hoc\\hk8\\khoaluan\\code\\manager\\manager\\views\\shared\\_layout.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
-      "RelativeMoniker": "D:0:0:{B5A91320-AF90-4A21-8251-C7D1F762736C}|Manager\\Manager.csproj|solutionrelative:manager\\views\\shared\\_layout.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+      "AbsoluteMoniker": "D:0:0:{B5A91320-AF90-4A21-8251-C7D1F762736C}|Manager\\Manager.csproj|D:\\E\\DAI HOC\\HK8\\KhoaLuan\\Code\\Manager\\manager\\controllers\\homecontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{B5A91320-AF90-4A21-8251-C7D1F762736C}|Manager\\Manager.csproj|solutionrelative:manager\\controllers\\homecontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
   "DocumentGroupContainers": [
@@ -18,30 +18,30 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 1,
+          "SelectedChildIndex": 0,
           "Children": [
             {
               "$type": "Document",
-              "DocumentIndex": 1,
-              "Title": "_Layout.cshtml",
-              "DocumentMoniker": "D:\\E\\DAI HOC\\HK8\\KhoaLuan\\Code\\Manager\\Manager\\Views\\Shared\\_Layout.cshtml",
-              "RelativeDocumentMoniker": "Manager\\Views\\Shared\\_Layout.cshtml",
-              "ToolTip": "D:\\E\\DAI HOC\\HK8\\KhoaLuan\\Code\\Manager\\Manager\\Views\\Shared\\_Layout.cshtml",
-              "RelativeToolTip": "Manager\\Views\\Shared\\_Layout.cshtml",
-              "ViewState": "AQIAAEABAAAAAAAAAAAAAEIBAAAAAAAA",
+              "DocumentIndex": 0,
+              "Title": "DanhSachNhapHang.cshtml",
+              "DocumentMoniker": "D:\\E\\DAI HOC\\HK8\\KhoaLuan\\Code\\Manager\\Manager\\Views\\Home\\DanhSachNhapHang.cshtml",
+              "RelativeDocumentMoniker": "Manager\\Views\\Home\\DanhSachNhapHang.cshtml",
+              "ToolTip": "D:\\E\\DAI HOC\\HK8\\KhoaLuan\\Code\\Manager\\Manager\\Views\\Home\\DanhSachNhapHang.cshtml",
+              "RelativeToolTip": "Manager\\Views\\Home\\DanhSachNhapHang.cshtml",
+              "ViewState": "AQIAAKYAAAAAAAAAAAAAAAAAAAAAAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2025-04-24T16:29:39.253Z",
+              "WhenOpened": "2025-04-24T17:23:19.367Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
+              "DocumentIndex": 1,
               "Title": "HomeController.cs",
               "DocumentMoniker": "D:\\E\\DAI HOC\\HK8\\KhoaLuan\\Code\\Manager\\Manager\\Controllers\\HomeController.cs",
               "RelativeDocumentMoniker": "Manager\\Controllers\\HomeController.cs",
               "ToolTip": "D:\\E\\DAI HOC\\HK8\\KhoaLuan\\Code\\Manager\\Manager\\Controllers\\HomeController.cs",
               "RelativeToolTip": "Manager\\Controllers\\HomeController.cs",
-              "ViewState": "AQIAABMAAAAAAAAAAAAwwBkAAAAiAAAA",
+              "ViewState": "AQIAABAAAAAAAAAAAAAwwBkAAAAiAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-04-23T10:38:55.629Z",
               "EditorCaption": ""
