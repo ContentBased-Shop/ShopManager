@@ -13,6 +13,7 @@
       <Column Name="GiaKhuyenMai" Type="System.Double" DbType="Float" CanBeNull="true" />
       <Column Name="SoLuongTonKho" Type="System.Int32" DbType="Int" CanBeNull="true" />
       <Association Name="BienTheHangHoa_ChiTietDonHang" Member="ChiTietDonHangs" ThisKey="MaBienThe" OtherKey="MaBienThe" Type="ChiTietDonHang" />
+      <Association Name="BienTheHangHoa_ChiTietGioHang" Member="ChiTietGioHangs" ThisKey="MaBienThe" OtherKey="MaBienThe" Type="ChiTietGioHang" />
       <Association Name="BienTheHangHoa_ChiTietNhapHang" Member="ChiTietNhapHangs" ThisKey="MaBienThe" OtherKey="MaBienThe" Type="ChiTietNhapHang" />
       <Association Name="HangHoa_BienTheHangHoa" Member="HangHoa" ThisKey="MaHangHoa" OtherKey="MaHangHoa" Type="HangHoa" IsForeignKey="true" DeleteRule="CASCADE" />
     </Type>
@@ -35,6 +36,17 @@
       <Column Name="DonGia" Type="System.Double" DbType="Float" CanBeNull="true" />
       <Association Name="BienTheHangHoa_ChiTietDonHang" Member="BienTheHangHoa" ThisKey="MaBienThe" OtherKey="MaBienThe" Type="BienTheHangHoa" IsForeignKey="true" DeleteRule="CASCADE" />
       <Association Name="DonHang_ChiTietDonHang" Member="DonHang" ThisKey="MaDonHang" OtherKey="MaDonHang" Type="DonHang" IsForeignKey="true" DeleteRule="CASCADE" />
+    </Type>
+  </Table>
+  <Table Name="dbo.ChiTietGioHang" Member="ChiTietGioHangs">
+    <Type Name="ChiTietGioHang">
+      <Column Name="MaChiTietGioHang" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
+      <Column Name="MaGioHang" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="MaBienThe" Type="System.String" DbType="NVarChar(50)" CanBeNull="true" />
+      <Column Name="SoLuong" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="NgayThem" Type="System.DateTime" DbType="DateTime" CanBeNull="true" />
+      <Association Name="BienTheHangHoa_ChiTietGioHang" Member="BienTheHangHoa" ThisKey="MaBienThe" OtherKey="MaBienThe" Type="BienTheHangHoa" IsForeignKey="true" DeleteRule="CASCADE" />
+      <Association Name="GioHang_ChiTietGioHang" Member="GioHang" ThisKey="MaGioHang" OtherKey="MaGioHang" Type="GioHang" IsForeignKey="true" DeleteRule="CASCADE" />
     </Type>
   </Table>
   <Table Name="dbo.ChiTietNhapHang" Member="ChiTietNhapHangs">
@@ -127,6 +139,15 @@
       <Association Name="DonHang_GiaoHang" Member="DonHang" ThisKey="MaDonHang" OtherKey="MaDonHang" Type="DonHang" IsForeignKey="true" DeleteRule="CASCADE" />
     </Type>
   </Table>
+  <Table Name="dbo.GioHang" Member="GioHangs">
+    <Type Name="GioHang">
+      <Column Name="MaGioHang" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
+      <Column Name="MaKhachHang" Type="System.String" DbType="NVarChar(50)" CanBeNull="true" />
+      <Column Name="NgayCapNhat" Type="System.DateTime" DbType="DateTime" CanBeNull="true" />
+      <Association Name="GioHang_ChiTietGioHang" Member="ChiTietGioHangs" ThisKey="MaGioHang" OtherKey="MaGioHang" Type="ChiTietGioHang" />
+      <Association Name="KhachHang_GioHang" Member="KhachHang" ThisKey="MaKhachHang" OtherKey="MaKhachHang" Type="KhachHang" IsForeignKey="true" DeleteRule="CASCADE" />
+    </Type>
+  </Table>
   <Table Name="dbo.HangHoa" Member="HangHoas">
     <Type Name="HangHoa">
       <Column Name="MaHangHoa" Type="System.String" DbType="NVarChar(50) NOT NULL" IsPrimaryKey="true" CanBeNull="false" />
@@ -165,7 +186,6 @@
       <Column Name="MaKhachHang" Type="System.String" DbType="NVarChar(50) NOT NULL" IsPrimaryKey="true" CanBeNull="false" />
       <Column Name="TenDangNhap" Type="System.String" DbType="NVarChar(50)" CanBeNull="true" />
       <Column Name="HoTen" Type="System.String" DbType="NVarChar(50)" CanBeNull="true" />
-      <Column Name="DiaChi" Type="System.String" DbType="NVarChar(50)" CanBeNull="true" />
       <Column Name="MatKhauHash" Type="System.String" DbType="NVarChar(255)" CanBeNull="true" />
       <Column Name="Email" Type="System.String" DbType="NVarChar(100)" CanBeNull="true" />
       <Column Name="SoDienThoai" Type="System.String" DbType="NVarChar(20)" CanBeNull="true" />
@@ -176,6 +196,7 @@
       <Association Name="KhachHang_DanhGia" Member="DanhGias" ThisKey="MaKhachHang" OtherKey="MaKhachHang" Type="DanhGia" />
       <Association Name="KhachHang_DiaChiKhachHang" Member="DiaChiKhachHangs" ThisKey="MaKhachHang" OtherKey="MaKhachHang" Type="DiaChiKhachHang" />
       <Association Name="KhachHang_DonHang" Member="DonHangs" ThisKey="MaKhachHang" OtherKey="MaKhachHang" Type="DonHang" />
+      <Association Name="KhachHang_GioHang" Member="GioHangs" ThisKey="MaKhachHang" OtherKey="MaKhachHang" Type="GioHang" />
       <Association Name="KhachHang_LichSuXem" Member="LichSuXems" ThisKey="MaKhachHang" OtherKey="MaKhachHang" Type="LichSuXem" />
       <Association Name="KhachHang_PhanPhoiVoucher" Member="PhanPhoiVouchers" ThisKey="MaKhachHang" OtherKey="MaKhachHang" Type="PhanPhoiVoucher" />
       <Association Name="KhachHang_ThongBao" Member="ThongBaos" ThisKey="MaKhachHang" OtherKey="MaKhachHang" Type="ThongBao" />
@@ -234,6 +255,7 @@
       <Column Name="MatKhau" Type="System.String" DbType="NVarChar(255)" CanBeNull="true" />
       <Column Name="Email" Type="System.String" DbType="NVarChar(100)" CanBeNull="true" />
       <Column Name="SoDienThoai" Type="System.String" DbType="NVarChar(20)" CanBeNull="true" />
+      <Column Name="ExpiryTime" Type="System.DateTime" DbType="DateTime" CanBeNull="true" />
       <Column Name="NgayTao" Type="System.DateTime" DbType="DateTime" CanBeNull="true" />
       <Column Name="TrangThai" Type="System.String" DbType="NVarChar(20)" CanBeNull="true" />
       <Column Name="VaiTro" Type="System.String" DbType="NVarChar(20)" CanBeNull="true" />

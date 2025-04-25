@@ -1400,7 +1400,7 @@ namespace Manager.Controllers
                     MatKhauHash = matKhauMaHoa,
                     Email = Email,
                     SoDienThoai = SoDienThoai,
-                    DiaChi = DiaChi,
+    
                     NgayTao = DateTime.Now,
                     TrangThai = TrangThai
                 };
@@ -1437,7 +1437,7 @@ namespace Manager.Controllers
                 khachHang.HoTen = HoTen;
                 khachHang.Email = Email;
                 khachHang.SoDienThoai = SoDienThoai;
-                khachHang.DiaChi = DiaChi;
+   
                 khachHang.TrangThai = TrangThai;
 
                 // Nếu có mật khẩu mới thì cập nhật
@@ -1462,7 +1462,7 @@ namespace Manager.Controllers
         public string LayDiaChiKhachHang(string id)
         {
             var khachHang = data.KhachHangs.FirstOrDefault(k => k.MaKhachHang == id);
-            return khachHang?.DiaChi ?? "";
+            return khachHang?.HoTen ?? "";
         }
 
         [HttpPost]
