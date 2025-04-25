@@ -22,6 +22,14 @@ namespace Manager.Controllers
     {
         SHOPDataContext data = new SHOPDataContext("Data Source=ACERNITRO5;Initial Catalog=CuaHang2;Persist Security Info=True;Use" +
                   "r ID=sa;Password=123;Encrypt=True;TrustServerCertificate=True");
+
+        // Khai báo thông tin email
+        private readonly string _emailAddress = "managertask34@gmail.com";
+        private readonly string _emailPassword = "veaq dwhq oico jlzc";
+        private readonly string _emailDisplayName = "PrimeTech Admin";
+        private readonly string _emailHost = "smtp.gmail.com";
+        private readonly int _emailPort = 587;
+        
         #region TRANG-CHU
         public ActionResult Dashboard()
         {
@@ -140,6 +148,24 @@ namespace Manager.Controllers
                     
                     if (decryptedPassword == password)
                     {
+                        // Kiểm tra thời gian hết hạn mật khẩu tạm thời
+                        if (user.ExpiryTime != null)
+                        {
+                            // Nếu đã quá thời hạn 5 phút
+                            if (user.ExpiryTime < DateTime.Now)
+                            {
+                                ViewBag.Error = "Mật khẩu tạm thời đã hết hạn. Vui lòng yêu cầu mật khẩu mới.";
+                                return View("Index");
+                            }
+                            
+                            // Mật khẩu tạm thời còn hạn, yêu cầu đổi mật khẩu
+                            Session["UserID"] = user.MaNhanVien;
+                            Session["UserName"] = user.HoTen;
+                            Session["Role"] = user.VaiTro;
+                            Session["RequirePasswordChange"] = true;
+                            return RedirectToAction("ChangePasswordRequired");
+                        }
+
                         // Lưu thông tin người dùng vào Session
                         Session["UserID"] = user.MaNhanVien;
                         Session["UserName"] = user.HoTen;
@@ -154,6 +180,24 @@ namespace Manager.Controllers
                     // Xử lý lỗi giải mã (có thể là mật khẩu đã được lưu dạng text trước đó)
                     if (user.MatKhau == password)
                     {
+                        // Kiểm tra thời gian hết hạn mật khẩu tạm thời
+                        if (user.ExpiryTime != null)
+                        {
+                            // Nếu đã quá thời hạn 5 phút
+                            if (user.ExpiryTime < DateTime.Now)
+                            {
+                                ViewBag.Error = "Mật khẩu tạm thời đã hết hạn. Vui lòng yêu cầu mật khẩu mới.";
+                                return View("Index");
+                            }
+                            
+                            // Mật khẩu tạm thời còn hạn, yêu cầu đổi mật khẩu
+                            Session["UserID"] = user.MaNhanVien;
+                            Session["UserName"] = user.HoTen;
+                            Session["Role"] = user.VaiTro;
+                            Session["RequirePasswordChange"] = true;
+                            return RedirectToAction("ChangePasswordRequired");
+                        }
+
                         // Lưu thông tin người dùng vào Session
                         Session["UserID"] = user.MaNhanVien;
                         Session["UserName"] = user.HoTen;
@@ -3342,6 +3386,249 @@ namespace Manager.Controllers
             // Số lượt xem sản phẩm
             ViewBag.TongSoLuotXem = data.LichSuXems.Count();
             
+            return View();
+        }
+
+        #region QUEN-MAT-KHAU
+        // Hiển thị trang quên mật khẩu
+        public ActionResult ForgotPassword()
+        {
+            return View();
+        }
+        
+        // Tạo mật khẩu ngẫu nhiên 12 ký tự
+        private string GenerateRandomPassword(int length = 12)
+        {
+            const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+            var random = new Random();
+            var result = new string(Enumerable.Repeat(chars, length)
+                .Select(s => s[random.Next(s.Length)]).ToArray());
+            return result;
+        }
+        
+        // Gửi email
+        private bool SendEmail(string toEmail, string subject, string body)
+        {
+            try
+            {
+                var message = new MailMessage();
+                message.From = new MailAddress(_emailAddress, _emailDisplayName);
+                message.To.Add(new MailAddress(toEmail));
+                message.Subject = subject;
+                message.IsBodyHtml = true;
+                message.Body = body;
+
+                var client = new SmtpClient(_emailHost, _emailPort)
+                {
+                    EnableSsl = true,
+                    UseDefaultCredentials = false,
+                    Credentials = new NetworkCredential(_emailAddress, _emailPassword)
+                };
+
+                client.Send(message);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                // Ghi log lỗi
+                System.Diagnostics.Debug.WriteLine("Lỗi gửi email: " + ex.Message);
+                return false;
+            }
+        }
+        
+        // Xử lý form yêu cầu đặt lại mật khẩu
+        [HttpPost]
+        public ActionResult RequestPasswordReset(string employeeId, string email)
+        {
+            // Kiểm tra mã nhân viên và email có khớp không
+            var employee = data.NhanViens.FirstOrDefault(e => 
+                e.MaNhanVien == employeeId && 
+                e.Email == email && 
+                e.TrangThai == "HoatDong");
+                
+            if (employee == null)
+            {
+                ViewBag.Error = "Mã nhân viên hoặc email không đúng. Vui lòng kiểm tra lại.";
+                return View("ForgotPassword");
+            }
+            
+            // Tạo mật khẩu tạm thời ngẫu nhiên 12 ký tự
+            string tempPassword = GenerateRandomPassword(12);
+            
+            // Cập nhật mật khẩu tạm thời và thời gian hết hạn (5 phút)
+            employee.MatKhau = EncryptPassword(tempPassword, "mysecretkey");
+            employee.ExpiryTime = DateTime.Now.AddMinutes(5);
+            data.SubmitChanges();
+            
+            // Tạo nội dung email
+            string emailSubject = "PrimeTech - Mã xác nhận đặt lại mật khẩu";
+            string emailBody = $@"
+                <html>
+                <head>
+                    <style>
+                        body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
+                        .container {{ max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 5px; }}
+                        .header {{ background-color: #2e7d32; color: white; padding: 10px 20px; border-radius: 5px 5px 0 0; }}
+                        .content {{ padding: 20px; }}
+                        .code {{ font-size: 24px; font-weight: bold; background-color: #f5f5f5; padding: 10px; border-radius: 5px; letter-spacing: 2px; text-align: center; }}
+                        .footer {{ margin-top: 30px; font-size: 12px; color: #777; }}
+                    </style>
+                </head>
+                <body>
+                    <div class='container'>
+                        <div class='header'>
+                            <h2>PrimeTech - Đặt lại mật khẩu</h2>
+                        </div>
+                        <div class='content'>
+                            <p>Xin chào {employee.HoTen},</p>
+                            <p>Chúng tôi nhận được yêu cầu đặt lại mật khẩu từ tài khoản của bạn.</p>
+                            <p>Đây là mã xác nhận để đặt lại mật khẩu của bạn:</p>
+                            <div class='code'>{tempPassword}</div>
+                            <p>Mã này sẽ hết hạn sau 5 phút.</p>
+                            <p>Sau khi đăng nhập, hệ thống sẽ yêu cầu bạn đổi mật khẩu ngay lập tức.</p>
+                            <p>Nếu bạn không yêu cầu đặt lại mật khẩu, vui lòng bỏ qua email này.</p>
+                            <p>Trân trọng,<br>Đội ngũ PrimeTech</p>
+                        </div>
+                        <div class='footer'>
+                            <p>Email này được gửi tự động, vui lòng không trả lời.</p>
+                        </div>
+                    </div>
+                </body>
+                </html>
+            ";
+            
+            // Gửi email
+            bool emailSent = SendEmail(email, emailSubject, emailBody);
+            
+            if (!emailSent)
+            {
+                ViewBag.Error = "Có lỗi xảy ra khi gửi email. Vui lòng thử lại sau.";
+                return View("ForgotPassword");
+            }
+            
+            // Hiển thị thông báo thành công và chuyển hướng về trang đăng nhập sau 5 giây
+            ViewBag.Success = "Mã xác nhận đã được gửi đến email của bạn. Vui lòng kiểm tra hộp thư. Hệ thống sẽ tự động chuyển về trang đăng nhập sau 5 giây.";
+            ViewBag.RedirectToLogin = true; // Cờ để kích hoạt chuyển hướng
+            return View("ForgotPassword");
+        }
+        
+        // Xử lý form đặt mật khẩu mới
+        [HttpPost]
+        public ActionResult SetNewPassword(string employeeId, string tempPassword, string newPassword, string confirmPassword)
+        {
+            // Kiểm tra các trường
+            if (string.IsNullOrEmpty(tempPassword) || string.IsNullOrEmpty(newPassword) || string.IsNullOrEmpty(confirmPassword))
+            {
+                ViewBag.Error = "Vui lòng nhập đầy đủ thông tin.";
+                ViewBag.EmployeeId = employeeId;
+                return View("ResetPassword");
+            }
+            
+            // Kiểm tra mật khẩu mới và nhập lại có khớp không
+            if (newPassword != confirmPassword)
+            {
+                ViewBag.Error = "Mật khẩu nhập lại không khớp.";
+                ViewBag.EmployeeId = employeeId;
+                return View("ResetPassword");
+            }
+            
+            // Tìm nhân viên
+            var employee = data.NhanViens.FirstOrDefault(e => e.MaNhanVien == employeeId);
+            if (employee == null)
+            {
+                ViewBag.Error = "Không tìm thấy thông tin nhân viên.";
+                return View("ResetPassword");
+            }
+            
+            // Kiểm tra mã xác nhận và thời gian hết hạn
+            try
+            {
+                string decryptedStoredPassword = DecryptPassword(employee.MatKhau, "mysecretkey");
+                
+                if (decryptedStoredPassword != tempPassword)
+                {
+                    ViewBag.Error = "Mã xác nhận không đúng.";
+                    ViewBag.EmployeeId = employeeId;
+                    return View("ResetPassword");
+                }
+                
+                // Kiểm tra thời gian hết hạn
+                if (employee.ExpiryTime == null || employee.ExpiryTime < DateTime.Now)
+                {
+                    ViewBag.Error = "Mã xác nhận đã hết hạn. Vui lòng yêu cầu mã mới.";
+                    return View("ForgotPassword");
+                }
+                
+                // Cập nhật mật khẩu mới
+                employee.MatKhau = EncryptPassword(newPassword, "mysecretkey");
+                employee.ExpiryTime = null; // Xóa thời gian hết hạn
+                data.SubmitChanges();
+                
+                ViewBag.Success = "Đặt lại mật khẩu thành công. Bạn có thể đăng nhập bằng mật khẩu mới.";
+                return View("ResetPassword");
+            }
+            catch (Exception ex)
+            {
+                ViewBag.Error = "Có lỗi xảy ra: " + ex.Message;
+                ViewBag.EmployeeId = employeeId;
+                return View("ResetPassword");
+            }
+        }
+        #endregion
+
+        // Trang yêu cầu đổi mật khẩu khi đăng nhập bằng mật khẩu tạm thời
+        public ActionResult ChangePasswordRequired()
+        {
+            // Kiểm tra đăng nhập
+            if (Session["UserID"] == null || Session["RequirePasswordChange"] == null)
+            {
+                return RedirectToAction("Index");
+            }
+            
+            return View();
+        }
+        
+        // Xử lý đổi mật khẩu bắt buộc
+        [HttpPost]
+        public ActionResult ChangePasswordRequired(string newPassword, string confirmPassword)
+        {
+            // Kiểm tra đăng nhập
+            if (Session["UserID"] == null || Session["RequirePasswordChange"] == null)
+            {
+                return RedirectToAction("Index");
+            }
+            
+            // Kiểm tra mật khẩu nhập vào
+            if (string.IsNullOrEmpty(newPassword) || string.IsNullOrEmpty(confirmPassword))
+            {
+                ViewBag.Error = "Vui lòng nhập đầy đủ thông tin";
+                return View();
+            }
+            
+            if (newPassword != confirmPassword)
+            {
+                ViewBag.Error = "Mật khẩu nhập lại không khớp";
+                return View();
+            }
+            
+            // Cập nhật mật khẩu mới
+            string userId = Session["UserID"].ToString();
+            var user = data.NhanViens.FirstOrDefault(u => u.MaNhanVien == userId);
+            
+            if (user != null)
+            {
+                user.MatKhau = EncryptPassword(newPassword, "mysecretkey");
+                user.ExpiryTime = null; // Xóa thời gian hết hạn
+                data.SubmitChanges();
+                
+                // Xóa cờ yêu cầu đổi mật khẩu trong session
+                Session["RequirePasswordChange"] = null;
+                
+                ViewBag.Success = "Đổi mật khẩu thành công. Bạn sẽ được chuyển hướng đến trang chính trong 3 giây.";
+                return View();
+            }
+            
+            ViewBag.Error = "Có lỗi xảy ra. Vui lòng thử lại sau.";
             return View();
         }
     }

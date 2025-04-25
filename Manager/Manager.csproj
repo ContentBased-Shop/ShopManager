@@ -276,6 +276,9 @@
     <Content Include="Views\Home\BaoCaoDoanhThu.cshtml" />
     <Content Include="Views\Home\BaoCaoKhachHang.cshtml" />
     <Content Include="Views\Home\BaoCaoSanPham.cshtml" />
+    <Content Include="Views\Home\ResetPassword.cshtml" />
+    <Content Include="Views\Home\ForgotPassword.cshtml" />
+    <Content Include="Views\Home\ChangePasswordRequired.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

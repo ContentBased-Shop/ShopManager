@@ -3,12 +3,20 @@
   "WorkspaceRootPath": "D:\\E\\DAI HOC\\HK8\\KhoaLuan\\Code\\Manager\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{B5A91320-AF90-4A21-8251-C7D1F762736C}|Manager\\Manager.csproj|d:\\e\\dai hoc\\hk8\\khoaluan\\code\\manager\\manager\\views\\home\\danhsachnhaphang.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
-      "RelativeMoniker": "D:0:0:{B5A91320-AF90-4A21-8251-C7D1F762736C}|Manager\\Manager.csproj|solutionrelative:manager\\views\\home\\danhsachnhaphang.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+      "AbsoluteMoniker": "D:0:0:{B5A91320-AF90-4A21-8251-C7D1F762736C}|Manager\\Manager.csproj|d:\\e\\dai hoc\\hk8\\khoaluan\\code\\manager\\manager\\views\\home\\changepasswordrequired.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{B5A91320-AF90-4A21-8251-C7D1F762736C}|Manager\\Manager.csproj|solutionrelative:manager\\views\\home\\changepasswordrequired.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{B5A91320-AF90-4A21-8251-C7D1F762736C}|Manager\\Manager.csproj|D:\\E\\DAI HOC\\HK8\\KhoaLuan\\Code\\Manager\\manager\\controllers\\homecontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "AbsoluteMoniker": "D:0:0:{B5A91320-AF90-4A21-8251-C7D1F762736C}|Manager\\Manager.csproj|d:\\e\\dai hoc\\hk8\\khoaluan\\code\\manager\\manager\\controllers\\homecontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{B5A91320-AF90-4A21-8251-C7D1F762736C}|Manager\\Manager.csproj|solutionrelative:manager\\controllers\\homecontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B5A91320-AF90-4A21-8251-C7D1F762736C}|Manager\\Manager.csproj|d:\\e\\dai hoc\\hk8\\khoaluan\\code\\manager\\manager\\views\\home\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{B5A91320-AF90-4A21-8251-C7D1F762736C}|Manager\\Manager.csproj|solutionrelative:manager\\views\\home\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B5A91320-AF90-4A21-8251-C7D1F762736C}|Manager\\Manager.csproj|d:\\e\\dai hoc\\hk8\\khoaluan\\code\\manager\\manager\\web.config||{FA3CD31E-987B-443A-9B81-186104E8DAC1}",
+      "RelativeMoniker": "D:0:0:{B5A91320-AF90-4A21-8251-C7D1F762736C}|Manager\\Manager.csproj|solutionrelative:manager\\web.config||{FA3CD31E-987B-443A-9B81-186104E8DAC1}"
     }
   ],
   "DocumentGroupContainers": [
@@ -23,14 +31,14 @@
             {
               "$type": "Document",
               "DocumentIndex": 0,
-              "Title": "DanhSachNhapHang.cshtml",
-              "DocumentMoniker": "D:\\E\\DAI HOC\\HK8\\KhoaLuan\\Code\\Manager\\Manager\\Views\\Home\\DanhSachNhapHang.cshtml",
-              "RelativeDocumentMoniker": "Manager\\Views\\Home\\DanhSachNhapHang.cshtml",
-              "ToolTip": "D:\\E\\DAI HOC\\HK8\\KhoaLuan\\Code\\Manager\\Manager\\Views\\Home\\DanhSachNhapHang.cshtml",
-              "RelativeToolTip": "Manager\\Views\\Home\\DanhSachNhapHang.cshtml",
-              "ViewState": "AQIAAKYAAAAAAAAAAAAAAAAAAAAAAAAA",
+              "Title": "ChangePasswordRequired.cshtml",
+              "DocumentMoniker": "D:\\E\\DAI HOC\\HK8\\KhoaLuan\\Code\\Manager\\Manager\\Views\\Home\\ChangePasswordRequired.cshtml",
+              "RelativeDocumentMoniker": "Manager\\Views\\Home\\ChangePasswordRequired.cshtml",
+              "ToolTip": "D:\\E\\DAI HOC\\HK8\\KhoaLuan\\Code\\Manager\\Manager\\Views\\Home\\ChangePasswordRequired.cshtml",
+              "RelativeToolTip": "Manager\\Views\\Home\\ChangePasswordRequired.cshtml",
+              "ViewState": "AQIAAHgAAAAAAAAAAAAmwNEAAAAIAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2025-04-24T17:23:19.367Z",
+              "WhenOpened": "2025-04-25T13:22:17.157Z",
               "EditorCaption": ""
             },
             {
@@ -41,9 +49,35 @@
               "RelativeDocumentMoniker": "Manager\\Controllers\\HomeController.cs",
               "ToolTip": "D:\\E\\DAI HOC\\HK8\\KhoaLuan\\Code\\Manager\\Manager\\Controllers\\HomeController.cs",
               "RelativeToolTip": "Manager\\Controllers\\HomeController.cs",
-              "ViewState": "AQIAABAAAAAAAAAAAAAwwBkAAAAiAAAA",
+              "ViewState": "AQIAADANAAAAAAAAAAAuwAAAAAAAAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-04-23T10:38:55.629Z",
+              "WhenOpened": "2025-04-25T13:19:46.846Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "Index.cshtml",
+              "DocumentMoniker": "D:\\E\\DAI HOC\\HK8\\KhoaLuan\\Code\\Manager\\Manager\\Views\\Home\\Index.cshtml",
+              "RelativeDocumentMoniker": "Manager\\Views\\Home\\Index.cshtml",
+              "ToolTip": "D:\\E\\DAI HOC\\HK8\\KhoaLuan\\Code\\Manager\\Manager\\Views\\Home\\Index.cshtml",
+              "RelativeToolTip": "Manager\\Views\\Home\\Index.cshtml",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2025-04-25T13:19:41.976Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "Web.config",
+              "DocumentMoniker": "D:\\E\\DAI HOC\\HK8\\KhoaLuan\\Code\\Manager\\Manager\\Web.config",
+              "RelativeDocumentMoniker": "Manager\\Web.config",
+              "ToolTip": "D:\\E\\DAI HOC\\HK8\\KhoaLuan\\Code\\Manager\\Manager\\Web.config",
+              "RelativeToolTip": "Manager\\Web.config",
+              "ViewState": "AQIAAFoAAAAAAAAAAAAAAAAAAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000601|",
+              "WhenOpened": "2025-04-25T13:02:02.327Z",
               "EditorCaption": ""
             }
           ]
