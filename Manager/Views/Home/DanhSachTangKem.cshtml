@@ -1,0 +1,705 @@
+﻿@model List<Manager.Models.KhuyenMaiTangKem>
+@{
+    ViewBag.Title = "Quản lý sản phẩm tặng kèm";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
+
+<div class="container py-4">
+    <h3 class="fw-bold mb-3">Danh sách sản phẩm tặng kèm</h3>
+
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb bg-info bg-opacity-25 px-3 py-2 rounded">
+            <li class="breadcrumb-item"><a href="/home/Dashboard">Trang chủ</a></li>
+            <li class="breadcrumb-item"><a href="#">Khuyến mãi</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Sản phẩm tặng kèm</li>
+        </ol>
+    </nav>
+
+    <!-- Action Bar -->
+    <div class="d-flex flex-wrap align-items-center mb-3 gap-2">
+        <a href="#" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#createTangKemModal">
+            <i class="bi bi-plus-circle"></i> Tạo mới
+        </a>
+        <input type="text" class="form-control w-auto" id="searchInput" placeholder="Tìm kiếm..." />
+        <button id="btnXoaNhieu" class="btn btn-danger d-none" onclick="xoaNhieu()">
+            <i class="bi bi-trash3"></i> Xóa đã chọn
+        </button>
+    </div>
+
+    <!-- Table -->
+    <div class="table-responsive">
+        <table class="table table-bordered align-middle text-center" id="tangKemTable">
+            <thead class="table-light">
+                <tr>
+                    <th style="width: 50px;">
+                        <input type="checkbox" id="checkAll" />
+                    </th>
+                    <th>ID</th>
+                    <th>Sản phẩm mua</th>
+                    <th>Sản phẩm tặng</th>
+                    <th>SL mua tối thiểu</th>
+                    <th>SL tặng</th>
+                    <th>Thời gian áp dụng</th>
+                    <th>Trạng thái</th>
+                    <th>Thao tác</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model != null && Model.Count > 0)
+                {
+                    foreach (var item in Model)
+                    {
+                        string trangThai = DateTime.Now >= item.NgayBatDau && DateTime.Now <= item.NgayKetThuc ? "Đang áp dụng" : 
+                                          (DateTime.Now < item.NgayBatDau ? "Chưa áp dụng" : "Đã kết thúc");
+                        string badgeClass = trangThai == "Đang áp dụng" ? "bg-success" : 
+                                          (trangThai == "Chưa áp dụng" ? "bg-warning" : "bg-secondary");
+                        
+                        <tr>
+                            <td>
+                                <input type="checkbox" class="check-item" value="@item.IDKM" />
+                            </td>
+                            <td>@item.IDKM</td>
+                            <td class="hang-hoa-mua">
+                                @{
+                                    var tenHangHoaMua = "";
+                                    foreach (var hang in ViewBag.DanhSachHangHoa)
+                                    {
+                                        if (hang.MaHangHoa == item.MaHangHoaMua)
+                                        {
+                                            tenHangHoaMua = hang.TenHangHoa;
+                                            break;
+                                        }
+                                    }
+                                    
+                                    if (!string.IsNullOrEmpty(tenHangHoaMua))
+                                    {
+                                        @tenHangHoaMua <span class="text-muted">(@item.MaHangHoaMua)</span>
+                                    }
+                                    else
+                                    {
+                                        @item.MaHangHoaMua
+                                    }
+                                }
+                            </td>
+                            <td class="hang-hoa-tang">
+                                @{
+                                    var tenHangHoaTang = "";
+                                    foreach (var hang in ViewBag.DanhSachHangHoa)
+                                    {
+                                        if (hang.MaHangHoa == item.MaHangHoaTangKem)
+                                        {
+                                            tenHangHoaTang = hang.TenHangHoa;
+                                            break;
+                                        }
+                                    }
+                                    
+                                    if (!string.IsNullOrEmpty(tenHangHoaTang))
+                                    {
+                                        @tenHangHoaTang <span class="text-muted">(@item.MaHangHoaTangKem)</span>
+                                    }
+                                    else
+                                    {
+                                        @item.MaHangHoaTangKem
+                                    }
+                                }
+                            </td>
+                            <td>@item.SoLuongMuaToiThieu</td>
+                            <td>@item.SoLuongTang</td>
+                            <td>@item.NgayBatDau.Value.ToString("dd/MM/yyyy") - @item.NgayKetThuc.Value.ToString("dd/MM/yyyy")</td>
+                            <td>
+                                <span class="badge @badgeClass">@trangThai</span>
+                            </td>
+                            <td>
+                                <a href="#" class="btn btn-sm btn-primary btn-edit" 
+                                   data-id="@item.IDKM" 
+                                   data-hang-mua="@item.MaHangHoaMua" 
+                                   data-hang-tang="@item.MaHangHoaTangKem"
+                                   data-sl-mua="@item.SoLuongMuaToiThieu"
+                                   data-sl-tang="@item.SoLuongTang"
+                                   data-ngay-bd="@item.NgayBatDau.Value.ToString("yyyy-MM-dd")"
+                                   data-ngay-kt="@item.NgayKetThuc.Value.ToString("yyyy-MM-dd")"
+                                   data-bs-toggle="modal" data-bs-target="#editTangKemModal">
+                                    <i class="bi bi-pencil-square"></i>
+                                </a>
+                                <a href="#" class="btn btn-sm btn-warning btn-delete" data-id="@item.IDKM" data-bs-toggle="modal" data-bs-target="#confirmDeleteModal">
+                                    <i class="bi bi-trash3"></i>
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="9" class="text-center">Không có dữ liệu</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Modal Xác nhận xóa -->
+    <div class="modal fade" id="confirmDeleteModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Xác nhận xóa</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p id="deleteMessage">Bạn có chắc chắn muốn xóa khuyến mãi tặng kèm này?</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <button type="button" class="btn btn-danger" id="confirmDelete">Xóa</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Xóa thành công -->
+    <div class="modal fade" id="deleteSuccessModal" tabindex="-1" aria-labelledby="deleteSuccessModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title" id="deleteSuccessModalLabel">Thành công</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+                </div>
+                <div class="modal-body">
+                    Đã xóa khuyến mãi tặng kèm thành công!
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Đóng</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Tạo mới khuyến mãi tặng kèm -->
+    <div class="modal fade" id="createTangKemModal" tabindex="-1" aria-labelledby="createTangKemModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="createTangKemModalLabel">Thêm khuyến mãi tặng kèm mới</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="createTangKemForm">
+                        <div class="mb-3">
+                            <label for="maHangHoaMua" class="form-label">Sản phẩm mua <span class="text-danger">*</span></label>
+                            <select class="form-select" id="maHangHoaMua" required>
+                                <option value="">-- Chọn sản phẩm --</option>
+                                @foreach (var item in ViewBag.DanhSachHangHoa ?? new List<dynamic>())
+                                {
+                                    <option value="@item.MaHangHoa">@item.TenHangHoa</option>
+                                }
+                            </select>
+                            <div class="text-danger mt-1" id="maHangHoaMuaError" style="display: none;">Vui lòng chọn sản phẩm mua.</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="maHangHoaTangKem" class="form-label">Sản phẩm tặng kèm <span class="text-danger">*</span></label>
+                            <select class="form-select" id="maHangHoaTangKem" required>
+                                <option value="">-- Chọn sản phẩm --</option>
+                                @foreach (var item in ViewBag.DanhSachHangHoa ?? new List<dynamic>())
+                                {
+                                    <option value="@item.MaHangHoa">@item.TenHangHoa</option>
+                                }
+                            </select>
+                            <div class="text-danger mt-1" id="maHangHoaTangKemError" style="display: none;">Vui lòng chọn sản phẩm tặng kèm.</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="soLuongMuaToiThieu" class="form-label">Số lượng mua tối thiểu <span class="text-danger">*</span></label>
+                            <input type="number" class="form-control" id="soLuongMuaToiThieu" min="1" value="1" required>
+                            <div class="text-danger mt-1" id="soLuongMuaToiThieuError" style="display: none;">Số lượng mua tối thiểu phải lớn hơn 0.</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="soLuongTang" class="form-label">Số lượng tặng <span class="text-danger">*</span></label>
+                            <input type="number" class="form-control" id="soLuongTang" min="1" value="1" required>
+                            <div class="text-danger mt-1" id="soLuongTangError" style="display: none;">Số lượng tặng phải lớn hơn 0.</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="ngayBatDau" class="form-label">Ngày bắt đầu <span class="text-danger">*</span></label>
+                            <input type="date" class="form-control" id="ngayBatDau" required>
+                            <div class="text-danger mt-1" id="ngayBatDauError" style="display: none;">Vui lòng chọn ngày bắt đầu.</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="ngayKetThuc" class="form-label">Ngày kết thúc <span class="text-danger">*</span></label>
+                            <input type="date" class="form-control" id="ngayKetThuc" required>
+                            <div class="text-danger mt-1" id="ngayKetThucError" style="display: none;">Vui lòng chọn ngày kết thúc.</div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <button type="button" class="btn btn-primary" id="saveTangKem">Lưu</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Thêm thành công -->
+    <div class="modal fade" id="addSuccessModal" tabindex="-1" aria-labelledby="addSuccessModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title" id="addSuccessModalLabel">Thành công</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+                </div>
+                <div class="modal-body">
+                    Đã thêm khuyến mãi tặng kèm thành công!
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Đóng</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Chỉnh sửa khuyến mãi tặng kèm -->
+    <div class="modal fade" id="editTangKemModal" tabindex="-1" aria-labelledby="editTangKemModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editTangKemModalLabel">Chỉnh sửa khuyến mãi tặng kèm</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="editTangKemForm">
+                        <input type="hidden" id="editIDKM">
+                        
+                        <div class="mb-3">
+                            <label for="editMaHangHoaMua" class="form-label">Sản phẩm mua <span class="text-danger">*</span></label>
+                            <select class="form-select" id="editMaHangHoaMua" required>
+                                <option value="">-- Chọn sản phẩm --</option>
+                                @foreach (var item in ViewBag.DanhSachHangHoa ?? new List<dynamic>())
+                                {
+                                    <option value="@item.MaHangHoa">@item.TenHangHoa</option>
+                                }
+                            </select>
+                            <div class="text-danger mt-1" id="editMaHangHoaMuaError" style="display: none;">Vui lòng chọn sản phẩm mua.</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="editMaHangHoaTangKem" class="form-label">Sản phẩm tặng kèm <span class="text-danger">*</span></label>
+                            <select class="form-select" id="editMaHangHoaTangKem" required>
+                                <option value="">-- Chọn sản phẩm --</option>
+                                @foreach (var item in ViewBag.DanhSachHangHoa ?? new List<dynamic>())
+                                {
+                                    <option value="@item.MaHangHoa">@item.TenHangHoa</option>
+                                }
+                            </select>
+                            <div class="text-danger mt-1" id="editMaHangHoaTangKemError" style="display: none;">Vui lòng chọn sản phẩm tặng kèm.</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="editSoLuongMuaToiThieu" class="form-label">Số lượng mua tối thiểu <span class="text-danger">*</span></label>
+                            <input type="number" class="form-control" id="editSoLuongMuaToiThieu" min="1" required>
+                            <div class="text-danger mt-1" id="editSoLuongMuaToiThieuError" style="display: none;">Số lượng mua tối thiểu phải lớn hơn 0.</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="editSoLuongTang" class="form-label">Số lượng tặng <span class="text-danger">*</span></label>
+                            <input type="number" class="form-control" id="editSoLuongTang" min="1" required>
+                            <div class="text-danger mt-1" id="editSoLuongTangError" style="display: none;">Số lượng tặng phải lớn hơn 0.</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="editNgayBatDau" class="form-label">Ngày bắt đầu <span class="text-danger">*</span></label>
+                            <input type="date" class="form-control" id="editNgayBatDau" required>
+                            <div class="text-danger mt-1" id="editNgayBatDauError" style="display: none;">Vui lòng chọn ngày bắt đầu.</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="editNgayKetThuc" class="form-label">Ngày kết thúc <span class="text-danger">*</span></label>
+                            <input type="date" class="form-control" id="editNgayKetThuc" required>
+                            <div class="text-danger mt-1" id="editNgayKetThucError" style="display: none;">Vui lòng chọn ngày kết thúc.</div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <button type="button" class="btn btn-primary" id="updateTangKem">Lưu</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Sửa thành công -->
+    <div class="modal fade" id="editSuccessModal" tabindex="-1" aria-labelledby="editSuccessModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title" id="editSuccessModalLabel">Thành công</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+                </div>
+                <div class="modal-body">
+                    Đã sửa khuyến mãi tặng kèm thành công!
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Đóng</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function () {
+        // Set ngày mặc định cho form tạo mới
+        var today = new Date();
+        var tomorrow = new Date(today);
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        
+        var todayStr = today.toISOString().slice(0, 10);
+        var tomorrowStr = tomorrow.toISOString().slice(0, 10);
+        
+        $('#ngayBatDau').val(todayStr);
+        $('#ngayKetThuc').val(tomorrowStr);
+
+        // Xử lý tìm kiếm
+        function searchTangKem() {
+            var searchText = $('#searchInput').val().toLowerCase();
+            $('#tangKemTable tbody tr').each(function() {
+                var idKM = $(this).find('td:eq(1)').text().toLowerCase();
+                var hangHoaMua = $(this).find('.hang-hoa-mua').text().toLowerCase();
+                var hangHoaTang = $(this).find('.hang-hoa-tang').text().toLowerCase();
+                
+                if(idKM.includes(searchText) || hangHoaMua.includes(searchText) || hangHoaTang.includes(searchText)) {
+                    $(this).show();
+                } else {
+                    $(this).hide();
+                }
+            });
+        }
+
+        // Sự kiện khi nhập vào ô tìm kiếm
+        $('#searchInput').on('input', function() {
+            searchTangKem();
+        });
+
+        // Xử lý checkbox "Chọn tất cả"
+        $('#checkAll').change(function() {
+            $('.check-item').prop('checked', $(this).prop('checked'));
+            toggleDeleteButton();
+        });
+
+        // Xử lý khi checkbox đơn lẻ thay đổi
+        $('.check-item').change(function() {
+            toggleDeleteButton();
+            // Nếu tất cả checkbox con được chọn, checkbox "Chọn tất cả" cũng được chọn
+            $('#checkAll').prop('checked', $('.check-item:checked').length === $('.check-item').length);
+        });
+
+        // Hàm hiển thị/ẩn nút xóa
+        function toggleDeleteButton() {
+            if($('.check-item:checked').length > 0) {
+                $('#btnXoaNhieu').removeClass('d-none');
+            } else {
+                $('#btnXoaNhieu').addClass('d-none');
+            }
+        }
+
+        // Hàm xóa nhiều khuyến mãi tặng kèm
+        window.xoaNhieu = function() {
+            var selectedIds = [];
+            $('.check-item:checked').each(function() {
+                selectedIds.push(parseInt($(this).val()));
+            });
+
+            if(selectedIds.length === 0) {
+                alert('Vui lòng chọn ít nhất một khuyến mãi để xóa!');
+                return;
+            }
+
+            $('#deleteMessage').text("Bạn có chắc chắn muốn xóa " + selectedIds.length + " khuyến mãi đã chọn?");
+            $('#confirmDeleteModal').modal('show');
+
+            $('#confirmDelete').off('click').on('click', function() {
+                $.ajax({
+                    url: '@Url.Action("XoaNhieuTangKem", "Home")',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({ ids: selectedIds }),
+                    success: function(response) {
+                        $('#confirmDeleteModal').modal('hide');
+                        if(response.success) {
+                            $('#deleteSuccessModal').modal('show');
+                            setTimeout(function() {
+                                location.reload();
+                            }, 1500);
+                        } else {
+                            alert(response.message || "Xóa thất bại");
+                        }
+                    },
+                    error: function() {
+                        alert("Lỗi khi gọi server.");
+                    }
+                });
+            });
+        }
+
+        // Xử lý nút xóa
+        $('.btn-delete').click(function () {
+            var id = parseInt($(this).data('id'));
+
+            $('#deleteMessage').text("Bạn có chắc chắn muốn xóa khuyến mãi tặng kèm này?");
+            $('#confirmDeleteModal').modal('show');
+
+            $('#confirmDelete').off('click').on('click', function () {
+                $.ajax({
+                    url: '@Url.Action("XoaTangKem", "Home")',
+                    type: 'POST',
+                    data: { id: id },
+                    success: function (response) {
+                        $('#confirmDeleteModal').modal('hide');
+                        if (response.success) {
+                            $('#deleteSuccessModal').modal('show');
+                            setTimeout(function () {
+                                location.reload();
+                            }, 1500);
+                        } else {
+                            alert(response.message || "Xóa thất bại");
+                        }
+                    },
+                    error: function () {
+                        alert("Lỗi khi gọi server.");
+                    }
+                });
+            });
+        });
+
+        // Xử lý nút thêm mới
+        $('#saveTangKem').click(function () {
+            // Kiểm tra form hợp lệ
+            if (!validateCreateForm()) {
+                return;
+            }
+
+            var data = {
+                MaHangHoaMua: $('#maHangHoaMua').val(),
+                MaHangHoaTangKem: $('#maHangHoaTangKem').val(),
+                SoLuongMuaToiThieu: parseInt($('#soLuongMuaToiThieu').val()),
+                SoLuongTang: parseInt($('#soLuongTang').val()),
+                NgayBatDau: $('#ngayBatDau').val(),
+                NgayKetThuc: $('#ngayKetThuc').val()
+            };
+
+            $.ajax({
+                url: '@Url.Action("ThemTangKem", "Home")',
+                type: 'POST',
+                data: data,
+                success: function (response) {
+                    if (response.success) {
+                        $('#createTangKemModal').modal('hide');
+                        $('#addSuccessModal').modal('show');
+                        setTimeout(function () {
+                            location.reload();
+                        }, 1500);
+                    } else {
+                        alert(response.message || "Thêm khuyến mãi tặng kèm thất bại");
+                    }
+                },
+                error: function () {
+                    alert("Lỗi khi gọi server.");
+                }
+            });
+        });
+
+        // Xử lý nút sửa
+        $('.btn-edit').click(function () {
+            var id = $(this).data('id');
+            var hangHoaMua = $(this).data('hang-mua');
+            var hangHoaTang = $(this).data('hang-tang');
+            var slMua = $(this).data('sl-mua');
+            var slTang = $(this).data('sl-tang');
+            var ngayBD = $(this).data('ngay-bd');
+            var ngayKT = $(this).data('ngay-kt');
+
+            $('#editIDKM').val(id);
+            $('#editMaHangHoaMua').val(hangHoaMua);
+            $('#editMaHangHoaTangKem').val(hangHoaTang);
+            $('#editSoLuongMuaToiThieu').val(slMua);
+            $('#editSoLuongTang').val(slTang);
+            $('#editNgayBatDau').val(ngayBD);
+            $('#editNgayKetThuc').val(ngayKT);
+
+            // Xử lý sự kiện khi nhấn nút Lưu trong modal chỉnh sửa
+            $('#updateTangKem').off('click').on('click', function () {
+                // Kiểm tra form hợp lệ
+                if (!validateEditForm()) {
+                    return;
+                }
+
+                var data = {
+                    IDKM: parseInt($('#editIDKM').val()),
+                    MaHangHoaMua: $('#editMaHangHoaMua').val(),
+                    MaHangHoaTangKem: $('#editMaHangHoaTangKem').val(),
+                    SoLuongMuaToiThieu: parseInt($('#editSoLuongMuaToiThieu').val()),
+                    SoLuongTang: parseInt($('#editSoLuongTang').val()),
+                    NgayBatDau: $('#editNgayBatDau').val(),
+                    NgayKetThuc: $('#editNgayKetThuc').val()
+                };
+                
+                $.ajax({
+                    url: '@Url.Action("SuaTangKem", "Home")',
+                    type: 'POST',
+                    data: data,
+                    success: function (response) {
+                        if (response.success) {
+                            $('#editTangKemModal').modal('hide');
+                            $('#editSuccessModal').modal('show');
+                            setTimeout(function () {
+                                location.reload();
+                            }, 1500);
+                        } else {
+                            alert(response.message || "Chỉnh sửa khuyến mãi tặng kèm thất bại");
+                        }
+                    },
+                    error: function () {
+                        alert("Lỗi khi gọi server.");
+                    }
+                });
+            });
+        });
+
+        // Validate form thêm mới
+        function validateCreateForm() {
+            var isValid = true;
+            
+            // Kiểm tra sản phẩm mua
+            var maHangHoaMua = $('#maHangHoaMua').val();
+            if (maHangHoaMua === "") {
+                $('#maHangHoaMua').addClass('is-invalid');
+                $('#maHangHoaMuaError').show();
+                isValid = false;
+            } else {
+                $('#maHangHoaMua').removeClass('is-invalid');
+                $('#maHangHoaMuaError').hide();
+            }
+            
+            // Kiểm tra sản phẩm tặng kèm
+            var maHangHoaTangKem = $('#maHangHoaTangKem').val();
+            if (maHangHoaTangKem === "") {
+                $('#maHangHoaTangKem').addClass('is-invalid');
+                $('#maHangHoaTangKemError').show();
+                isValid = false;
+            } else {
+                $('#maHangHoaTangKem').removeClass('is-invalid');
+                $('#maHangHoaTangKemError').hide();
+            }
+            
+            // Kiểm tra số lượng mua tối thiểu
+            var soLuongMuaToiThieu = parseInt($('#soLuongMuaToiThieu').val());
+            if (isNaN(soLuongMuaToiThieu) || soLuongMuaToiThieu <= 0) {
+                $('#soLuongMuaToiThieu').addClass('is-invalid');
+                $('#soLuongMuaToiThieuError').show();
+                isValid = false;
+            } else {
+                $('#soLuongMuaToiThieu').removeClass('is-invalid');
+                $('#soLuongMuaToiThieuError').hide();
+            }
+            
+            // Kiểm tra số lượng tặng
+            var soLuongTang = parseInt($('#soLuongTang').val());
+            if (isNaN(soLuongTang) || soLuongTang <= 0) {
+                $('#soLuongTang').addClass('is-invalid');
+                $('#soLuongTangError').show();
+                isValid = false;
+            } else {
+                $('#soLuongTang').removeClass('is-invalid');
+                $('#soLuongTangError').hide();
+            }
+            
+            // Kiểm tra ngày bắt đầu
+            var ngayBatDau = $('#ngayBatDau').val();
+            if (ngayBatDau === "") {
+                $('#ngayBatDau').addClass('is-invalid');
+                $('#ngayBatDauError').show();
+                isValid = false;
+            } else {
+                $('#ngayBatDau').removeClass('is-invalid');
+                $('#ngayBatDauError').hide();
+            }
+            
+            // Kiểm tra ngày kết thúc
+            var ngayKetThuc = $('#ngayKetThuc').val();
+            if (ngayKetThuc === "") {
+                $('#ngayKetThuc').addClass('is-invalid');
+                $('#ngayKetThucError').show();
+                isValid = false;
+            } else {
+                $('#ngayKetThuc').removeClass('is-invalid');
+                $('#ngayKetThucError').hide();
+            }
+            
+            // Kiểm tra ngày kết thúc phải sau ngày bắt đầu
+            if (ngayBatDau !== "" && ngayKetThuc !== "") {
+                if (new Date(ngayKetThuc) <= new Date(ngayBatDau)) {
+                    $('#ngayKetThuc').addClass('is-invalid');
+                    $('#ngayKetThucError').text("Ngày kết thúc phải sau ngày bắt đầu.").show();
+                    isValid = false;
+                }
+            }
+            
+            return isValid;
+        }
+        
+        // Validate form sửa
+        function validateEditForm() {
+            var isValid = true;
+            
+            // Tương tự validate như form thêm mới
+            // Kiểm tra sản phẩm mua
+            var maHangHoaMua = $('#editMaHangHoaMua').val();
+            if (maHangHoaMua === "") {
+                $('#editMaHangHoaMua').addClass('is-invalid');
+                $('#editMaHangHoaMuaError').show();
+                isValid = false;
+            } else {
+                $('#editMaHangHoaMua').removeClass('is-invalid');
+                $('#editMaHangHoaMuaError').hide();
+            }
+            
+            // Kiểm tra sản phẩm tặng kèm
+            var maHangHoaTangKem = $('#editMaHangHoaTangKem').val();
+            if (maHangHoaTangKem === "") {
+                $('#editMaHangHoaTangKem').addClass('is-invalid');
+                $('#editMaHangHoaTangKemError').show();
+                isValid = false;
+            } else {
+                $('#editMaHangHoaTangKem').removeClass('is-invalid');
+                $('#editMaHangHoaTangKemError').hide();
+            }
+            
+            // Các kiểm tra khác tương tự
+            // ...
+            
+            return isValid;
+        }
+        
+        // Reset form khi đóng modal
+        $("#createTangKemModal").on("hidden.bs.modal", function() {
+            $("#createTangKemForm")[0].reset();
+            $('#maHangHoaMua, #maHangHoaTangKem, #soLuongMuaToiThieu, #soLuongTang, #ngayBatDau, #ngayKetThuc').removeClass('is-invalid');
+            $('#maHangHoaMuaError, #maHangHoaTangKemError, #soLuongMuaToiThieuError, #soLuongTangError, #ngayBatDauError, #ngayKetThucError').hide();
+            
+            // Thiết lập lại ngày mặc định
+            $('#ngayBatDau').val(todayStr);
+            $('#ngayKetThuc').val(tomorrowStr);
+        });
+
+        $("#editTangKemModal").on("hidden.bs.modal", function() {
+            $('#editMaHangHoaMua, #editMaHangHoaTangKem, #editSoLuongMuaToiThieu, #editSoLuongTang, #editNgayBatDau, #editNgayKetThuc').removeClass('is-invalid');
+            $('#editMaHangHoaMuaError, #editMaHangHoaTangKemError, #editSoLuongMuaToiThieuError, #editSoLuongTangError, #editNgayBatDauError, #editNgayKetThucError').hide();
+        });
+    });
+</script>

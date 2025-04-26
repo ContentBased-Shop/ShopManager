@@ -3631,5 +3631,154 @@ namespace Manager.Controllers
             ViewBag.Error = "Có lỗi xảy ra. Vui lòng thử lại sau.";
             return View();
         }
+
+        public ActionResult DanhSachTangKem()
+        {
+            List<KhuyenMaiTangKem> danhSachTangKem = data.KhuyenMaiTangKems.ToList();
+            // Lấy danh sách hàng hóa để hiển thị trong dropdown
+            ViewBag.DanhSachHangHoa = data.HangHoas.ToList();
+            return View(danhSachTangKem);
+        }
+
+        [HttpPost]
+        public JsonResult ThemTangKem(string MaHangHoaMua, string MaHangHoaTangKem, int SoLuongMuaToiThieu, int SoLuongTang, DateTime NgayBatDau, DateTime NgayKetThuc)
+        {
+            try
+            {
+                // Kiểm tra các hàng hóa có tồn tại không
+                var hangHoaMua = data.HangHoas.FirstOrDefault(h => h.MaHangHoa == MaHangHoaMua);
+                var hangHoaTang = data.HangHoas.FirstOrDefault(h => h.MaHangHoa == MaHangHoaTangKem);
+
+                if (hangHoaMua == null || hangHoaTang == null)
+                {
+                    return Json(new { success = false, message = "Mã hàng hóa không tồn tại" });
+                }
+
+                // Kiểm tra số lượng
+                if (SoLuongMuaToiThieu <= 0 || SoLuongTang <= 0)
+                {
+                    return Json(new { success = false, message = "Số lượng phải lớn hơn 0" });
+                }
+
+                // Kiểm tra ngày
+                if (NgayBatDau >= NgayKetThuc)
+                {
+                    return Json(new { success = false, message = "Ngày kết thúc phải sau ngày bắt đầu" });
+                }
+
+                // Tạo mới khuyến mãi tặng kèm
+                KhuyenMaiTangKem tangKem = new KhuyenMaiTangKem
+                {
+                    MaHangHoaMua = MaHangHoaMua,
+                    MaHangHoaTangKem = MaHangHoaTangKem,
+                    SoLuongMuaToiThieu = SoLuongMuaToiThieu,
+                    SoLuongTang = SoLuongTang,
+                    NgayBatDau = NgayBatDau,
+                    NgayKetThuc = NgayKetThuc
+                };
+
+                data.KhuyenMaiTangKems.InsertOnSubmit(tangKem);
+                data.SubmitChanges();
+
+                return Json(new { success = true });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Lỗi: " + ex.Message });
+            }
+        }
+
+        [HttpPost]
+        public JsonResult SuaTangKem(int IDKM, string MaHangHoaMua, string MaHangHoaTangKem, int SoLuongMuaToiThieu, int SoLuongTang, DateTime NgayBatDau, DateTime NgayKetThuc)
+        {
+            try
+            {
+                // Kiểm tra các hàng hóa có tồn tại không
+                var hangHoaMua = data.HangHoas.FirstOrDefault(h => h.MaHangHoa == MaHangHoaMua);
+                var hangHoaTang = data.HangHoas.FirstOrDefault(h => h.MaHangHoa == MaHangHoaTangKem);
+
+                if (hangHoaMua == null || hangHoaTang == null)
+                {
+                    return Json(new { success = false, message = "Mã hàng hóa không tồn tại" });
+                }
+
+                // Kiểm tra số lượng
+                if (SoLuongMuaToiThieu <= 0 || SoLuongTang <= 0)
+                {
+                    return Json(new { success = false, message = "Số lượng phải lớn hơn 0" });
+                }
+
+                // Kiểm tra ngày
+                if (NgayBatDau >= NgayKetThuc)
+                {
+                    return Json(new { success = false, message = "Ngày kết thúc phải sau ngày bắt đầu" });
+                }
+
+                // Cập nhật thông tin
+                var tangKem = data.KhuyenMaiTangKems.FirstOrDefault(km => km.IDKM == IDKM);
+                if (tangKem == null)
+                {
+                    return Json(new { success = false, message = "Không tìm thấy khuyến mãi" });
+                }
+
+                tangKem.MaHangHoaMua = MaHangHoaMua;
+                tangKem.MaHangHoaTangKem = MaHangHoaTangKem;
+                tangKem.SoLuongMuaToiThieu = SoLuongMuaToiThieu;
+                tangKem.SoLuongTang = SoLuongTang;
+                tangKem.NgayBatDau = NgayBatDau;
+                tangKem.NgayKetThuc = NgayKetThuc;
+
+                data.SubmitChanges();
+                return Json(new { success = true });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Lỗi: " + ex.Message });
+            }
+        }
+
+        [HttpPost]
+        public JsonResult XoaTangKem(int id)
+        {
+            try
+            {
+                var tangKem = data.KhuyenMaiTangKems.FirstOrDefault(km => km.IDKM == id);
+                if (tangKem == null)
+                {
+                    return Json(new { success = false, message = "Không tìm thấy khuyến mãi" });
+                }
+
+                data.KhuyenMaiTangKems.DeleteOnSubmit(tangKem);
+                data.SubmitChanges();
+
+                return Json(new { success = true });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Lỗi: " + ex.Message });
+            }
+        }
+
+        [HttpPost]
+        public JsonResult XoaNhieuTangKem(List<int> ids)
+        {
+            try
+            {
+                var tangKemList = data.KhuyenMaiTangKems.Where(km => ids.Contains(km.IDKM)).ToList();
+                if (tangKemList.Count == 0)
+                {
+                    return Json(new { success = false, message = "Không tìm thấy khuyến mãi nào để xóa" });
+                }
+
+                data.KhuyenMaiTangKems.DeleteAllOnSubmit(tangKemList);
+                data.SubmitChanges();
+
+                return Json(new { success = true });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Lỗi: " + ex.Message });
+            }
+        }
     }
 }

@@ -279,6 +279,7 @@
     <Content Include="Views\Home\ResetPassword.cshtml" />
     <Content Include="Views\Home\ForgotPassword.cshtml" />
     <Content Include="Views\Home\ChangePasswordRequired.cshtml" />
+    <Content Include="Views\Home\DanhSachTangKem.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
