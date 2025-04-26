@@ -72,6 +72,10 @@
         {
           "text": "Quản lý voucher",
           "url": "/Home/DanhSachVoucher"
+        },
+        {
+          "text": "Quản lý sản phẩm tặng kèm",
+          "url": "/Home/DanhSachTangKem"
         }
       ],
       "quick_replies": [ "Xem voucher", "Thêm mã giảm giá" ]

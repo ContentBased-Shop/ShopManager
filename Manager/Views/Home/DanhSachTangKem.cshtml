@@ -24,10 +24,53 @@
         <a href="#" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#createTangKemModal">
             <i class="bi bi-plus-circle"></i> Tạo mới
         </a>
-        <input type="text" class="form-control w-auto" id="searchInput" placeholder="Tìm kiếm..." />
+        <div class="input-group" style="width: auto">
+            <input type="text" class="form-control" id="searchInput" placeholder="Tìm kiếm..." />
+            <button class="btn btn-outline-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#filterOptions" aria-expanded="false" aria-controls="filterOptions">
+                <i class="bi bi-funnel"></i> Lọc
+            </button>
+        </div>
         <button id="btnXoaNhieu" class="btn btn-danger d-none" onclick="xoaNhieu()">
             <i class="bi bi-trash3"></i> Xóa đã chọn
         </button>
+    </div>
+
+    <!-- Filter options -->
+    <div class="collapse mb-3" id="filterOptions">
+        <div class="card card-body">
+            <div class="row">
+                <div class="col-md-3">
+                    <div class="mb-3">
+                        <label for="filterTrangThai" class="form-label">Trạng thái</label>
+                        <select class="form-select" id="filterTrangThai">
+                            <option value="all">Tất cả</option>
+                            <option value="active">Đang áp dụng</option>
+                            <option value="pending">Chưa áp dụng</option>
+                            <option value="expired">Đã kết thúc</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="mb-3">
+                        <label for="filterFromDate" class="form-label">Từ ngày</label>
+                        <input type="date" class="form-control" id="filterFromDate">
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="mb-3">
+                        <label for="filterToDate" class="form-label">Đến ngày</label>
+                        <input type="date" class="form-control" id="filterToDate">
+                    </div>
+                </div>
+                <div class="col-md-3 d-flex align-items-end">
+                    <div class="mb-3 w-100">
+                        <button class="btn btn-primary w-100" id="applyFilter">
+                            <i class="bi bi-check-circle"></i> Áp dụng
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Table -->
@@ -368,12 +411,59 @@
         // Xử lý tìm kiếm
         function searchTangKem() {
             var searchText = $('#searchInput').val().toLowerCase();
+            
+            // Lấy các giá trị lọc
+            var trangThai = $('#filterTrangThai').val();
+            var fromDate = $('#filterFromDate').val() ? new Date($('#filterFromDate').val()) : null;
+            var toDate = $('#filterToDate').val() ? new Date($('#filterToDate').val()) : null;
+            
             $('#tangKemTable tbody tr').each(function() {
                 var idKM = $(this).find('td:eq(1)').text().toLowerCase();
                 var hangHoaMua = $(this).find('.hang-hoa-mua').text().toLowerCase();
                 var hangHoaTang = $(this).find('.hang-hoa-tang').text().toLowerCase();
+                var row = $(this);
                 
-                if(idKM.includes(searchText) || hangHoaMua.includes(searchText) || hangHoaTang.includes(searchText)) {
+                // Mặc định hiển thị hàng nếu thỏa mãn điều kiện tìm kiếm text
+                var showRow = (idKM.includes(searchText) || hangHoaMua.includes(searchText) || hangHoaTang.includes(searchText));
+                
+                // Kiểm tra trạng thái nếu cần lọc
+                if (showRow && trangThai !== 'all') {
+                    var statusText = row.find('td:eq(7) .badge').text().trim();
+                    if (
+                        (trangThai === 'active' && statusText !== 'Đang áp dụng') ||
+                        (trangThai === 'pending' && statusText !== 'Chưa áp dụng') ||
+                        (trangThai === 'expired' && statusText !== 'Đã kết thúc')
+                    ) {
+                        showRow = false;
+                    }
+                }
+                
+                // Kiểm tra từ ngày nếu có
+                if (showRow && fromDate) {
+                    var dateRangeText = row.find('td:eq(6)').text();
+                    var startDateStr = dateRangeText.split(' - ')[0].trim();
+                    var startDateParts = startDateStr.split('/');
+                    var startDate = new Date(startDateParts[2], startDateParts[1] - 1, startDateParts[0]);
+                    
+                    if (startDate < fromDate) {
+                        showRow = false;
+                    }
+                }
+                
+                // Kiểm tra đến ngày nếu có
+                if (showRow && toDate) {
+                    var dateRangeText = row.find('td:eq(6)').text();
+                    var endDateStr = dateRangeText.split(' - ')[1].trim();
+                    var endDateParts = endDateStr.split('/');
+                    var endDate = new Date(endDateParts[2], endDateParts[1] - 1, endDateParts[0]);
+                    
+                    if (endDate > toDate) {
+                        showRow = false;
+                    }
+                }
+                
+                // Hiển thị hoặc ẩn hàng dựa trên kết quả
+                if (showRow) {
                     $(this).show();
                 } else {
                     $(this).hide();
@@ -384,6 +474,19 @@
         // Sự kiện khi nhập vào ô tìm kiếm
         $('#searchInput').on('input', function() {
             searchTangKem();
+        });
+
+        // Sự kiện khi nhấn nút áp dụng bộ lọc
+        $('#applyFilter').click(function() {
+            searchTangKem();
+        });
+
+        // Reset filter khi đóng
+        $('#filterOptions').on('hidden.bs.collapse', function () {
+            // Chỉ reset nếu không có giá trị lọc
+            if ($('#filterTrangThai').val() === 'all' && !$('#filterFromDate').val() && !$('#filterToDate').val()) {
+                searchTangKem();
+            }
         });
 
         // Xử lý checkbox "Chọn tất cả"
