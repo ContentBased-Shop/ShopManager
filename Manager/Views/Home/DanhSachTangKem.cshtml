@@ -82,9 +82,8 @@
                         <input type="checkbox" id="checkAll" />
                     </th>
                     <th>ID</th>
-                    <th>Sản phẩm mua</th>
+                    <th>Giá trị đơn hàng tối thiểu</th>
                     <th>Sản phẩm tặng</th>
-                    <th>SL mua tối thiểu</th>
                     <th>SL tặng</th>
                     <th>Thời gian áp dụng</th>
                     <th>Trạng thái</th>
@@ -106,28 +105,7 @@
                                 <input type="checkbox" class="check-item" value="@item.IDKM" />
                             </td>
                             <td>@item.IDKM</td>
-                            <td class="hang-hoa-mua">
-                                @{
-                                    var tenHangHoaMua = "";
-                                    foreach (var hang in ViewBag.DanhSachHangHoa)
-                                    {
-                                        if (hang.MaHangHoa == item.MaHangHoaMua)
-                                        {
-                                            tenHangHoaMua = hang.TenHangHoa;
-                                            break;
-                                        }
-                                    }
-                                    
-                                    if (!string.IsNullOrEmpty(tenHangHoaMua))
-                                    {
-                                        @tenHangHoaMua <span class="text-muted">(@item.MaHangHoaMua)</span>
-                                    }
-                                    else
-                                    {
-                                        @item.MaHangHoaMua
-                                    }
-                                }
-                            </td>
+                            <td class="gia-tri-toi-thieu">@(item.GiaTriDonHangToiThieu != null ? item.GiaTriDonHangToiThieu.Value.ToString("N0") + " VNĐ" : "0 VNĐ")</td>
                             <td class="hang-hoa-tang">
                                 @{
                                     var tenHangHoaTang = "";
@@ -150,7 +128,6 @@
                                     }
                                 }
                             </td>
-                            <td>@item.SoLuongMuaToiThieu</td>
                             <td>@item.SoLuongTang</td>
                             <td>@item.NgayBatDau.Value.ToString("dd/MM/yyyy") - @item.NgayKetThuc.Value.ToString("dd/MM/yyyy")</td>
                             <td>
@@ -159,9 +136,8 @@
                             <td>
                                 <a href="#" class="btn btn-sm btn-primary btn-edit" 
                                    data-id="@item.IDKM" 
-                                   data-hang-mua="@item.MaHangHoaMua" 
+                                   data-gia-tri="@item.GiaTriDonHangToiThieu"
                                    data-hang-tang="@item.MaHangHoaTangKem"
-                                   data-sl-mua="@item.SoLuongMuaToiThieu"
                                    data-sl-tang="@item.SoLuongTang"
                                    data-ngay-bd="@item.NgayBatDau.Value.ToString("yyyy-MM-dd")"
                                    data-ngay-kt="@item.NgayKetThuc.Value.ToString("yyyy-MM-dd")"
@@ -178,7 +154,7 @@
                 else
                 {
                     <tr>
-                        <td colspan="9" class="text-center">Không có dữ liệu</td>
+                        <td colspan="8" class="text-center">Không có dữ liệu</td>
                     </tr>
                 }
             </tbody>
@@ -233,15 +209,9 @@
                 <div class="modal-body">
                     <form id="createTangKemForm">
                         <div class="mb-3">
-                            <label for="maHangHoaMua" class="form-label">Sản phẩm mua <span class="text-danger">*</span></label>
-                            <select class="form-select" id="maHangHoaMua" required>
-                                <option value="">-- Chọn sản phẩm --</option>
-                                @foreach (var item in ViewBag.DanhSachHangHoa ?? new List<dynamic>())
-                                {
-                                    <option value="@item.MaHangHoa">@item.TenHangHoa</option>
-                                }
-                            </select>
-                            <div class="text-danger mt-1" id="maHangHoaMuaError" style="display: none;">Vui lòng chọn sản phẩm mua.</div>
+                            <label for="giaTriDonHangToiThieu" class="form-label">Giá trị đơn hàng tối thiểu <span class="text-danger">*</span></label>
+                            <input type="number" class="form-control" id="giaTriDonHangToiThieu" min="1000" value="100000" required>
+                            <div class="text-danger mt-1" id="giaTriDonHangToiThieuError" style="display: none;">Giá trị đơn hàng tối thiểu phải lớn hơn 0.</div>
                         </div>
 
                         <div class="mb-3">
@@ -254,12 +224,6 @@
                                 }
                             </select>
                             <div class="text-danger mt-1" id="maHangHoaTangKemError" style="display: none;">Vui lòng chọn sản phẩm tặng kèm.</div>
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="soLuongMuaToiThieu" class="form-label">Số lượng mua tối thiểu <span class="text-danger">*</span></label>
-                            <input type="number" class="form-control" id="soLuongMuaToiThieu" min="1" value="1" required>
-                            <div class="text-danger mt-1" id="soLuongMuaToiThieuError" style="display: none;">Số lượng mua tối thiểu phải lớn hơn 0.</div>
                         </div>
 
                         <div class="mb-3">
@@ -320,15 +284,9 @@
                         <input type="hidden" id="editIDKM">
                         
                         <div class="mb-3">
-                            <label for="editMaHangHoaMua" class="form-label">Sản phẩm mua <span class="text-danger">*</span></label>
-                            <select class="form-select" id="editMaHangHoaMua" required>
-                                <option value="">-- Chọn sản phẩm --</option>
-                                @foreach (var item in ViewBag.DanhSachHangHoa ?? new List<dynamic>())
-                                {
-                                    <option value="@item.MaHangHoa">@item.TenHangHoa</option>
-                                }
-                            </select>
-                            <div class="text-danger mt-1" id="editMaHangHoaMuaError" style="display: none;">Vui lòng chọn sản phẩm mua.</div>
+                            <label for="editGiaTriDonHangToiThieu" class="form-label">Giá trị đơn hàng tối thiểu <span class="text-danger">*</span></label>
+                            <input type="number" class="form-control" id="editGiaTriDonHangToiThieu" min="1000" required>
+                            <div class="text-danger mt-1" id="editGiaTriDonHangToiThieuError" style="display: none;">Giá trị đơn hàng tối thiểu phải lớn hơn 0.</div>
                         </div>
 
                         <div class="mb-3">
@@ -341,12 +299,6 @@
                                 }
                             </select>
                             <div class="text-danger mt-1" id="editMaHangHoaTangKemError" style="display: none;">Vui lòng chọn sản phẩm tặng kèm.</div>
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="editSoLuongMuaToiThieu" class="form-label">Số lượng mua tối thiểu <span class="text-danger">*</span></label>
-                            <input type="number" class="form-control" id="editSoLuongMuaToiThieu" min="1" required>
-                            <div class="text-danger mt-1" id="editSoLuongMuaToiThieuError" style="display: none;">Số lượng mua tối thiểu phải lớn hơn 0.</div>
                         </div>
 
                         <div class="mb-3">
@@ -419,16 +371,16 @@
             
             $('#tangKemTable tbody tr').each(function() {
                 var idKM = $(this).find('td:eq(1)').text().toLowerCase();
-                var hangHoaMua = $(this).find('.hang-hoa-mua').text().toLowerCase();
+                var giaTriToiThieu = $(this).find('.gia-tri-toi-thieu').text().toLowerCase();
                 var hangHoaTang = $(this).find('.hang-hoa-tang').text().toLowerCase();
                 var row = $(this);
                 
                 // Mặc định hiển thị hàng nếu thỏa mãn điều kiện tìm kiếm text
-                var showRow = (idKM.includes(searchText) || hangHoaMua.includes(searchText) || hangHoaTang.includes(searchText));
+                var showRow = (idKM.includes(searchText) || giaTriToiThieu.includes(searchText) || hangHoaTang.includes(searchText));
                 
                 // Kiểm tra trạng thái nếu cần lọc
                 if (showRow && trangThai !== 'all') {
-                    var statusText = row.find('td:eq(7) .badge').text().trim();
+                    var statusText = row.find('td:eq(6) .badge').text().trim();
                     if (
                         (trangThai === 'active' && statusText !== 'Đang áp dụng') ||
                         (trangThai === 'pending' && statusText !== 'Chưa áp dụng') ||
@@ -440,7 +392,7 @@
                 
                 // Kiểm tra từ ngày nếu có
                 if (showRow && fromDate) {
-                    var dateRangeText = row.find('td:eq(6)').text();
+                    var dateRangeText = row.find('td:eq(5)').text();
                     var startDateStr = dateRangeText.split(' - ')[0].trim();
                     var startDateParts = startDateStr.split('/');
                     var startDate = new Date(startDateParts[2], startDateParts[1] - 1, startDateParts[0]);
@@ -452,7 +404,7 @@
                 
                 // Kiểm tra đến ngày nếu có
                 if (showRow && toDate) {
-                    var dateRangeText = row.find('td:eq(6)').text();
+                    var dateRangeText = row.find('td:eq(5)').text();
                     var endDateStr = dateRangeText.split(' - ')[1].trim();
                     var endDateParts = endDateStr.split('/');
                     var endDate = new Date(endDateParts[2], endDateParts[1] - 1, endDateParts[0]);
@@ -588,9 +540,8 @@
             }
 
             var data = {
-                MaHangHoaMua: $('#maHangHoaMua').val(),
+                GiaTriDonHangToiThieu: parseFloat($('#giaTriDonHangToiThieu').val()),
                 MaHangHoaTangKem: $('#maHangHoaTangKem').val(),
-                SoLuongMuaToiThieu: parseInt($('#soLuongMuaToiThieu').val()),
                 SoLuongTang: parseInt($('#soLuongTang').val()),
                 NgayBatDau: $('#ngayBatDau').val(),
                 NgayKetThuc: $('#ngayKetThuc').val()
@@ -620,17 +571,15 @@
         // Xử lý nút sửa
         $('.btn-edit').click(function () {
             var id = $(this).data('id');
-            var hangHoaMua = $(this).data('hang-mua');
+            var giaTriDonHang = $(this).data('gia-tri');
             var hangHoaTang = $(this).data('hang-tang');
-            var slMua = $(this).data('sl-mua');
             var slTang = $(this).data('sl-tang');
             var ngayBD = $(this).data('ngay-bd');
             var ngayKT = $(this).data('ngay-kt');
 
             $('#editIDKM').val(id);
-            $('#editMaHangHoaMua').val(hangHoaMua);
+            $('#editGiaTriDonHangToiThieu').val(giaTriDonHang);
             $('#editMaHangHoaTangKem').val(hangHoaTang);
-            $('#editSoLuongMuaToiThieu').val(slMua);
             $('#editSoLuongTang').val(slTang);
             $('#editNgayBatDau').val(ngayBD);
             $('#editNgayKetThuc').val(ngayKT);
@@ -644,9 +593,8 @@
 
                 var data = {
                     IDKM: parseInt($('#editIDKM').val()),
-                    MaHangHoaMua: $('#editMaHangHoaMua').val(),
+                    GiaTriDonHangToiThieu: parseFloat($('#editGiaTriDonHangToiThieu').val()),
                     MaHangHoaTangKem: $('#editMaHangHoaTangKem').val(),
-                    SoLuongMuaToiThieu: parseInt($('#editSoLuongMuaToiThieu').val()),
                     SoLuongTang: parseInt($('#editSoLuongTang').val()),
                     NgayBatDau: $('#editNgayBatDau').val(),
                     NgayKetThuc: $('#editNgayKetThuc').val()
@@ -678,15 +626,15 @@
         function validateCreateForm() {
             var isValid = true;
             
-            // Kiểm tra sản phẩm mua
-            var maHangHoaMua = $('#maHangHoaMua').val();
-            if (maHangHoaMua === "") {
-                $('#maHangHoaMua').addClass('is-invalid');
-                $('#maHangHoaMuaError').show();
+            // Kiểm tra giá trị đơn hàng tối thiểu
+            var giaTriDonHangToiThieu = parseInt($('#giaTriDonHangToiThieu').val());
+            if (isNaN(giaTriDonHangToiThieu) || giaTriDonHangToiThieu <= 0) {
+                $('#giaTriDonHangToiThieu').addClass('is-invalid');
+                $('#giaTriDonHangToiThieuError').show();
                 isValid = false;
             } else {
-                $('#maHangHoaMua').removeClass('is-invalid');
-                $('#maHangHoaMuaError').hide();
+                $('#giaTriDonHangToiThieu').removeClass('is-invalid');
+                $('#giaTriDonHangToiThieuError').hide();
             }
             
             // Kiểm tra sản phẩm tặng kèm
@@ -698,17 +646,6 @@
             } else {
                 $('#maHangHoaTangKem').removeClass('is-invalid');
                 $('#maHangHoaTangKemError').hide();
-            }
-            
-            // Kiểm tra số lượng mua tối thiểu
-            var soLuongMuaToiThieu = parseInt($('#soLuongMuaToiThieu').val());
-            if (isNaN(soLuongMuaToiThieu) || soLuongMuaToiThieu <= 0) {
-                $('#soLuongMuaToiThieu').addClass('is-invalid');
-                $('#soLuongMuaToiThieuError').show();
-                isValid = false;
-            } else {
-                $('#soLuongMuaToiThieu').removeClass('is-invalid');
-                $('#soLuongMuaToiThieuError').hide();
             }
             
             // Kiểm tra số lượng tặng
@@ -760,16 +697,15 @@
         function validateEditForm() {
             var isValid = true;
             
-            // Tương tự validate như form thêm mới
-            // Kiểm tra sản phẩm mua
-            var maHangHoaMua = $('#editMaHangHoaMua').val();
-            if (maHangHoaMua === "") {
-                $('#editMaHangHoaMua').addClass('is-invalid');
-                $('#editMaHangHoaMuaError').show();
+            // Kiểm tra giá trị đơn hàng tối thiểu
+            var giaTriDonHangToiThieu = parseInt($('#editGiaTriDonHangToiThieu').val());
+            if (isNaN(giaTriDonHangToiThieu) || giaTriDonHangToiThieu <= 0) {
+                $('#editGiaTriDonHangToiThieu').addClass('is-invalid');
+                $('#editGiaTriDonHangToiThieuError').show();
                 isValid = false;
             } else {
-                $('#editMaHangHoaMua').removeClass('is-invalid');
-                $('#editMaHangHoaMuaError').hide();
+                $('#editGiaTriDonHangToiThieu').removeClass('is-invalid');
+                $('#editGiaTriDonHangToiThieuError').hide();
             }
             
             // Kiểm tra sản phẩm tặng kèm
@@ -783,8 +719,47 @@
                 $('#editMaHangHoaTangKemError').hide();
             }
             
-            // Các kiểm tra khác tương tự
-            // ...
+            // Kiểm tra số lượng tặng
+            var soLuongTang = parseInt($('#editSoLuongTang').val());
+            if (isNaN(soLuongTang) || soLuongTang <= 0) {
+                $('#editSoLuongTang').addClass('is-invalid');
+                $('#editSoLuongTangError').show();
+                isValid = false;
+            } else {
+                $('#editSoLuongTang').removeClass('is-invalid');
+                $('#editSoLuongTangError').hide();
+            }
+            
+            // Kiểm tra ngày bắt đầu
+            var ngayBatDau = $('#editNgayBatDau').val();
+            if (ngayBatDau === "") {
+                $('#editNgayBatDau').addClass('is-invalid');
+                $('#editNgayBatDauError').show();
+                isValid = false;
+            } else {
+                $('#editNgayBatDau').removeClass('is-invalid');
+                $('#editNgayBatDauError').hide();
+            }
+            
+            // Kiểm tra ngày kết thúc
+            var ngayKetThuc = $('#editNgayKetThuc').val();
+            if (ngayKetThuc === "") {
+                $('#editNgayKetThuc').addClass('is-invalid');
+                $('#editNgayKetThucError').show();
+                isValid = false;
+            } else {
+                $('#editNgayKetThuc').removeClass('is-invalid');
+                $('#editNgayKetThucError').hide();
+            }
+            
+            // Kiểm tra ngày kết thúc phải sau ngày bắt đầu
+            if (ngayBatDau !== "" && ngayKetThuc !== "") {
+                if (new Date(ngayKetThuc) <= new Date(ngayBatDau)) {
+                    $('#editNgayKetThuc').addClass('is-invalid');
+                    $('#editNgayKetThucError').text("Ngày kết thúc phải sau ngày bắt đầu.").show();
+                    isValid = false;
+                }
+            }
             
             return isValid;
         }
@@ -792,8 +767,8 @@
         // Reset form khi đóng modal
         $("#createTangKemModal").on("hidden.bs.modal", function() {
             $("#createTangKemForm")[0].reset();
-            $('#maHangHoaMua, #maHangHoaTangKem, #soLuongMuaToiThieu, #soLuongTang, #ngayBatDau, #ngayKetThuc').removeClass('is-invalid');
-            $('#maHangHoaMuaError, #maHangHoaTangKemError, #soLuongMuaToiThieuError, #soLuongTangError, #ngayBatDauError, #ngayKetThucError').hide();
+            $('#giaTriDonHangToiThieu, #maHangHoaTangKem, #soLuongTang, #ngayBatDau, #ngayKetThuc').removeClass('is-invalid');
+            $('#giaTriDonHangToiThieuError, #maHangHoaTangKemError, #soLuongTangError, #ngayBatDauError, #ngayKetThucError').hide();
             
             // Thiết lập lại ngày mặc định
             $('#ngayBatDau').val(todayStr);
@@ -801,8 +776,8 @@
         });
 
         $("#editTangKemModal").on("hidden.bs.modal", function() {
-            $('#editMaHangHoaMua, #editMaHangHoaTangKem, #editSoLuongMuaToiThieu, #editSoLuongTang, #editNgayBatDau, #editNgayKetThuc').removeClass('is-invalid');
-            $('#editMaHangHoaMuaError, #editMaHangHoaTangKemError, #editSoLuongMuaToiThieuError, #editSoLuongTangError, #editNgayBatDauError, #editNgayKetThucError').hide();
+            $('#editGiaTriDonHangToiThieu, #editMaHangHoaTangKem, #editSoLuongTang, #editNgayBatDau, #editNgayKetThuc').removeClass('is-invalid');
+            $('#editGiaTriDonHangToiThieuError, #editMaHangHoaTangKemError, #editSoLuongTangError, #editNgayBatDauError, #editNgayKetThucError').hide();
         });
     });
 </script>

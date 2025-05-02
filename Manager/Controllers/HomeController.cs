@@ -2420,7 +2420,7 @@ namespace Manager.Controllers
 
         [HttpPost]
         public JsonResult TaoBienTheHangHoa(string MaHangHoa, string MauSac, string DungLuong, string CPU, 
-            string RAM, string KichThuocManHinh, string LoaiBoNho, decimal Gia, decimal? GiaKhuyenMai, int SoLuongTonKho)
+            string RAM, string KichThuocManHinh, string LoaiBoNho, decimal GiaNhap, decimal GiaBan, decimal? GiaKhuyenMai, int SoLuongTonKho)
         {
             try
             {
@@ -2448,7 +2448,8 @@ namespace Manager.Controllers
                     RAM = RAM,
                     KichThuocManHinh = KichThuocManHinh,
                     LoaiBoNho = LoaiBoNho,
-                    GiaGoc = (double)Gia,
+                    GiaNhap = (double)GiaNhap,
+                    GiaBan = (double)GiaBan,
                     GiaKhuyenMai = GiaKhuyenMai.HasValue ? (double)GiaKhuyenMai.Value : (double?)null,
                     SoLuongTonKho = SoLuongTonKho
                 };
@@ -2466,7 +2467,7 @@ namespace Manager.Controllers
 
         [HttpPost]
         public JsonResult SuaBienTheHangHoa(string MaBienThe, string MauSac, string DungLuong, string CPU, 
-            string RAM, string KichThuocManHinh, string LoaiBoNho, decimal Gia, decimal? GiaKhuyenMai, int SoLuongTonKho)
+            string RAM, string KichThuocManHinh, string LoaiBoNho, decimal GiaNhap, decimal GiaBan, decimal? GiaKhuyenMai, int SoLuongTonKho)
         {
             try
             {
@@ -2482,7 +2483,8 @@ namespace Manager.Controllers
                 bienThe.RAM = RAM;
                 bienThe.KichThuocManHinh = KichThuocManHinh;
                 bienThe.LoaiBoNho = LoaiBoNho;
-                bienThe.GiaGoc = (double)Gia;
+                bienThe.GiaNhap = (double)GiaNhap;
+                bienThe.GiaBan = (double)GiaBan;
                 bienThe.GiaKhuyenMai = GiaKhuyenMai.HasValue ? (double)GiaKhuyenMai.Value : (double?)null;
                 bienThe.SoLuongTonKho = SoLuongTonKho;
 
@@ -3641,23 +3643,22 @@ namespace Manager.Controllers
         }
 
         [HttpPost]
-        public JsonResult ThemTangKem(string MaHangHoaMua, string MaHangHoaTangKem, int SoLuongMuaToiThieu, int SoLuongTang, DateTime NgayBatDau, DateTime NgayKetThuc)
+        public JsonResult ThemTangKem(float GiaTriDonHangToiThieu, string MaHangHoaTangKem, int SoLuongTang, DateTime NgayBatDau, DateTime NgayKetThuc)
         {
             try
             {
-                // Kiểm tra các hàng hóa có tồn tại không
-                var hangHoaMua = data.HangHoas.FirstOrDefault(h => h.MaHangHoa == MaHangHoaMua);
+                // Kiểm tra hàng hóa tặng có tồn tại không
                 var hangHoaTang = data.HangHoas.FirstOrDefault(h => h.MaHangHoa == MaHangHoaTangKem);
 
-                if (hangHoaMua == null || hangHoaTang == null)
+                if (hangHoaTang == null)
                 {
-                    return Json(new { success = false, message = "Mã hàng hóa không tồn tại" });
+                    return Json(new { success = false, message = "Mã hàng hóa tặng kèm không tồn tại" });
                 }
 
-                // Kiểm tra số lượng
-                if (SoLuongMuaToiThieu <= 0 || SoLuongTang <= 0)
+                // Kiểm tra số lượng và giá trị
+                if (SoLuongTang <= 0 || GiaTriDonHangToiThieu <= 0)
                 {
-                    return Json(new { success = false, message = "Số lượng phải lớn hơn 0" });
+                    return Json(new { success = false, message = "Số lượng tặng và giá trị đơn hàng tối thiểu phải lớn hơn 0" });
                 }
 
                 // Kiểm tra ngày
@@ -3669,9 +3670,8 @@ namespace Manager.Controllers
                 // Tạo mới khuyến mãi tặng kèm
                 KhuyenMaiTangKem tangKem = new KhuyenMaiTangKem
                 {
-                    MaHangHoaMua = MaHangHoaMua,
+                    GiaTriDonHangToiThieu = GiaTriDonHangToiThieu,
                     MaHangHoaTangKem = MaHangHoaTangKem,
-                    SoLuongMuaToiThieu = SoLuongMuaToiThieu,
                     SoLuongTang = SoLuongTang,
                     NgayBatDau = NgayBatDau,
                     NgayKetThuc = NgayKetThuc
@@ -3689,23 +3689,22 @@ namespace Manager.Controllers
         }
 
         [HttpPost]
-        public JsonResult SuaTangKem(int IDKM, string MaHangHoaMua, string MaHangHoaTangKem, int SoLuongMuaToiThieu, int SoLuongTang, DateTime NgayBatDau, DateTime NgayKetThuc)
+        public JsonResult SuaTangKem(int IDKM, float GiaTriDonHangToiThieu, string MaHangHoaTangKem, int SoLuongTang, DateTime NgayBatDau, DateTime NgayKetThuc)
         {
             try
             {
-                // Kiểm tra các hàng hóa có tồn tại không
-                var hangHoaMua = data.HangHoas.FirstOrDefault(h => h.MaHangHoa == MaHangHoaMua);
+                // Kiểm tra hàng hóa tặng có tồn tại không
                 var hangHoaTang = data.HangHoas.FirstOrDefault(h => h.MaHangHoa == MaHangHoaTangKem);
 
-                if (hangHoaMua == null || hangHoaTang == null)
+                if (hangHoaTang == null)
                 {
-                    return Json(new { success = false, message = "Mã hàng hóa không tồn tại" });
+                    return Json(new { success = false, message = "Mã hàng hóa tặng kèm không tồn tại" });
                 }
 
-                // Kiểm tra số lượng
-                if (SoLuongMuaToiThieu <= 0 || SoLuongTang <= 0)
+                // Kiểm tra số lượng và giá trị
+                if (SoLuongTang <= 0 || GiaTriDonHangToiThieu <= 0)
                 {
-                    return Json(new { success = false, message = "Số lượng phải lớn hơn 0" });
+                    return Json(new { success = false, message = "Số lượng tặng và giá trị đơn hàng tối thiểu phải lớn hơn 0" });
                 }
 
                 // Kiểm tra ngày
@@ -3721,9 +3720,8 @@ namespace Manager.Controllers
                     return Json(new { success = false, message = "Không tìm thấy khuyến mãi" });
                 }
 
-                tangKem.MaHangHoaMua = MaHangHoaMua;
+                tangKem.GiaTriDonHangToiThieu = GiaTriDonHangToiThieu;
                 tangKem.MaHangHoaTangKem = MaHangHoaTangKem;
-                tangKem.SoLuongMuaToiThieu = SoLuongMuaToiThieu;
                 tangKem.SoLuongTang = SoLuongTang;
                 tangKem.NgayBatDau = NgayBatDau;
                 tangKem.NgayKetThuc = NgayKetThuc;

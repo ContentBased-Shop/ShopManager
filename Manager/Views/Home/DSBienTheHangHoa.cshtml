@@ -21,7 +21,7 @@
 
     <!-- Action Bar -->
     <div class="d-flex flex-wrap align-items-center mb-3 gap-2">
-        <a href="#" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#createVariantModal">
+        <a href="#" class="btn btn-success" id="btnAddNewVariant">
             <i class="bi bi-plus-circle"></i> Thêm biến thể mới
         </a>
         <a href="@Url.Action("DanhSachHangHoa", "Home")" class="btn btn-primary">
@@ -48,7 +48,8 @@
                     <th>RAM</th>
                     <th>Màn hình</th>
                     <th>Loại bộ nhớ</th>
-                    <th>Giá gốc</th>
+                    <th>Giá nhập</th>
+                    <th>Giá bán</th>
                     <th>Giá KM</th>
                     <th>Tồn kho</th>
                     <th>Thao tác</th>
@@ -68,7 +69,8 @@
                         <td class="ram">@(item.RAM ?? "Không có")</td>
                         <td class="kich-thuoc-man-hinh">@(item.KichThuocManHinh ?? "Không có")</td>
                         <td class="loai-bo-nho">@(item.LoaiBoNho ?? "Không có")</td>
-                        <td>@(item.GiaGoc != null ? item.GiaGoc.Value.ToString("N0") + " VNĐ" : "0 VNĐ")</td>
+                        <td>@(item.GiaNhap != null ? item.GiaNhap.Value.ToString("N0") + " VNĐ" : "0 VNĐ")</td>
+                        <td>@(item.GiaBan != null ? item.GiaBan.Value.ToString("N0") + " VNĐ" : "0 VNĐ")</td>
                         <td>@(item.GiaKhuyenMai != null ? item.GiaKhuyenMai.Value.ToString("N0") + " VNĐ" : "Không có")</td>
                         <td>@item.SoLuongTonKho</td>
                         <td>
@@ -76,7 +78,7 @@
                                     data-mausac="@item.MauSac" data-dungluong="@item.DungLuong"
                                     data-cpu="@item.CPU" data-ram="@item.RAM" 
                                     data-kichthuocmanhinh="@item.KichThuocManHinh" data-loaibonho="@item.LoaiBoNho"
-                                    data-gia="@item.GiaGoc" data-giakhuyenmai="@item.GiaKhuyenMai" data-soluong="@item.SoLuongTonKho"
+                                    data-gianhap="@item.GiaNhap" data-giaban="@item.GiaBan" data-giakhuyenmai="@item.GiaKhuyenMai" data-soluong="@item.SoLuongTonKho"
                                     data-bs-toggle="modal" data-bs-target="#editVariantModal">
                                 <i class="bi bi-pencil-square"></i>
                             </button>
@@ -179,71 +181,111 @@
                     <form id="createVariantForm">
                         <input type="hidden" id="maHangHoa" name="MaHangHoa" value="@ViewBag.MaHangHoa" />
                         
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="mauSac" class="form-label">Màu Sắc</label>
-                                    <input type="text" class="form-control" id="mauSac" name="MauSac" maxlength="50">
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="dungLuong" class="form-label">Dung Lượng</label>
-                                    <input type="text" class="form-control" id="dungLuong" name="DungLuong" maxlength="50">
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="cpu" class="form-label">CPU</label>
-                                    <input type="text" class="form-control" id="cpu" name="CPU" maxlength="100">
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="ram" class="form-label">RAM</label>
-                                    <input type="text" class="form-control" id="ram" name="RAM" maxlength="50">
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="kichThuocManHinh" class="form-label">Kích Thước Màn Hình</label>
-                                    <input type="text" class="form-control" id="kichThuocManHinh" name="KichThuocManHinh" maxlength="50">
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="loaiBoNho" class="form-label">Loại Bộ Nhớ</label>
-                                    <input type="text" class="form-control" id="loaiBoNho" name="LoaiBoNho" maxlength="50">
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="gia" class="form-label">Giá Gốc <span class="text-danger">*</span></label>
-                                    <input type="number" class="form-control" id="gia" name="Gia" required>
-                                    <div class="text-danger mt-1" id="giaError" style="display: none;">Vui lòng nhập giá cho biến thể.</div>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="giaKhuyenMai" class="form-label">Giá Khuyến Mãi</label>
-                                    <input type="number" class="form-control" id="giaKhuyenMai" name="GiaKhuyenMai">
-                                </div>
-                            </div>
-                        </div>
-                        
                         <div class="mb-3">
-                            <label for="soLuongTonKho" class="form-label">Số Lượng Tồn Kho <span class="text-danger">*</span></label>
-                            <input type="number" class="form-control" id="soLuongTonKho" name="SoLuongTonKho" required>
-                            <div class="text-danger mt-1" id="soLuongTonKhoError" style="display: none;">Vui lòng nhập số lượng tồn kho.</div>
+                            <label class="form-label">Loại sản phẩm</label>
+                            <select class="form-select" id="loaiSanPham" name="LoaiSanPham">
+                                <option value="">-- Chọn loại sản phẩm --</option>
+                                <option value="DienThoai">Điện thoại</option>
+                                <option value="Laptop">Laptop</option>
+                                <option value="PC">PC</option>
+                                <option value="ManHinh">Màn hình</option>
+                                <option value="Khac">Khác</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Thuộc tính cho Điện thoại -->
+                        <div id="dienThoaiFields" style="display:none;">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="mauSac" class="form-label">Màu Sắc</label>
+                                        <input type="text" class="form-control" id="mauSac" name="MauSac" maxlength="50">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="dungLuong" class="form-label">Dung Lượng</label>
+                                        <input type="text" class="form-control" id="dungLuong" name="DungLuong" maxlength="50">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Thuộc tính cho Laptop và PC -->
+                        <div id="laptopPCFields" style="display:none;">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="cpu" class="form-label">CPU</label>
+                                        <input type="text" class="form-control" id="cpu" name="CPU" maxlength="100">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="ram" class="form-label">RAM</label>
+                                        <input type="text" class="form-control" id="ram" name="RAM" maxlength="50">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Thuộc tính cho Màn hình -->
+                        <div id="manHinhFields" style="display:none;">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="kichThuocManHinh" class="form-label">Kích Thước Màn Hình</label>
+                                        <input type="text" class="form-control" id="kichThuocManHinh" name="KichThuocManHinh" maxlength="50">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="mauSacManHinh" class="form-label">Màu Sắc</label>
+                                        <input type="text" class="form-control" id="mauSacManHinh" name="MauSac" maxlength="50">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Trường chung cho tất cả loại thiết bị -->
+                        <div id="commonFields">
+                            <div class="mb-3">
+                                <label for="loaiBoNho" class="form-label">Loại Bộ Nhớ</label>
+                                <input type="text" class="form-control" id="loaiBoNho" name="LoaiBoNho" maxlength="50">
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="giaNhap" class="form-label">Giá Nhập <span class="text-danger">*</span></label>
+                                        <input type="number" class="form-control" id="giaNhap" name="GiaNhap" required>
+                                        <div class="text-danger mt-1" id="giaNhapError" style="display: none;">Vui lòng nhập giá nhập.</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="giaBan" class="form-label">Giá Bán <span class="text-danger">*</span></label>
+                                        <input type="number" class="form-control" id="giaBan" name="GiaBan" required>
+                                        <div class="text-danger mt-1" id="giaBanError" style="display: none;">Vui lòng nhập giá bán.</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="giaKhuyenMai" class="form-label">Giá Khuyến Mãi</label>
+                                        <input type="number" class="form-control" id="giaKhuyenMai" name="GiaKhuyenMai">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="soLuongTonKho" class="form-label">Số Lượng Tồn Kho <span class="text-danger">*</span></label>
+                                        <input type="number" class="form-control" id="soLuongTonKho" name="SoLuongTonKho" required>
+                                        <div class="text-danger mt-1" id="soLuongTonKhoError" style="display: none;">Vui lòng nhập số lượng tồn kho.</div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </form>
                 </div>
@@ -288,71 +330,111 @@
                             <input type="text" class="form-control bg-light" id="editMaBienThe" name="MaBienThe" readonly>
                         </div>
                         
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="editMauSac" class="form-label">Màu Sắc</label>
-                                    <input type="text" class="form-control" id="editMauSac" name="MauSac" maxlength="50">
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="editDungLuong" class="form-label">Dung Lượng</label>
-                                    <input type="text" class="form-control" id="editDungLuong" name="DungLuong" maxlength="50">
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="editCPU" class="form-label">CPU</label>
-                                    <input type="text" class="form-control" id="editCPU" name="CPU" maxlength="100">
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="editRAM" class="form-label">RAM</label>
-                                    <input type="text" class="form-control" id="editRAM" name="RAM" maxlength="50">
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="editKichThuocManHinh" class="form-label">Kích Thước Màn Hình</label>
-                                    <input type="text" class="form-control" id="editKichThuocManHinh" name="KichThuocManHinh" maxlength="50">
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="editLoaiBoNho" class="form-label">Loại Bộ Nhớ</label>
-                                    <input type="text" class="form-control" id="editLoaiBoNho" name="LoaiBoNho" maxlength="50">
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="editGia" class="form-label">Giá Gốc <span class="text-danger">*</span></label>
-                                    <input type="number" class="form-control" id="editGia" name="Gia" required>
-                                    <div class="text-danger mt-1" id="editGiaError" style="display: none;">Vui lòng nhập giá cho biến thể.</div>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="editGiaKhuyenMai" class="form-label">Giá Khuyến Mãi</label>
-                                    <input type="number" class="form-control" id="editGiaKhuyenMai" name="GiaKhuyenMai">
-                                </div>
-                            </div>
-                        </div>
-                        
                         <div class="mb-3">
-                            <label for="editSoLuongTonKho" class="form-label">Số Lượng Tồn Kho <span class="text-danger">*</span></label>
-                            <input type="number" class="form-control" id="editSoLuongTonKho" name="SoLuongTonKho" required>
-                            <div class="text-danger mt-1" id="editSoLuongTonKhoError" style="display: none;">Vui lòng nhập số lượng tồn kho.</div>
+                            <label class="form-label">Loại sản phẩm</label>
+                            <select class="form-select" id="editLoaiSanPham" name="LoaiSanPham">
+                                <option value="">-- Chọn loại sản phẩm --</option>
+                                <option value="DienThoai">Điện thoại</option>
+                                <option value="Laptop">Laptop</option>
+                                <option value="PC">PC</option>
+                                <option value="ManHinh">Màn hình</option>
+                                <option value="Khac">Khác</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Thuộc tính cho Điện thoại -->
+                        <div id="editDienThoaiFields" style="display:none;">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="editMauSac" class="form-label">Màu Sắc</label>
+                                        <input type="text" class="form-control" id="editMauSac" name="MauSac" maxlength="50">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="editDungLuong" class="form-label">Dung Lượng</label>
+                                        <input type="text" class="form-control" id="editDungLuong" name="DungLuong" maxlength="50">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Thuộc tính cho Laptop và PC -->
+                        <div id="editLaptopPCFields" style="display:none;">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="editCPU" class="form-label">CPU</label>
+                                        <input type="text" class="form-control" id="editCPU" name="CPU" maxlength="100">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="editRAM" class="form-label">RAM</label>
+                                        <input type="text" class="form-control" id="editRAM" name="RAM" maxlength="50">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Thuộc tính cho Màn hình -->
+                        <div id="editManHinhFields" style="display:none;">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="editKichThuocManHinh" class="form-label">Kích Thước Màn Hình</label>
+                                        <input type="text" class="form-control" id="editKichThuocManHinh" name="KichThuocManHinh" maxlength="50">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="editMauSacManHinh" class="form-label">Màu Sắc</label>
+                                        <input type="text" class="form-control" id="editMauSacManHinh" name="MauSac" maxlength="50">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Trường chung cho tất cả loại thiết bị -->
+                        <div id="editCommonFields">
+                            <div class="mb-3">
+                                <label for="editLoaiBoNho" class="form-label">Loại Bộ Nhớ</label>
+                                <input type="text" class="form-control" id="editLoaiBoNho" name="LoaiBoNho" maxlength="50">
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="editGiaNhap" class="form-label">Giá Nhập <span class="text-danger">*</span></label>
+                                        <input type="number" class="form-control" id="editGiaNhap" name="GiaNhap" required>
+                                        <div class="text-danger mt-1" id="editGiaNhapError" style="display: none;">Vui lòng nhập giá nhập.</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="editGiaBan" class="form-label">Giá Bán <span class="text-danger">*</span></label>
+                                        <input type="number" class="form-control" id="editGiaBan" name="GiaBan" required>
+                                        <div class="text-danger mt-1" id="editGiaBanError" style="display: none;">Vui lòng nhập giá bán.</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="editGiaKhuyenMai" class="form-label">Giá Khuyến Mãi</label>
+                                        <input type="number" class="form-control" id="editGiaKhuyenMai" name="GiaKhuyenMai">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="editSoLuongTonKho" class="form-label">Số Lượng Tồn Kho <span class="text-danger">*</span></label>
+                                        <input type="number" class="form-control" id="editSoLuongTonKho" name="SoLuongTonKho" required>
+                                        <div class="text-danger mt-1" id="editSoLuongTonKhoError" style="display: none;">Vui lòng nhập số lượng tồn kho.</div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </form>
                 </div>
@@ -384,6 +466,69 @@
 
     <script>
     $(document).ready(function () {
+        // Xử lý khi nhấn nút thêm biến thể mới
+        $('#btnAddNewVariant').click(function() {
+            // Reset form
+            $('#createVariantForm')[0].reset();
+            
+            // Ẩn tất cả các trường đặc biệt
+            $('#dienThoaiFields, #laptopPCFields, #manHinhFields').hide();
+            
+            // Reset loại sản phẩm
+            $('#loaiSanPham').val('');
+            
+            // Hiển thị modal
+            $('#createVariantModal').modal('show');
+        });
+        
+        // Xử lý hiển thị các trường theo loại sản phẩm khi thêm mới
+        $('#loaiSanPham').change(function() {
+            var loaiSanPham = $(this).val();
+            
+            // Ẩn tất cả các trường đặc biệt
+            $('#dienThoaiFields, #laptopPCFields, #manHinhFields').hide();
+            
+            // Hiển thị trường tương ứng với loại sản phẩm
+            if (loaiSanPham === 'DienThoai') {
+                $('#dienThoaiFields').show();
+            } else if (loaiSanPham === 'Laptop' || loaiSanPham === 'PC') {
+                $('#laptopPCFields').show();
+            } else if (loaiSanPham === 'ManHinh') {
+                $('#manHinhFields').show();
+            }
+        });
+        
+        // Xử lý hiển thị các trường theo loại sản phẩm khi chỉnh sửa
+        $('#editLoaiSanPham').change(function() {
+            var loaiSanPham = $(this).val();
+            
+            // Ẩn tất cả các trường đặc biệt
+            $('#editDienThoaiFields, #editLaptopPCFields, #editManHinhFields').hide();
+            
+            // Hiển thị trường tương ứng với loại sản phẩm
+            if (loaiSanPham === 'DienThoai') {
+                $('#editDienThoaiFields').show();
+                $('#editMauSac').val($('#editMauSacManHinh').val()); // Đồng bộ giá trị màu sắc
+            } else if (loaiSanPham === 'Laptop' || loaiSanPham === 'PC') {
+                $('#editLaptopPCFields').show();
+            } else if (loaiSanPham === 'ManHinh') {
+                $('#editManHinhFields').show();
+                $('#editMauSacManHinh').val($('#editMauSac').val()); // Đồng bộ giá trị màu sắc
+            }
+        });
+        
+        // Xác định loại sản phẩm khi mở form sửa
+        function determineProductType(data) {
+            if (data.mausac && data.dungluong && data.mausac !== 'Không có' && data.dungluong !== 'Không có') {
+                return 'DienThoai';
+            } else if (data.cpu && data.ram && data.cpu !== 'Không có' && data.ram !== 'Không có') {
+                return 'Laptop'; // hoặc PC, cần thêm logic phân biệt nếu cần
+            } else if (data.kichthuocmanhinh && data.kichthuocmanhinh !== 'Không có') {
+                return 'ManHinh';
+            }
+            return 'Khac';
+        }
+
         // Xử lý tìm kiếm
         function searchVariants() {
             var searchText = $('#searchInput').val().toLowerCase();
@@ -441,15 +586,26 @@
         function validateCreateForm() {
             var isValid = true;
             
-            // Validate giá
-            var gia = $('#gia').val();
-            if (!gia || gia <= 0) {
-                $('#gia').addClass('is-invalid');
-                $('#giaError').show();
+            // Validate giá nhập
+            var giaNhap = $('#giaNhap').val();
+            if (!giaNhap || giaNhap <= 0) {
+                $('#giaNhap').addClass('is-invalid');
+                $('#giaNhapError').show();
                 isValid = false;
             } else {
-                $('#gia').removeClass('is-invalid');
-                $('#giaError').hide();
+                $('#giaNhap').removeClass('is-invalid');
+                $('#giaNhapError').hide();
+            }
+            
+            // Validate giá bán
+            var giaBan = $('#giaBan').val();
+            if (!giaBan || giaBan <= 0) {
+                $('#giaBan').addClass('is-invalid');
+                $('#giaBanError').show();
+                isValid = false;
+            } else {
+                $('#giaBan').removeClass('is-invalid');
+                $('#giaBanError').hide();
             }
             
             // Validate số lượng tồn kho
@@ -470,15 +626,26 @@
         function validateEditForm() {
             var isValid = true;
             
-            // Validate giá
-            var gia = $('#editGia').val();
-            if (!gia || gia <= 0) {
-                $('#editGia').addClass('is-invalid');
-                $('#editGiaError').show();
+            // Validate giá nhập
+            var giaNhap = $('#editGiaNhap').val();
+            if (!giaNhap || giaNhap <= 0) {
+                $('#editGiaNhap').addClass('is-invalid');
+                $('#editGiaNhapError').show();
                 isValid = false;
             } else {
-                $('#editGia').removeClass('is-invalid');
-                $('#editGiaError').hide();
+                $('#editGiaNhap').removeClass('is-invalid');
+                $('#editGiaNhapError').hide();
+            }
+            
+            // Validate giá bán
+            var giaBan = $('#editGiaBan').val();
+            if (!giaBan || giaBan <= 0) {
+                $('#editGiaBan').addClass('is-invalid');
+                $('#editGiaBanError').show();
+                isValid = false;
+            } else {
+                $('#editGiaBan').removeClass('is-invalid');
+                $('#editGiaBanError').hide();
             }
             
             // Validate số lượng tồn kho
@@ -495,24 +662,67 @@
             return isValid;
         }
 
+        // Lấy dữ liệu form thêm mới theo loại sản phẩm
+        function getCreateFormData() {
+            var loaiSanPham = $('#loaiSanPham').val();
+            var formData = {
+                MaHangHoa: $('#maHangHoa').val(),
+                GiaNhap: $('#giaNhap').val(),
+                GiaBan: $('#giaBan').val(),
+                GiaKhuyenMai: $('#giaKhuyenMai').val(),
+                SoLuongTonKho: $('#soLuongTonKho').val(),
+                LoaiBoNho: $('#loaiBoNho').val()
+            };
+            
+            // Thêm các trường theo loại sản phẩm
+            if (loaiSanPham === 'DienThoai') {
+                formData.MauSac = $('#mauSac').val();
+                formData.DungLuong = $('#dungLuong').val();
+            } else if (loaiSanPham === 'Laptop' || loaiSanPham === 'PC') {
+                formData.CPU = $('#cpu').val();
+                formData.RAM = $('#ram').val();
+            } else if (loaiSanPham === 'ManHinh') {
+                formData.KichThuocManHinh = $('#kichThuocManHinh').val();
+                formData.MauSac = $('#mauSacManHinh').val();
+            }
+            
+            return formData;
+        }
+        
+        // Lấy dữ liệu form chỉnh sửa theo loại sản phẩm
+        function getEditFormData() {
+            var loaiSanPham = $('#editLoaiSanPham').val();
+            var formData = {
+                MaBienThe: $('#editMaBienThe').val(),
+                GiaNhap: $('#editGiaNhap').val(),
+                GiaBan: $('#editGiaBan').val(),
+                GiaKhuyenMai: $('#editGiaKhuyenMai').val(),
+                SoLuongTonKho: $('#editSoLuongTonKho').val(),
+                LoaiBoNho: $('#editLoaiBoNho').val()
+            };
+            
+            // Thêm các trường theo loại sản phẩm
+            if (loaiSanPham === 'DienThoai') {
+                formData.MauSac = $('#editMauSac').val();
+                formData.DungLuong = $('#editDungLuong').val();
+            } else if (loaiSanPham === 'Laptop' || loaiSanPham === 'PC') {
+                formData.CPU = $('#editCPU').val();
+                formData.RAM = $('#editRAM').val();
+            } else if (loaiSanPham === 'ManHinh') {
+                formData.KichThuocManHinh = $('#editKichThuocManHinh').val();
+                formData.MauSac = $('#editMauSacManHinh').val();
+            }
+            
+            return formData;
+        }
+
         // Xử lý thêm biến thể
         $('#saveVariant').click(function() {
             if (!validateCreateForm()) {
                 return;
             }
             
-            var formData = {
-                MaHangHoa: $('#maHangHoa').val(),
-                MauSac: $('#mauSac').val(),
-                DungLuong: $('#dungLuong').val(),   
-                CPU: $('#cpu').val(),
-                RAM: $('#ram').val(),
-                KichThuocManHinh: $('#kichThuocManHinh').val(),
-                LoaiBoNho: $('#loaiBoNho').val(),
-                Gia: $('#gia').val(),
-                GiaKhuyenMai: $('#giaKhuyenMai').val(),
-                SoLuongTonKho: $('#soLuongTonKho').val()
-            };
+            var formData = getCreateFormData();
             
             $.ajax({
                 url: '@Url.Action("TaoBienTheHangHoa", "Home")',
@@ -544,18 +754,33 @@
             var ram = $(this).data('ram');
             var kichThuocManHinh = $(this).data('kichthuocmanhinh');
             var loaiBoNho = $(this).data('loaibonho');
-            var gia = $(this).data('gia');
+            var giaNhap = $(this).data('gianhap') || 0;
+            var giaBan = $(this).data('giaban') || 0;
             var giaKhuyenMai = $(this).data('giakhuyenmai');
             var soLuong = $(this).data('soluong');
             
+            // Xác định loại sản phẩm
+            var productType = determineProductType({
+                mausac: mauSac, 
+                dungluong: dungLuong,
+                cpu: cpu,
+                ram: ram,
+                kichthuocmanhinh: kichThuocManHinh
+            });
+            
             $('#editMaBienThe').val(maBienThe);
+            $('#editLoaiSanPham').val(productType).trigger('change');
+            
+            // Điền dữ liệu vào các trường
             $('#editMauSac').val(mauSac);
+            $('#editMauSacManHinh').val(mauSac);
             $('#editDungLuong').val(dungLuong);
             $('#editCPU').val(cpu);
             $('#editRAM').val(ram);
             $('#editKichThuocManHinh').val(kichThuocManHinh);
             $('#editLoaiBoNho').val(loaiBoNho);
-            $('#editGia').val(gia);
+            $('#editGiaNhap').val(giaNhap);
+            $('#editGiaBan').val(giaBan);
             $('#editGiaKhuyenMai').val(giaKhuyenMai);
             $('#editSoLuongTonKho').val(soLuong);
         });
@@ -566,18 +791,7 @@
                 return;
             }
             
-            var formData = {
-                MaBienThe: $('#editMaBienThe').val(),
-                MauSac: $('#editMauSac').val(),
-                DungLuong: $('#editDungLuong').val(),
-                CPU: $('#editCPU').val(),
-                RAM: $('#editRAM').val(),
-                KichThuocManHinh: $('#editKichThuocManHinh').val(),
-                LoaiBoNho: $('#editLoaiBoNho').val(),
-                Gia: $('#editGia').val(),
-                GiaKhuyenMai: $('#editGiaKhuyenMai').val(),
-                SoLuongTonKho: $('#editSoLuongTonKho').val()
-            };
+            var formData = getEditFormData();
             
             $.ajax({
                 url: '@Url.Action("SuaBienTheHangHoa", "Home")',
