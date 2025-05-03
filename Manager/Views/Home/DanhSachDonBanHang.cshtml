@@ -75,7 +75,7 @@
                     <select class="form-select" id="filterOrderStatus">
                         <option value="">Tất cả</option>
                         <option value="DangXuLy">Đang xử lý</option>
-                        <option value="DaGiao">Đã giao</option>
+                        <option value="DangGiao">Đang giao</option>
                         <option value="HoanThanh">Hoàn thành</option>
                         <option value="DaHuy">Đã hủy</option>
                     </select>
@@ -138,9 +138,9 @@
                                         badgeClass = "bg-warning";
                                         trangThaiText = "Đang xử lý";
                                         break;
-                                    case "DaGiao":
+                                    case "DangGiao":
                                         badgeClass = "bg-info";
-                                        trangThaiText = "Đã giao";
+                                        trangThaiText = "Đang giao";
                                         break;
                                     case "HoanThanh":
                                         badgeClass = "bg-success";
@@ -253,7 +253,7 @@
                             <label for="editTrangThaiDonHang" class="form-label">Trạng thái đơn hàng</label>
                             <select class="form-select" id="editTrangThaiDonHang">
                                 <option value="DangXuLy">Đang xử lý</option>
-                                <option value="DaGiao">Đã giao</option>
+                                <option value="DangGiao">Đang giao</option>
                                 <option value="HoanThanh">Hoàn thành</option>
                                 <option value="DaHuy">Đã hủy</option>
                             </select>
@@ -407,7 +407,7 @@
                         var actualStatus = '';
                         
                         if (statusElement.text() === 'Đang xử lý') actualStatus = 'DangXuLy';
-                        else if (statusElement.text() === 'Đã giao') actualStatus = 'DaGiao';
+                        else if (statusElement.text() === 'Đang giao') actualStatus = 'DangGiao';
                         else if (statusElement.text() === 'Hoàn thành') actualStatus = 'HoanThanh';
                         else if (statusElement.text() === 'Đã hủy') actualStatus = 'DaHuy';
                         

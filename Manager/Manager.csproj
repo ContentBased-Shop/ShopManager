@@ -148,7 +148,7 @@
   <ItemGroup>
     <Content Include="Content\img\hanghoa\iphone15_pro_max.jpg" />
     <Content Include="Content\img\logo.png" />
-    <Content Include="Content\img\logo1.png" />
+    <Content Include="Content\img\favicon.ico" />
     <Content Include="Content\img\thuonghieu\apple.png" />
     <Content Include="Content\img\thuonghieu\dell.png" />
     <Content Include="Content\img\thuonghieu\logitech.png" />

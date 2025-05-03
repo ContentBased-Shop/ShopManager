@@ -2897,66 +2897,86 @@ namespace Manager.Controllers
                     return Json(new { success = false, message = "Không tìm thấy sản phẩm" });
                 }
 
+                // Đảm bảo thư mục tồn tại
+                string uploadDir = Server.MapPath("~/Content/img/hanghoa/");
+                Directory.CreateDirectory(uploadDir);
+                
+                // Đếm số lượng hình ảnh thành công
+                int successCount = 0;
+                List<string> failedFiles = new List<string>();
+                
                 // Lấy file đầu tiên để kiểm tra và xử lý đặt làm ảnh chính nếu cần
                 var firstFile = Request.Files[0];
                 string firstFileName = null;
                 
-                if (firstFile != null && firstFile.ContentLength > 0)
-                {
-                    string extension = Path.GetExtension(firstFile.FileName);
-                    firstFileName = Guid.NewGuid().ToString() + extension;
-                    string filePath = Path.Combine(Server.MapPath("~/Content/img/hanghoa/"), firstFileName);
-                    
-                    // Đảm bảo thư mục tồn tại
-                    Directory.CreateDirectory(Path.GetDirectoryName(filePath));
-                    
-                    // Lưu file đầu tiên
-                    firstFile.SaveAs(filePath);
-                    
-                    // Nếu sản phẩm chưa có ảnh chính, đặt ảnh đầu tiên làm ảnh chính
-                    if (string.IsNullOrEmpty(hangHoa.HinhAnh))
+                try {
+                    if (firstFile != null && firstFile.ContentLength > 0)
                     {
-                        hangHoa.HinhAnh = firstFileName;
-                    }
-                    else if (Request.Files.Count == 1) 
-                    {
-                        // Nếu chỉ có 1 file và đã có ảnh chính, lưu vào bảng HinhAnhHangHoa
-                        var hinhAnh = new HinhAnhHangHoa
+                        string extension = Path.GetExtension(firstFile.FileName);
+                        firstFileName = Guid.NewGuid().ToString() + extension;
+                        string filePath = Path.Combine(uploadDir, firstFileName);
+                        
+                        // Lưu file đầu tiên
+                        firstFile.SaveAs(filePath);
+                        successCount++;
+                        
+                        // Nếu sản phẩm chưa có ảnh chính, đặt ảnh đầu tiên làm ảnh chính
+                        if (string.IsNullOrEmpty(hangHoa.HinhAnh))
                         {
-                            MaHangHoa = MaHangHoa,
-                            UrlAnh = firstFileName
-                        };
-                        data.HinhAnhHangHoas.InsertOnSubmit(hinhAnh);
+                            hangHoa.HinhAnh = firstFileName;
+                        }
+                        else if (Request.Files.Count == 1) 
+                        {
+                            // Nếu chỉ có 1 file và đã có ảnh chính, lưu vào bảng HinhAnhHangHoa
+                            var hinhAnh = new HinhAnhHangHoa
+                            {
+                                MaHangHoa = MaHangHoa,
+                                UrlAnh = firstFileName
+                            };
+                            data.HinhAnhHangHoas.InsertOnSubmit(hinhAnh);
+                        }
                     }
+                } catch (Exception ex) {
+                    failedFiles.Add(firstFile.FileName + " (" + ex.Message + ")");
                 }
                 
                 // Xử lý các file còn lại
                 for (int i = 1; i < Request.Files.Count; i++)
                 {
                     var file = Request.Files[i];
-                    if (file != null && file.ContentLength > 0)
-                    {
-                        string extension = Path.GetExtension(file.FileName);
-                        string fileName = Guid.NewGuid().ToString() + extension;
-                        string filePath = Path.Combine(Server.MapPath("~/Content/img/hanghoa/"), fileName);
-                        
-                        // Lưu file
-                        file.SaveAs(filePath);
-                        
-                        // Lưu vào bảng HinhAnhHangHoa
-                        var hinhAnh = new HinhAnhHangHoa
+                    try {
+                        if (file != null && file.ContentLength > 0)
                         {
-                            MaHangHoa = MaHangHoa,
-                            UrlAnh = fileName
-                        };
-                        data.HinhAnhHangHoas.InsertOnSubmit(hinhAnh);
+                            string extension = Path.GetExtension(file.FileName);
+                            string fileName = Guid.NewGuid().ToString() + extension;
+                            string filePath = Path.Combine(uploadDir, fileName);
+                            
+                            // Lưu file
+                            file.SaveAs(filePath);
+                            successCount++;
+                            
+                            // Lưu vào bảng HinhAnhHangHoa
+                            var hinhAnh = new HinhAnhHangHoa
+                            {
+                                MaHangHoa = MaHangHoa,
+                                UrlAnh = fileName
+                            };
+                            data.HinhAnhHangHoas.InsertOnSubmit(hinhAnh);
+                        }
+                    } catch (Exception ex) {
+                        failedFiles.Add(file.FileName + " (" + ex.Message + ")");
                     }
                 }
                 
                 // Lưu tất cả thay đổi vào database
                 data.SubmitChanges();
                 
-                return Json(new { success = true, message = "Đã tải lên " + Request.Files.Count + " hình ảnh thành công" });
+                string message = "Đã tải lên " + successCount + " hình ảnh thành công";
+                if (failedFiles.Count > 0) {
+                    message += ". " + failedFiles.Count + " tệp không thành công: " + string.Join(", ", failedFiles);
+                }
+                
+                return Json(new { success = true, message = message });
             }
             catch (Exception ex)
             {

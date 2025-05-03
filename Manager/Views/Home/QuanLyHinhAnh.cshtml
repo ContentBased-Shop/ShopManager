@@ -399,6 +399,7 @@
             $('.upload-progress').show();
             $('#uploadProgressBar').css('width', '0%');
             $('#uploadedCount').text('0');
+            $('#totalCount').text(files.length);
             
             // Vô hiệu hóa nút tải lên
             $('#btnUpload').prop('disabled', true).html('<i class="bi bi-hourglass-split"></i> Đang tải lên...');
@@ -413,11 +414,22 @@
             
             // Gửi tất cả hình ảnh cùng lúc
             $.ajax({
-                url: '@Url.Action("UploadMultipleHinhAnh", "Home")',
+                url: '/Home/UploadMultipleHinhAnh',
                 type: 'POST',
                 data: formData,
                 processData: false,
                 contentType: false,
+                timeout: 300000, // Tăng timeout lên 5 phút
+                xhr: function() {
+                    var xhr = new window.XMLHttpRequest();
+                    xhr.upload.addEventListener("progress", function(evt) {
+                        if (evt.lengthComputable) {
+                            var percentComplete = evt.loaded / evt.total * 100;
+                            $('#uploadProgressBar').css('width', percentComplete + '%');
+                        }
+                    }, false);
+                    return xhr;
+                },
                 success: function(response) {
                     if (response.success) {
                         // Hiển thị thông báo thành công
@@ -439,8 +451,14 @@
                         $('#btnUpload').prop('disabled', false).html('<i class="bi bi-upload"></i> Tải lên tất cả hình ảnh');
                     }
                 },
-                error: function() {
-                    alert('Lỗi kết nối đến server');
+                error: function(xhr, status, error) {
+                    console.error("XHR status: " + status);
+                    console.error("Error: " + error);
+                    if (status === 'timeout') {
+                        alert('Yêu cầu tải lên đã hết thời gian. Vui lòng thử lại với ít hình ảnh hơn hoặc kích thước nhỏ hơn.');
+                    } else {
+                        alert('Lỗi kết nối đến server: ' + status);
+                    }
                     $('#btnUpload').prop('disabled', false).html('<i class="bi bi-upload"></i> Tải lên tất cả hình ảnh');
                 }
             });
