@@ -41,6 +41,7 @@
                     <th>Thương hiệu</th>
                     <th>Mô tả</th>
                     <th>Đánh giá</th>
+                    <th>Trạng thái</th>
                     <th>Ngày tạo</th>
                     <th>Thao tác</th>
                 </tr>
@@ -72,6 +73,16 @@
                         <td>@(item.ThuongHieu.TenThuongHieu ?? "Chưa có")</td>
                         <td>@(item.MoTa.Length > 50 ? item.MoTa.Substring(0, 50) + "..." : item.MoTa ?? "Chưa có mô tả")</td>
                         <td>@(item.DanhGiaTrungBinh.Value.ToString("0.0") ?? "Chưa có")</td>
+                        <td>
+                            @if (item.TrangThai == "HoatDong")
+                            {
+                                <span class="badge bg-success">Hoạt động</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-warning text-dark">Tạm dừng</span>
+                            }
+                        </td>
                         <td>@item.NgayTao.Value.ToString("dd/MM/yyyy")</td>
                         <td>
                             <a href="@Url.Action("SuaHangHoa", "Home", new { id = item.MaHangHoa })" class="btn btn-sm btn-primary">

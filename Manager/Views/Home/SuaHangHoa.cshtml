@@ -63,6 +63,15 @@
                             </select>
                         </div>
 
+                        <div class="mb-3">
+                            <label class="form-label">Trạng thái</label>
+                            <select class="form-select" id="trangThai" name="TrangThai">
+                                <option value="HoatDong" @(Model.TrangThai == "HoatDong" ? "selected" : "")>Hoạt động</option>
+                                <option value="TamDung" @(Model.TrangThai == "TamDung" ? "selected" : "")>Tạm dừng</option>
+                            </select>
+                            <div class="form-text">Trạng thái hoạt động của sản phẩm</div>
+                        </div>
+
                         <button type="button" id="btnSuaHangHoa" class="btn btn-primary mt-3">
                             <i class="bi bi-save"></i> Lưu thay đổi
                         </button>
@@ -144,7 +153,8 @@
                 TenHangHoa: $('#tenHangHoa').val().trim(),
                 MaDanhMuc: $('#maDanhMuc').val(),
                 MaThuongHieu: $('#maThuongHieu').val(),
-                MoTa: $('#moTa').val().trim()
+                MoTa: $('#moTa').val().trim(),
+                TrangThai: $('#trangThai').val()
             };
 
             $.ajax({

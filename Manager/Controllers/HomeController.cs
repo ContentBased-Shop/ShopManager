@@ -706,7 +706,7 @@ namespace Manager.Controllers
         }
 
         [HttpPost]
-        public JsonResult TaoHangHoa(string TenHangHoa, string MaDanhMuc, string MaThuongHieu, string MoTa, HttpPostedFileBase HinhAnh)
+        public JsonResult TaoHangHoa(string TenHangHoa, string MaDanhMuc, string MaThuongHieu, string MoTa, string TrangThai, HttpPostedFileBase HinhAnh)
         {
             try
             {
@@ -741,7 +741,8 @@ namespace Manager.Controllers
                     MoTa = MoTa,
                     HinhAnh = hinhAnhFileName,
                     DanhGiaTrungBinh = 0,
-                    NgayTao = DateTime.Now
+                    NgayTao = DateTime.Now,
+                    TrangThai = TrangThai
                 };
 
                 data.HangHoas.InsertOnSubmit(hangHoa);
@@ -910,7 +911,7 @@ namespace Manager.Controllers
         }
 
         [HttpPost]
-        public JsonResult SuaHangHoa(string MaHangHoa, string TenHangHoa, string MaDanhMuc, string MaThuongHieu, string MoTa, HttpPostedFileBase HinhAnh)
+        public JsonResult SuaHangHoa(string MaHangHoa, string TenHangHoa, string MaDanhMuc, string MaThuongHieu, string MoTa, string TrangThai, HttpPostedFileBase HinhAnh)
         {
             try
             {
@@ -957,6 +958,7 @@ namespace Manager.Controllers
                 hangHoa.MaDanhMuc = string.IsNullOrEmpty(MaDanhMuc) ? null : MaDanhMuc;
                 hangHoa.MaThuongHieu = string.IsNullOrEmpty(MaThuongHieu) ? null : MaThuongHieu;
                 hangHoa.MoTa = MoTa;
+                hangHoa.TrangThai = TrangThai;
 
                 data.SubmitChanges();
 
