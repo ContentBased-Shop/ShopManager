@@ -64,6 +64,15 @@
                             }
                         </select>
                     </div>
+                    <div class="col-md-3 mb-2">
+                        <label class="form-label">Trạng thái thanh toán</label>
+                        <select class="form-select" id="filterPaymentStatus">
+                            <option value="">-- Tất cả --</option>
+                            <option value="Chuathanhtoan">Chưa thanh toán</option>
+                            <option value="Dathanhtoanmotphan">Đã thanh toán một phần</option>
+                            <option value="Dathanhtoanhet">Đã thanh toán hết</option>
+                        </select>
+                    </div>
                 </div>
                 <div class="mt-2">
                     <button class="btn btn-primary" id="btnApplyFilter">
@@ -89,6 +98,9 @@
                     <th>Nhà cung cấp</th>
                     <th>Nhân viên</th>
                     <th>Tổng tiền</th>
+                    <th>Đã thanh toán</th>
+                    <th>Còn lại</th>
+                    <th>Trạng thái</th>
                     <th>Ngày nhập</th>
                     <th>Thao tác</th>
                 </tr>
@@ -104,6 +116,25 @@
                         <td>@(item.NhaCungCap != null ? string.Format("{0} - {1}", item.NhaCungCap.TenNhaCungCap, item.MaNhaCungCap) : item.MaNhaCungCap)</td>
                         <td>@(item.NhanVien != null ? string.Format("{0} - {1}", item.NhanVien.HoTen, item.MaNhanVien) : item.MaNhanVien)</td>
                         <td class="text-end">@String.Format("{0:N0}₫", item.TongTien)</td>
+                        <td class="text-end">@String.Format("{0:N0}₫", item.DaThanhToan)</td>
+                        <td class="text-end">@String.Format("{0:N0}₫", item.TongTien - item.DaThanhToan)</td>
+                        <td class="text-center">
+                            @switch (item.TrangThai)
+                            {
+                                case "Chuathanhtoan":
+                                    <span class="badge bg-danger">Chưa thanh toán</span>
+                                    break;
+                                case "Dathanhtoanmotphan":
+                                    <span class="badge bg-warning text-dark">Đã thanh toán một phần</span>
+                                    break;
+                                case "Dathanhtoanhet":
+                                    <span class="badge bg-success">Đã thanh toán hết</span>
+                                    break;
+                                default:
+                                    <span class="badge bg-secondary">@item.TrangThai</span>
+                                    break;
+                            }
+                        </td>
                         <td>@item.NgayNhap.Value.ToString("dd/MM/yyyy HH:mm")</td>
                         <td class="text-center">
                             <a href="@Url.Action("ChiTietNhapHang", new { id = item.MaNhapHang })" class="btn btn-sm btn-info">
@@ -180,6 +211,10 @@
                                     }
                                 </select>
                             </div>
+                            <div class="col-md-6">
+                                <label for="daThanhToan" class="form-label">Số tiền đã thanh toán</label>
+                                <input type="number" class="form-control" id="daThanhToan" min="0" value="0" />
+                            </div>
                         </div>
 
                         <h6 class="mt-4 mb-3">Chi tiết nhập hàng</h6>
@@ -191,7 +226,7 @@
                                         <option value="">-- Chọn biến thể --</option>
                                         @foreach (var bt in ViewBag.BienThes ?? new List<Manager.Models.BienTheHangHoa>())
                                         {
-                                            <option value="@bt.MaBienThe" data-gia="@bt.GiaGoc">@bt.MaHangHoa - @bt.MauSac - @bt.DungLuong</option>
+                                            <option value="@bt.MaBienThe" data-gia="@bt.GiaNhap">@bt.MaHangHoa - @bt.MauSac - @bt.DungLuong</option>
                                         }
                                     </select>
                                 </div>
@@ -216,6 +251,14 @@
                             </button>
                             <div class="text-end">
                                 <h5>Tổng tiền: <span id="tongTien">0₫</span></h5>
+                                <div class="d-flex flex-column">
+                                    <div class="form-check mt-2">
+                                        <input class="form-check-input" type="checkbox" id="thanhToanHet">
+                                        <label class="form-check-label" for="thanhToanHet">
+                                            Thanh toán hết
+                                        </label>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </form>
@@ -247,6 +290,35 @@
                                 {
                                     <option value="@ncc.MaNhaCungCap">@ncc.TenNhaCungCap</option>
                                 }
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="editTongTien" class="form-label">Tổng tiền</label>
+                            <input type="text" class="form-control" id="editTongTien" readonly />
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="editDaThanhToan" class="form-label">Đã thanh toán</label>
+                            <input type="text" class="form-control" id="editDaThanhToan" readonly />
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="editConLai" class="form-label">Số tiền còn lại</label>
+                            <input type="text" class="form-control" id="editConLai" readonly />
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="editThanhToanThem" class="form-label">Thanh toán thêm</label>
+                            <input type="number" class="form-control" id="editThanhToanThem" min="0" value="0" />
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="editTrangThai" class="form-label">Trạng thái</label>
+                            <select class="form-select" id="editTrangThai">
+                                <option value="Chuathanhtoan">Chưa thanh toán</option>
+                                <option value="Dathanhtoanmotphan">Đã thanh toán một phần</option>
+                                <option value="Dathanhtoanhet">Đã thanh toán hết</option>
                             </select>
                         </div>
                         
@@ -325,6 +397,7 @@
                 $('#filterMinValue').val('');
                 $('#filterMaxValue').val('');
                 $('#filterEmployee').val('');
+                $('#filterPaymentStatus').val('');
                 $('#importTable tbody tr').show();
             });
             
@@ -334,6 +407,7 @@
                 var minValue = parseFloat($('#filterMinValue').val()) || 0;
                 var maxValue = parseFloat($('#filterMaxValue').val()) || Number.MAX_VALUE;
                 var employee = $('#filterEmployee').val();
+                var paymentStatus = $('#filterPaymentStatus').val();
                 
                 $('#importTable tbody tr').each(function() {
                     var row = $(this);
@@ -341,7 +415,7 @@
                     
                     // Lọc theo ngày
                     if (fromDate || toDate) {
-                        var dateStr = row.find('td:eq(5)').text();
+                        var dateStr = row.find('td:eq(7)').text();
                         var parts = dateStr.split(' ')[0].split('/');
                         var rowDate = new Date(parts[2], parts[1] - 1, parts[0]);
                         
@@ -361,6 +435,16 @@
                     if (showRow && employee) {
                         var employeeCell = row.find('td:eq(3)').text();
                         if (!employeeCell.includes(employee)) showRow = false;
+                    }
+                    
+                    // Lọc theo trạng thái thanh toán
+                    if (showRow && paymentStatus) {
+                        var statusClass = row.find('td:eq(6) .badge').attr('class');
+                        var statusText = row.find('td:eq(6) .badge').text().trim();
+                        
+                        if (paymentStatus === "Chuathanhtoan" && !statusClass.includes('bg-danger')) showRow = false;
+                        else if (paymentStatus === "Dathanhtoanmotphan" && !statusClass.includes('bg-warning')) showRow = false;
+                        else if (paymentStatus === "Dathanhtoanhet" && !statusClass.includes('bg-success')) showRow = false;
                     }
                     
                     row.toggle(showRow);
@@ -417,6 +501,16 @@
             bindRemoveEvent();
             bindChangeEvents();
 
+            // Xử lý khi nhấn checkbox "Thanh toán hết"
+            $('#thanhToanHet').change(function() {
+                if($(this).is(':checked')) {
+                    var tongTien = tinhTongTien();
+                    $('#daThanhToan').val(tongTien);
+                } else {
+                    $('#daThanhToan').val(0);
+                }
+            });
+
             // Xử lý khi nhấn nút Lưu phiếu nhập
             $('#btnSaveImport').click(function() {
                 var maNhaCungCap = $('#maNhaCungCap').val();
@@ -455,11 +549,27 @@
                     return;
                 }
                 
+                var tongTien = tinhTongTien();
+                var daThanhToan = parseFloat($('#daThanhToan').val()) || 0;
+                
+                // Xác định trạng thái thanh toán
+                var trangThai = "Chuathanhtoan";
+                if (daThanhToan >= tongTien) {
+                    trangThai = "Dathanhtoanhet";
+                    daThanhToan = tongTien; // Đảm bảo không thanh toán quá
+                } else if (daThanhToan > 0) {
+                    trangThai = "Dathanhtoanmotphan";
+                }
+                
                 var data = {
                     MaNhaCungCap: maNhaCungCap,
-                    TongTien: tinhTongTien(),
+                    TongTien: tongTien,
+                    DaThanhToan: daThanhToan,
+                    TrangThai: trangThai,
                     ChiTietNhapHangs: chiTietList
                 };
+                
+                console.log('Dữ liệu gửi đi:', data); // Log dữ liệu để debug
                 
                 $.ajax({
                     url: '@Url.Action("TaoNhapHang", "Home")',
@@ -478,8 +588,9 @@
                             alert(response.message || 'Tạo phiếu nhập hàng thất bại');
                         }
                     },
-                    error: function() {
-                        alert('Lỗi khi gọi server');
+                    error: function(xhr, status, error) {
+                        console.error('Lỗi AJAX:', xhr.responseText);
+                        alert('Lỗi khi gọi server: ' + error);
                     }
                 });
             });
@@ -496,6 +607,16 @@
                         if (response) {
                             $('#editMaNhapHang').val(response.MaNhapHang);
                             $('#editMaNhaCungCap').val(response.MaNhaCungCap);
+                            
+                            var tongTien = response.TongTien;
+                            var daThanhToan = response.DaThanhToan || 0;
+                            var conLai = tongTien - daThanhToan;
+                            
+                            $('#editTongTien').val(new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(tongTien));
+                            $('#editDaThanhToan').val(new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(daThanhToan));
+                            $('#editConLai').val(new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(conLai));
+                            $('#editThanhToanThem').val(0);
+                            $('#editTrangThai').val(response.TrangThai);
                         } else {
                             alert('Không tìm thấy thông tin phiếu nhập');
                         }
@@ -506,17 +627,58 @@
                 });
             });
 
+            // Tự động cập nhật trạng thái khi thay đổi số tiền thanh toán thêm
+            $('#editThanhToanThem').on('input', function() {
+                var tongTienText = $('#editTongTien').val().replace(/\D/g, '');
+                var daThanhToanText = $('#editDaThanhToan').val().replace(/\D/g, '');
+                
+                var tongTien = parseFloat(tongTienText) || 0;
+                var daThanhToan = parseFloat(daThanhToanText) || 0;
+                var thanhToanThem = parseFloat($(this).val()) || 0;
+                
+                var tongDaThanhToan = daThanhToan + thanhToanThem;
+                
+                if (tongDaThanhToan <= 0) {
+                    $('#editTrangThai').val('Chuathanhtoan');
+                } else if (tongDaThanhToan >= tongTien) {
+                    $('#editTrangThai').val('Dathanhtoanhet');
+                    // Giới hạn số tiền thanh toán thêm để không vượt quá số tiền còn lại
+                    var conLai = tongTien - daThanhToan;
+                    if (thanhToanThem > conLai) {
+                        $(this).val(conLai);
+                    }
+                } else {
+                    $('#editTrangThai').val('Dathanhtoanmotphan');
+                }
+            });
+
             // Xử lý khi nhấn nút Lưu trong modal sửa
             $('#updateImport').click(function() {
+                var maNhapHang = $('#editMaNhapHang').val();
+                var maNhaCungCap = $('#editMaNhaCungCap').val();
+                var thanhToanThem = parseFloat($('#editThanhToanThem').val()) || 0;
+                var trangThai = $('#editTrangThai').val();
+                
+                // Đảm bảo giá trị không null
+                if (!maNhapHang || !maNhaCungCap || trangThai === undefined || trangThai === null) {
+                    alert('Vui lòng điền đầy đủ thông tin');
+                    return;
+                }
+                
                 var data = {
-                    MaNhapHang: $('#editMaNhapHang').val(),
-                    MaNhaCungCap: $('#editMaNhaCungCap').val()
+                    MaNhapHang: maNhapHang,
+                    MaNhaCungCap: maNhaCungCap,
+                    ThanhToanThem: thanhToanThem,
+                    TrangThai: trangThai
                 };
                 
+                console.log('Dữ liệu cập nhật:', data);
+                
                 $.ajax({
-                    url: '@Url.Action("CapNhatNhapHang", "Home")',
+                    url: '@Url.Action("CapNhatThanhToanNhapHang", "Home")',
                     type: 'POST',
-                    data: data,
+                    contentType: 'application/json',
+                    data: JSON.stringify(data),
                     success: function(response) {
                         $('#editImportModal').modal('hide');
                         if (response.success) {
@@ -529,8 +691,9 @@
                             alert(response.message || 'Cập nhật phiếu nhập thất bại');
                         }
                     },
-                    error: function() {
-                        alert('Lỗi khi gọi server');
+                    error: function(xhr, status, error) {
+                        console.error('Lỗi AJAX:', xhr.responseText);
+                        alert('Lỗi khi gọi server: ' + error);
                     }
                 });
             });

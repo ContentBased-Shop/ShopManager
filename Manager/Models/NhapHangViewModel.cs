@@ -11,6 +11,8 @@ namespace Manager.Models
         public string MaNhaCungCap { get; set; }
         public string MaNhanVien { get; set; }
         public decimal TongTien { get; set; }
+        public decimal? DaThanhToan { get; set; }
+        public string TrangThai { get; set; }
         public DateTime? NgayNhap { get; set; }
         public List<ChiTietNhapHangViewModel> ChiTietNhapHangs { get; set; }
     }

@@ -1878,6 +1878,20 @@ namespace Manager.Controllers
                 // Lấy mã nhân viên đang đăng nhập
                 string maNhanVien = Session["UserID"].ToString();
 
+                // Đảm bảo giá trị DaThanhToan và xác định TrangThai
+                double daThanhToan = model.DaThanhToan.HasValue ? (double)model.DaThanhToan.Value : 0;
+                string trangThai = "Chuathanhtoan";
+                
+                if (daThanhToan >= (double)model.TongTien)
+                {
+                    trangThai = "Dathanhtoanhet";
+                    daThanhToan = (double)model.TongTien; // Đảm bảo không thanh toán quá tổng tiền
+                }
+                else if (daThanhToan > 0)
+                {
+                    trangThai = "Dathanhtoanmotphan";
+                }
+
                 // Tạo phiếu nhập mới
                 var nhapHang = new NhapHang
                 {
@@ -1885,6 +1899,8 @@ namespace Manager.Controllers
                     MaNhaCungCap = model.MaNhaCungCap,
                     MaNhanVien = maNhanVien,
                     TongTien = (double)model.TongTien,
+                    DaThanhToan = daThanhToan,
+                    TrangThai = trangThai,
                     NgayNhap = DateTime.Now
                 };
                 data.NhapHangs.InsertOnSubmit(nhapHang);
@@ -1942,17 +1958,19 @@ namespace Manager.Controllers
                     nhapHang.MaNhaCungCap,
                     nhapHang.MaNhanVien,
                     nhapHang.TongTien,
+                    nhapHang.DaThanhToan,
+                    nhapHang.TrangThai,
                     NgayNhap = nhapHang.NgayNhap?.ToString("dd/MM/yyyy HH:mm")
                 }, JsonRequestBehavior.AllowGet);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                return Json(null, JsonRequestBehavior.AllowGet);
+                return Json(new { error = ex.Message }, JsonRequestBehavior.AllowGet);
             }
         }
 
         [HttpPost]
-        public JsonResult CapNhatNhapHang(string MaNhapHang, string MaNhaCungCap)
+        public JsonResult CapNhatNhapHang(string MaNhapHang, string MaNhaCungCap, double DaThanhToan, string TrangThai)
         {
             try
             {
@@ -1962,7 +1980,32 @@ namespace Manager.Controllers
                     return Json(new { success = false, message = "Không tìm thấy phiếu nhập" });
                 }
 
+                // Cập nhật thông tin phiếu nhập
                 nhapHang.MaNhaCungCap = MaNhaCungCap;
+                
+                // Đảm bảo giá trị DaThanhToan hợp lệ
+                if (DaThanhToan >= nhapHang.TongTien)
+                {
+                    nhapHang.DaThanhToan = nhapHang.TongTien;
+                    nhapHang.TrangThai = "Dathanhtoanhet";
+                }
+                else if (DaThanhToan > 0)
+                {
+                    nhapHang.DaThanhToan = DaThanhToan;
+                    nhapHang.TrangThai = "Dathanhtoanmotphan";
+                }
+                else
+                {
+                    nhapHang.DaThanhToan = 0;
+                    nhapHang.TrangThai = "Chuathanhtoan";
+                }
+                
+                // Nếu trạng thái được chỉ định rõ ràng, sử dụng giá trị đó thay vì tính toán
+                if (!string.IsNullOrEmpty(TrangThai))
+                {
+                    nhapHang.TrangThai = TrangThai;
+                }
+
                 data.SubmitChanges();
                 return Json(new { success = true });
             }
@@ -3796,6 +3839,56 @@ namespace Manager.Controllers
             catch (Exception ex)
             {
                 return Json(new { success = false, message = "Lỗi: " + ex.Message });
+            }
+        }
+
+        [HttpPost]
+        public JsonResult CapNhatThanhToanNhapHang(string MaNhapHang, string MaNhaCungCap, double ThanhToanThem, string TrangThai)
+        {
+            try
+            {
+                var nhapHang = data.NhapHangs.FirstOrDefault(n => n.MaNhapHang == MaNhapHang);
+                if (nhapHang == null)
+                {
+                    return Json(new { success = false, message = "Không tìm thấy phiếu nhập" });
+                }
+
+                // Cập nhật thông tin phiếu nhập
+                nhapHang.MaNhaCungCap = MaNhaCungCap;
+                
+                // Cập nhật số tiền đã thanh toán bằng cách cộng thêm số tiền thanh toán mới
+                double daThanhToan = nhapHang.DaThanhToan.HasValue ? nhapHang.DaThanhToan.Value : 0;
+                double tongDaThanhToan = daThanhToan + ThanhToanThem;
+                
+                // Đảm bảo giá trị DaThanhToan hợp lệ
+                if (tongDaThanhToan >= nhapHang.TongTien)
+                {
+                    nhapHang.DaThanhToan = nhapHang.TongTien;
+                    nhapHang.TrangThai = "Dathanhtoanhet";
+                }
+                else if (tongDaThanhToan > 0)
+                {
+                    nhapHang.DaThanhToan = tongDaThanhToan;
+                    nhapHang.TrangThai = "Dathanhtoanmotphan";
+                }
+                else
+                {
+                    nhapHang.DaThanhToan = 0;
+                    nhapHang.TrangThai = "Chuathanhtoan";
+                }
+                
+                // Nếu trạng thái được chỉ định rõ ràng, sử dụng giá trị đó thay vì tính toán
+                if (!string.IsNullOrEmpty(TrangThai))
+                {
+                    nhapHang.TrangThai = TrangThai;
+                }
+
+                data.SubmitChanges();
+                return Json(new { success = true });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Có lỗi xảy ra: " + ex.Message });
             }
         }
     }
