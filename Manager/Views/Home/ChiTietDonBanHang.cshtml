@@ -32,8 +32,12 @@
                         <div class="col-sm-8">@Model.DonHang.MaDonHang</div>
                     </div>
                     <div class="mb-2 row">
-                        <label class="col-sm-4 fw-bold">Mã khách hàng:</label>
-                        <div class="col-sm-8">@Model.DonHang.MaKhachHang</div>
+                        <label class="col-sm-4 fw-bold">Khách hàng:</label>
+                        <div class="col-sm-8">
+                            <span data-bs-toggle="tooltip" title="Mã: @Model.DonHang.MaKhachHang">
+                                @(Model.DonHang.KhachHang != null ? Model.DonHang.KhachHang.HoTen : "Không xác định")
+                            </span>
+                        </div>
                     </div>
                     <div class="mb-2 row">
                         <label class="col-sm-4 fw-bold">Tổng tiền:</label>
@@ -44,23 +48,28 @@
                         <div class="col-sm-8">
                             @{
                                 var donHangClass = "";
+                                var trangThaiText = "";
                                 switch (Model.DonHang.TrangThaiDonHang)
                                 {
                                     case "DangXuLy":
                                         donHangClass = "bg-warning";
+                                        trangThaiText = "Đang xử lý";
                                         break;
-                                    case "DaGiao":
+                                    case "DangGiao":
                                         donHangClass = "bg-info";
+                                        trangThaiText = "Đang giao";
                                         break;
                                     case "HoanThanh":
                                         donHangClass = "bg-success";
+                                        trangThaiText = "Hoàn thành";
                                         break;
                                     case "DaHuy":
                                         donHangClass = "bg-danger";
+                                        trangThaiText = "Đã hủy";
                                         break;
                                 }
                             }
-                            <span class="badge @donHangClass">@Model.DonHang.TrangThaiDonHang</span>
+                            <span class="badge @donHangClass">@trangThaiText</span>
                         </div>
                     </div>
                     <div class="mb-2 row">
@@ -68,20 +77,24 @@
                         <div class="col-sm-8">
                             @{
                                 var paymentClass = "";
+                                var thanhToanText = "";
                                 switch (Model.DonHang.TrangThaiThanhToan)
                                 {
                                     case "ChoThanhToan":
                                         paymentClass = "bg-warning";
+                                        thanhToanText = "Chờ thanh toán";
                                         break;
                                     case "DaThanhToan":
                                         paymentClass = "bg-success";
+                                        thanhToanText = "Đã thanh toán";
                                         break;
                                     case "DaHuy":
                                         paymentClass = "bg-danger";
+                                        thanhToanText = "Đã hủy";
                                         break;
                                 }
                             }
-                            <span class="badge @paymentClass">@Model.DonHang.TrangThaiThanhToan</span>
+                            <span class="badge @paymentClass">@thanhToanText</span>
                         </div>
                     </div>
                     <div class="mb-2 row">
@@ -102,7 +115,24 @@
                     {
                         <div class="mb-2 row">
                             <label class="col-sm-4 fw-bold">Phương thức:</label>
-                            <div class="col-sm-8">@Model.ThanhToan.PhuongThucThanhToan</div>
+                            <div class="col-sm-8">
+                                @{
+                                    var phuongThucText = "";
+                                    switch (Model.ThanhToan.PhuongThucThanhToan)
+                                    {
+                                        case "TheTinDung":
+                                            phuongThucText = "Thẻ tín dụng";
+                                            break;
+                                        case "ChuyenKhoan":
+                                            phuongThucText = "Chuyển khoản";
+                                            break;
+                                        case "COD":
+                                            phuongThucText = "Thanh toán khi nhận hàng";
+                                            break;
+                                    }
+                                }
+                                @phuongThucText
+                            </div>
                         </div>
                         <div class="mb-2 row">
                             <label class="col-sm-4 fw-bold">Mã giao dịch:</label>
@@ -113,20 +143,24 @@
                             <div class="col-sm-8">
                                 @{
                                     var thanhToanClass = "";
+                                    var trangThaiThanhToanText = "";
                                     switch (Model.ThanhToan.TrangThai)
                                     {
                                         case "ChoXuLy":
                                             thanhToanClass = "bg-warning";
+                                            trangThaiThanhToanText = "Chờ xử lý";
                                             break;
                                         case "ThanhCong":
                                             thanhToanClass = "bg-success";
+                                            trangThaiThanhToanText = "Thành công";
                                             break;
                                         case "ThatBai":
                                             thanhToanClass = "bg-danger";
+                                            trangThaiThanhToanText = "Thất bại";
                                             break;
                                     }
                                 }
-                                <span class="badge @thanhToanClass">@Model.ThanhToan.TrangThai</span>
+                                <span class="badge @thanhToanClass">@trangThaiThanhToanText</span>
                             </div>
                         </div>
                         <div class="mb-2 row">
@@ -173,26 +207,32 @@
                                     <div class="col-sm-8">
                                         @{
                                             var giaoHangClass = "";
+                                            var trangThaiGiaoHangText = "";
                                             switch (Model.GiaoHang.TrangThaiGiaoHang)
                                             {
                                                 case "ChuanBiHang":
                                                     giaoHangClass = "bg-secondary";
+                                                    trangThaiGiaoHangText = "Chuẩn bị hàng";
                                                     break;
                                                 case "DangVanChuyen":
                                                     giaoHangClass = "bg-primary";
+                                                    trangThaiGiaoHangText = "Đang vận chuyển";
                                                     break;
                                                 case "DaGiao":
                                                     giaoHangClass = "bg-success";
+                                                    trangThaiGiaoHangText = "Đã giao";
                                                     break;
                                                 case "ThatBai":
                                                     giaoHangClass = "bg-danger";
+                                                    trangThaiGiaoHangText = "Thất bại";
                                                     break;
                                                 case "BiHoan":
                                                     giaoHangClass = "bg-warning";
+                                                    trangThaiGiaoHangText = "Bị hoàn";
                                                     break;
                                             }
                                         }
-                                        <span class="badge @giaoHangClass">@Model.GiaoHang.TrangThaiGiaoHang</span>
+                                        <span class="badge @giaoHangClass">@trangThaiGiaoHangText</span>
                                     </div>
                                 </div>
                                 <div class="mb-2 row">
@@ -233,7 +273,7 @@
                     <thead class="table-light">
                         <tr class="text-center">
                             <th>STT</th>
-                            <th>Mã biến thể</th>
+                            <th>Biến thể</th>
                             <th>Số lượng</th>
                             <th>Đơn giá</th>
                             <th>Thành tiền</th>
@@ -248,12 +288,34 @@
                         {
                             var thanhTien = item.SoLuong * item.DonGia;
                             tongTien += thanhTien;
+                            var bienThe = item.BienTheHangHoa;
+                            var tenBienThe = "";
+
+                            if (bienThe != null)
+                            {
+                                var tenSanPham = bienThe.HangHoa != null ? bienThe.HangHoa.TenHangHoa : "";
+                                var thongTinBienThe = new List<string>();
+
+                                if (!string.IsNullOrEmpty(bienThe.MauSac)) { thongTinBienThe.Add(bienThe.MauSac); }
+                                if (!string.IsNullOrEmpty(bienThe.DungLuong)) { thongTinBienThe.Add(bienThe.DungLuong); }
+                                if (!string.IsNullOrEmpty(bienThe.CPU)) { thongTinBienThe.Add(bienThe.CPU); }
+                                if (!string.IsNullOrEmpty(bienThe.RAM)) { thongTinBienThe.Add(bienThe.RAM); }
+                                if (!string.IsNullOrEmpty(bienThe.KichThuocManHinh)) { thongTinBienThe.Add(bienThe.KichThuocManHinh); }
+
+                                tenBienThe = string.Format("{0} ({1})", tenSanPham, string.Join(", ", thongTinBienThe));
+                            }
+
                             <tr>
                                 <td class="text-center">@stt</td>
-                                <td>@item.MaBienThe</td>
+                                <td>
+                                    <span data-bs-toggle="tooltip" title="@tenBienThe">
+                                        @item.MaBienThe
+                                    </span>
+                                </td>
                                 <td class="text-center">@item.SoLuong</td>
                                 <td class="text-end">@((item.DonGia ?? 0).ToString("N0")) ₫</td>
-                                <td class="text-end">@((thanhTien ?? 0).ToString("N0")) ₫</td>                            </tr>
+                                <td class="text-end">@((thanhTien ?? 0).ToString("N0")) ₫</td>
+                            </tr>
                             stt++;
                         }
                     </tbody>
@@ -268,3 +330,13 @@
         </div>
     </div>
 </div>
+
+<script>
+    $(document).ready(function() {
+        // Kích hoạt tooltip
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl)
+        });
+    });
+</script>
