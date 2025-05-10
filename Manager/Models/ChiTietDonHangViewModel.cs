@@ -11,6 +11,7 @@ namespace Manager.Models
         public List<ChiTietDonHang> ChiTietDonHangs { get; set; }
         public ThanhToan ThanhToan { get; set; }
         public GiaoHang GiaoHang { get; set; }
+        public DiaChiKhachHang DiaChiGiaoHang { get; set; }
     }
 
 

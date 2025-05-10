@@ -3,32 +3,16 @@
   "WorkspaceRootPath": "D:\\E\\DAI HOC\\HK8\\KhoaLuan\\Code\\Manager\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{B5A91320-AF90-4A21-8251-C7D1F762736C}|Manager\\Manager.csproj|d:\\e\\dai hoc\\hk8\\khoaluan\\code\\manager\\manager\\views\\home\\chitietnhaphang.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
-      "RelativeMoniker": "D:0:0:{B5A91320-AF90-4A21-8251-C7D1F762736C}|Manager\\Manager.csproj|solutionrelative:manager\\views\\home\\chitietnhaphang.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{B5A91320-AF90-4A21-8251-C7D1F762736C}|Manager\\Manager.csproj|d:\\e\\dai hoc\\hk8\\khoaluan\\code\\manager\\manager\\views\\home\\danhsachhanghoa.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
-      "RelativeMoniker": "D:0:0:{B5A91320-AF90-4A21-8251-C7D1F762736C}|Manager\\Manager.csproj|solutionrelative:manager\\views\\home\\danhsachhanghoa.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{B5A91320-AF90-4A21-8251-C7D1F762736C}|Manager\\Manager.csproj|D:\\E\\DAI HOC\\HK8\\KhoaLuan\\Code\\Manager\\manager\\views\\home\\danhsachdonbanhang.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
-      "RelativeMoniker": "D:0:0:{B5A91320-AF90-4A21-8251-C7D1F762736C}|Manager\\Manager.csproj|solutionrelative:manager\\views\\home\\danhsachdonbanhang.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+      "AbsoluteMoniker": "D:0:0:{B5A91320-AF90-4A21-8251-C7D1F762736C}|Manager\\Manager.csproj|d:\\e\\dai hoc\\hk8\\khoaluan\\code\\manager\\manager\\views\\home\\chitietdonbanhang.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{B5A91320-AF90-4A21-8251-C7D1F762736C}|Manager\\Manager.csproj|solutionrelative:manager\\views\\home\\chitietdonbanhang.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{B5A91320-AF90-4A21-8251-C7D1F762736C}|Manager\\Manager.csproj|d:\\e\\dai hoc\\hk8\\khoaluan\\code\\manager\\manager\\controllers\\homecontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{B5A91320-AF90-4A21-8251-C7D1F762736C}|Manager\\Manager.csproj|solutionrelative:manager\\controllers\\homecontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{B5A91320-AF90-4A21-8251-C7D1F762736C}|Manager\\Manager.csproj|D:\\E\\DAI HOC\\HK8\\KhoaLuan\\Code\\Manager\\manager\\views\\home\\danhsachnhaphang.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
-      "RelativeMoniker": "D:0:0:{B5A91320-AF90-4A21-8251-C7D1F762736C}|Manager\\Manager.csproj|solutionrelative:manager\\views\\home\\danhsachnhaphang.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{B5A91320-AF90-4A21-8251-C7D1F762736C}|Manager\\Manager.csproj|D:\\E\\DAI HOC\\HK8\\KhoaLuan\\Code\\Manager\\manager\\views\\home\\dashboard.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
-      "RelativeMoniker": "D:0:0:{B5A91320-AF90-4A21-8251-C7D1F762736C}|Manager\\Manager.csproj|solutionrelative:manager\\views\\home\\dashboard.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{B5A91320-AF90-4A21-8251-C7D1F762736C}|Manager\\Manager.csproj|D:\\E\\DAI HOC\\HK8\\KhoaLuan\\Code\\Manager\\manager\\views\\home\\quanlyhinhanh.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
-      "RelativeMoniker": "D:0:0:{B5A91320-AF90-4A21-8251-C7D1F762736C}|Manager\\Manager.csproj|solutionrelative:manager\\views\\home\\quanlyhinhanh.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+      "AbsoluteMoniker": "D:0:0:{B5A91320-AF90-4A21-8251-C7D1F762736C}|Manager\\Manager.csproj|d:\\e\\dai hoc\\hk8\\khoaluan\\code\\manager\\manager\\views\\home\\danhsachhanghoa.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{B5A91320-AF90-4A21-8251-C7D1F762736C}|Manager\\Manager.csproj|solutionrelative:manager\\views\\home\\danhsachhanghoa.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
     }
   ],
   "DocumentGroupContainers": [
@@ -38,96 +22,45 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 0,
+          "SelectedChildIndex": 1,
           "Children": [
             {
               "$type": "Document",
-              "DocumentIndex": 0,
-              "Title": "ChiTietNhapHang.cshtml",
-              "DocumentMoniker": "D:\\E\\DAI HOC\\HK8\\KhoaLuan\\Code\\Manager\\Manager\\Views\\Home\\ChiTietNhapHang.cshtml",
-              "RelativeDocumentMoniker": "Manager\\Views\\Home\\ChiTietNhapHang.cshtml",
-              "ToolTip": "D:\\E\\DAI HOC\\HK8\\KhoaLuan\\Code\\Manager\\Manager\\Views\\Home\\ChiTietNhapHang.cshtml",
-              "RelativeToolTip": "Manager\\Views\\Home\\ChiTietNhapHang.cshtml",
-              "ViewState": "AQIAAH0AAAAAAAAAAAAvwIYAAABzAAAA",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2025-05-10T04:07:35.196Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
               "DocumentIndex": 1,
-              "Title": "DanhSachHangHoa.cshtml",
-              "DocumentMoniker": "D:\\E\\DAI HOC\\HK8\\KhoaLuan\\Code\\Manager\\Manager\\Views\\Home\\DanhSachHangHoa.cshtml",
-              "RelativeDocumentMoniker": "Manager\\Views\\Home\\DanhSachHangHoa.cshtml",
-              "ToolTip": "D:\\E\\DAI HOC\\HK8\\KhoaLuan\\Code\\Manager\\Manager\\Views\\Home\\DanhSachHangHoa.cshtml",
-              "RelativeToolTip": "Manager\\Views\\Home\\DanhSachHangHoa.cshtml",
-              "ViewState": "AQIAAKgAAAAAAAAAAAAAADQAAAAzAAAA",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2025-05-10T03:55:33.23Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 5,
-              "Title": "Dashboard.cshtml",
-              "DocumentMoniker": "D:\\E\\DAI HOC\\HK8\\KhoaLuan\\Code\\Manager\\Manager\\Views\\Home\\Dashboard.cshtml",
-              "RelativeDocumentMoniker": "Manager\\Views\\Home\\Dashboard.cshtml",
-              "ToolTip": "D:\\E\\DAI HOC\\HK8\\KhoaLuan\\Code\\Manager\\Manager\\Views\\Home\\Dashboard.cshtml",
-              "RelativeToolTip": "Manager\\Views\\Home\\Dashboard.cshtml",
-              "ViewState": "AQIAALkAAAAAAAAAAAASwGsAAAAxAAAA",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2025-05-03T01:49:28.378Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 2,
-              "Title": "DanhSachDonBanHang.cshtml",
-              "DocumentMoniker": "D:\\E\\DAI HOC\\HK8\\KhoaLuan\\Code\\Manager\\Manager\\Views\\Home\\DanhSachDonBanHang.cshtml",
-              "RelativeDocumentMoniker": "Manager\\Views\\Home\\DanhSachDonBanHang.cshtml",
-              "ToolTip": "D:\\E\\DAI HOC\\HK8\\KhoaLuan\\Code\\Manager\\Manager\\Views\\Home\\DanhSachDonBanHang.cshtml",
-              "RelativeToolTip": "Manager\\Views\\Home\\DanhSachDonBanHang.cshtml",
-              "ViewState": "AQIAAI0BAAAAAAAAAIAwwJkBAABEAAAA",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2025-05-03T01:23:48.352Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 4,
-              "Title": "DanhSachNhapHang.cshtml",
-              "DocumentMoniker": "D:\\E\\DAI HOC\\HK8\\KhoaLuan\\Code\\Manager\\Manager\\Views\\Home\\DanhSachNhapHang.cshtml",
-              "RelativeDocumentMoniker": "Manager\\Views\\Home\\DanhSachNhapHang.cshtml",
-              "ToolTip": "D:\\E\\DAI HOC\\HK8\\KhoaLuan\\Code\\Manager\\Manager\\Views\\Home\\DanhSachNhapHang.cshtml",
-              "RelativeToolTip": "Manager\\Views\\Home\\DanhSachNhapHang.cshtml",
-              "ViewState": "AQIAAK0CAAAAAAAAAOBvwLECAAAgAAAA",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2025-05-02T13:54:47.193Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 6,
-              "Title": "QuanLyHinhAnh.cshtml",
-              "DocumentMoniker": "D:\\E\\DAI HOC\\HK8\\KhoaLuan\\Code\\Manager\\Manager\\Views\\Home\\QuanLyHinhAnh.cshtml",
-              "RelativeDocumentMoniker": "Manager\\Views\\Home\\QuanLyHinhAnh.cshtml",
-              "ToolTip": "D:\\E\\DAI HOC\\HK8\\KhoaLuan\\Code\\Manager\\Manager\\Views\\Home\\QuanLyHinhAnh.cshtml",
-              "RelativeToolTip": "Manager\\Views\\Home\\QuanLyHinhAnh.cshtml",
-              "ViewState": "AQIAAJEBAAAAAAAAAAAwwKABAAAzAAAA",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2025-05-02T13:54:03.945Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 3,
               "Title": "HomeController.cs",
               "DocumentMoniker": "D:\\E\\DAI HOC\\HK8\\KhoaLuan\\Code\\Manager\\Manager\\Controllers\\HomeController.cs",
               "RelativeDocumentMoniker": "Manager\\Controllers\\HomeController.cs",
               "ToolTip": "D:\\E\\DAI HOC\\HK8\\KhoaLuan\\Code\\Manager\\Manager\\Controllers\\HomeController.cs",
               "RelativeToolTip": "Manager\\Controllers\\HomeController.cs",
-              "ViewState": "AQIAAGYAAAAAAAAAAAAqwIkAAAAMAAAA",
+              "ViewState": "AQIAADAPAAAAAAAAAAAqwEgPAAAAAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-04-26T03:07:08.478Z",
+              "WhenOpened": "2025-05-10T05:18:50.646Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "ChiTietDonBanHang.cshtml",
+              "DocumentMoniker": "D:\\E\\DAI HOC\\HK8\\KhoaLuan\\Code\\Manager\\Manager\\Views\\Home\\ChiTietDonBanHang.cshtml",
+              "RelativeDocumentMoniker": "Manager\\Views\\Home\\ChiTietDonBanHang.cshtml",
+              "ToolTip": "D:\\E\\DAI HOC\\HK8\\KhoaLuan\\Code\\Manager\\Manager\\Views\\Home\\ChiTietDonBanHang.cshtml",
+              "RelativeToolTip": "Manager\\Views\\Home\\ChiTietDonBanHang.cshtml",
+              "ViewState": "AQIAAAYCAAAAAAAAAAAgwBYCAAAUAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2025-05-10T05:18:48.918Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "DanhSachHangHoa.cshtml",
+              "DocumentMoniker": "D:\\E\\DAI HOC\\HK8\\KhoaLuan\\Code\\Manager\\Manager\\Views\\Home\\DanhSachHangHoa.cshtml",
+              "RelativeDocumentMoniker": "Manager\\Views\\Home\\DanhSachHangHoa.cshtml",
+              "ToolTip": "D:\\E\\DAI HOC\\HK8\\KhoaLuan\\Code\\Manager\\Manager\\Views\\Home\\DanhSachHangHoa.cshtml",
+              "RelativeToolTip": "Manager\\Views\\Home\\DanhSachHangHoa.cshtml",
+              "ViewState": "AQIAAIoAAAAAAAAAAAAAADQAAAAzAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2025-05-10T03:55:33.23Z",
               "EditorCaption": ""
             }
           ]

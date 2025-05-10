@@ -1643,12 +1643,28 @@ namespace Manager.Controllers
             var thanhToan = data.ThanhToans.FirstOrDefault(t => t.MaDonHang == id);
             var giaoHang = data.GiaoHangs.FirstOrDefault(g => g.MaDonHang == id);
 
+            // Lấy danh sách địa chỉ của khách hàng
+            if (donHang != null && donHang.MaKhachHang != null)
+            {
+                ViewBag.DiaChiKhachHang = data.DiaChiKhachHangs
+                    .Where(d => d.MaKhachHang == donHang.MaKhachHang)
+                    .ToList();
+            }
+            
+            // Lấy đối tượng địa chỉ khách hàng cho đơn giao hàng nếu có
+            DiaChiKhachHang diaChiGiaoHang = null;
+            if (giaoHang != null && !string.IsNullOrEmpty(giaoHang.MaDiaChi))
+            {
+                diaChiGiaoHang = data.DiaChiKhachHangs.FirstOrDefault(d => d.MaDiaChi == giaoHang.MaDiaChi);
+            }
+
             var viewModel = new ChiTietDonHangViewModel
             {
                 DonHang = donHang,
                 ChiTietDonHangs = chiTiet,
                 ThanhToan = thanhToan,
-                GiaoHang = giaoHang
+                GiaoHang = giaoHang,
+                DiaChiGiaoHang = diaChiGiaoHang
             };
 
             return View(viewModel);
@@ -3893,5 +3909,107 @@ namespace Manager.Controllers
                 return Json(new { success = false, message = "Có lỗi xảy ra: " + ex.Message });
             }
         }
+
+
+        // Cập nhật thông tin giao hàng
+        [HttpPost]
+        public ActionResult CapNhatGiaoHang(GiaoHang model)
+        {
+            try
+            {
+                var giaoHang = data.GiaoHangs.FirstOrDefault(g => g.MaGiaoHang == model.MaGiaoHang);
+                if (giaoHang != null)
+                {
+                    // Kiểm tra xem đơn vị vận chuyển có thay đổi không
+                    bool donViVanChuyenThayDoi = !string.IsNullOrEmpty(giaoHang.DonViVanChuyen) && 
+                                                !string.IsNullOrEmpty(model.DonViVanChuyen) && 
+                                                giaoHang.DonViVanChuyen != model.DonViVanChuyen;
+                    
+                    // Ghi log các giá trị trước khi cập nhật
+                    System.Diagnostics.Debug.WriteLine("MaDiaChi trước khi cập nhật: " + giaoHang.MaDiaChi);
+                    System.Diagnostics.Debug.WriteLine("MaDiaChi từ model: " + model.MaDiaChi);
+                    System.Diagnostics.Debug.WriteLine("NgayGuiHang trước khi cập nhật: " + giaoHang.NgayGuiHang);
+                    System.Diagnostics.Debug.WriteLine("NgayGuiHang từ model: " + model.NgayGuiHang);
+                    System.Diagnostics.Debug.WriteLine("NgayNhanHang trước khi cập nhật: " + giaoHang.NgayNhanHang);
+                    System.Diagnostics.Debug.WriteLine("NgayNhanHang từ model: " + model.NgayNhanHang);
+                    System.Diagnostics.Debug.WriteLine("TrangThaiGiaoHang trước khi cập nhật: " + giaoHang.TrangThaiGiaoHang);
+                    System.Diagnostics.Debug.WriteLine("TrangThaiGiaoHang từ model: " + model.TrangThaiGiaoHang);
+                    
+                    // Kiểm tra thay đổi trạng thái để cập nhật ngày tương ứng
+                    bool trangThaiThayDoi = giaoHang.TrangThaiGiaoHang != model.TrangThaiGiaoHang;
+                    
+                    // Chỉ cập nhật đơn vị vận chuyển và trạng thái giao hàng
+                    giaoHang.DonViVanChuyen = model.DonViVanChuyen;
+                    giaoHang.TrangThaiGiaoHang = model.TrangThaiGiaoHang;
+                    
+                    // Nếu trạng thái thay đổi thành "Đang vận chuyển", cập nhật ngày gửi hàng là ngày hôm nay
+                    if (trangThaiThayDoi && model.TrangThaiGiaoHang == "DangVanChuyen")
+                    {
+                        giaoHang.NgayGuiHang = DateTime.Now;
+                    }
+                    
+                    // Nếu trạng thái thay đổi thành "Đã giao", cập nhật ngày nhận hàng là ngày hôm nay
+                    if (trangThaiThayDoi && model.TrangThaiGiaoHang == "DaGiao")
+                    {
+                        giaoHang.NgayNhanHang = DateTime.Now;
+                    }
+                    
+                    // Đảm bảo giữ nguyên các thông tin khác
+                    // Giữ nguyên MaDiaChi từ database
+                    if (!string.IsNullOrEmpty(model.MaDiaChi))
+                    {
+                        giaoHang.MaDiaChi = model.MaDiaChi;
+                    }
+                    
+                    // Giữ nguyên các ngày từ model nếu được gửi lên (trừ trường hợp cập nhật tự động ở trên)
+                    if (model.NgayGuiHang.HasValue && !(trangThaiThayDoi && model.TrangThaiGiaoHang == "DangVanChuyen"))
+                    {
+                        giaoHang.NgayGuiHang = model.NgayGuiHang;
+                    }
+                    
+                    if (model.NgayNhanHang.HasValue && !(trangThaiThayDoi && model.TrangThaiGiaoHang == "DaGiao"))
+                    {
+                        giaoHang.NgayNhanHang = model.NgayNhanHang;
+                    }
+                    
+                    // Kiểm tra và cập nhật trạng thái đơn hàng nếu cần
+                    var donHang = data.DonHangs.FirstOrDefault(d => d.MaDonHang == model.MaDonHang);
+                    if (donHang != null)
+                    {
+                        // Cập nhật trạng thái đơn hàng khi trạng thái giao hàng thay đổi
+                        if (model.TrangThaiGiaoHang == "DangVanChuyen" && donHang.TrangThaiDonHang == "DangXuLy")
+                        {
+                            donHang.TrangThaiDonHang = "DangGiao";
+                        }
+                        else if (model.TrangThaiGiaoHang == "DaGiao" && donHang.TrangThaiThanhToan == "DaThanhToan")
+                        {
+                            // Nếu đã giao hàng và đã thanh toán thì cập nhật trạng thái đơn hàng thành "HoanThanh"
+                            donHang.TrangThaiDonHang = "HoanThanh";
+                        }
+                    }
+                    
+                    // Ghi log giá trị sau khi cập nhật
+                    System.Diagnostics.Debug.WriteLine("MaDiaChi sau khi cập nhật: " + giaoHang.MaDiaChi);
+                    System.Diagnostics.Debug.WriteLine("NgayGuiHang sau khi cập nhật: " + giaoHang.NgayGuiHang);
+                    System.Diagnostics.Debug.WriteLine("NgayNhanHang sau khi cập nhật: " + giaoHang.NgayNhanHang);
+                    
+                    data.SubmitChanges();
+                    
+                    TempData["SuccessMessage"] = "Cập nhật thông tin giao hàng thành công";
+                }
+                else
+                {
+                    TempData["ErrorMessage"] = "Không tìm thấy thông tin giao hàng";
+                }
+                
+                return RedirectToAction("ChiTietDonBanHang", new { id = model.MaDonHang });
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = "Lỗi khi cập nhật thông tin giao hàng: " + ex.Message;
+                return RedirectToAction("ChiTietDonBanHang", new { id = model.MaDonHang });
+            }
+        }
+
     }
 }
