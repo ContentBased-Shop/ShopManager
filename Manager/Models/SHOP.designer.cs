@@ -390,6 +390,8 @@ namespace Manager.Models
 		
 		private EntitySet<ChiTietNhapHang> _ChiTietNhapHangs;
 		
+		private EntitySet<HinhAnhHangHoa> _HinhAnhHangHoas;
+		
 		private EntityRef<HangHoa> _HangHoa;
 		
     #region Extensibility Method Definitions
@@ -427,6 +429,7 @@ namespace Manager.Models
 			this._ChiTietDonHangs = new EntitySet<ChiTietDonHang>(new Action<ChiTietDonHang>(this.attach_ChiTietDonHangs), new Action<ChiTietDonHang>(this.detach_ChiTietDonHangs));
 			this._ChiTietGioHangs = new EntitySet<ChiTietGioHang>(new Action<ChiTietGioHang>(this.attach_ChiTietGioHangs), new Action<ChiTietGioHang>(this.detach_ChiTietGioHangs));
 			this._ChiTietNhapHangs = new EntitySet<ChiTietNhapHang>(new Action<ChiTietNhapHang>(this.attach_ChiTietNhapHangs), new Action<ChiTietNhapHang>(this.detach_ChiTietNhapHangs));
+			this._HinhAnhHangHoas = new EntitySet<HinhAnhHangHoa>(new Action<HinhAnhHangHoa>(this.attach_HinhAnhHangHoas), new Action<HinhAnhHangHoa>(this.detach_HinhAnhHangHoas));
 			this._HangHoa = default(EntityRef<HangHoa>);
 			OnCreated();
 		}
@@ -714,6 +717,19 @@ namespace Manager.Models
 			}
 		}
 		
+		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="BienTheHangHoa_HinhAnhHangHoa", Storage="_HinhAnhHangHoas", ThisKey="MaBienThe", OtherKey="MaBienThe")]
+		public EntitySet<HinhAnhHangHoa> HinhAnhHangHoas
+		{
+			get
+			{
+				return this._HinhAnhHangHoas;
+			}
+			set
+			{
+				this._HinhAnhHangHoas.Assign(value);
+			}
+		}
+		
 		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="HangHoa_BienTheHangHoa", Storage="_HangHoa", ThisKey="MaHangHoa", OtherKey="MaHangHoa", IsForeignKey=true, DeleteRule="CASCADE")]
 		public HangHoa HangHoa
 		{
@@ -799,6 +815,18 @@ namespace Manager.Models
 		}
 		
 		private void detach_ChiTietNhapHangs(ChiTietNhapHang entity)
+		{
+			this.SendPropertyChanging();
+			entity.BienTheHangHoa = null;
+		}
+		
+		private void attach_HinhAnhHangHoas(HinhAnhHangHoa entity)
+		{
+			this.SendPropertyChanging();
+			entity.BienTheHangHoa = this;
+		}
+		
+		private void detach_HinhAnhHangHoas(HinhAnhHangHoa entity)
 		{
 			this.SendPropertyChanging();
 			entity.BienTheHangHoa = null;
@@ -3615,6 +3643,8 @@ namespace Manager.Models
 		
 		private string _TrangThai;
 		
+		private string _MoTaDai;
+		
 		private System.Nullable<System.DateTime> _NgayTao;
 		
 		private EntitySet<BienTheHangHoa> _BienTheHangHoas;
@@ -3661,6 +3691,8 @@ namespace Manager.Models
     partial void OnDanhGiaTrungBinhChanged();
     partial void OnTrangThaiChanging(string value);
     partial void OnTrangThaiChanged();
+    partial void OnMoTaDaiChanging(string value);
+    partial void OnMoTaDaiChanged();
     partial void OnNgayTaoChanging(System.Nullable<System.DateTime> value);
     partial void OnNgayTaoChanged();
     #endregion
@@ -3846,6 +3878,26 @@ namespace Manager.Models
 					this._TrangThai = value;
 					this.SendPropertyChanged("TrangThai");
 					this.OnTrangThaiChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_MoTaDai", DbType="NVarChar(MAX)")]
+		public string MoTaDai
+		{
+			get
+			{
+				return this._MoTaDai;
+			}
+			set
+			{
+				if ((this._MoTaDai != value))
+				{
+					this.OnMoTaDaiChanging(value);
+					this.SendPropertyChanging();
+					this._MoTaDai = value;
+					this.SendPropertyChanged("MoTaDai");
+					this.OnMoTaDaiChanged();
 				}
 			}
 		}
@@ -4219,7 +4271,11 @@ namespace Manager.Models
 		
 		private string _MaHangHoa;
 		
+		private string _MaBienThe;
+		
 		private string _UrlAnh;
+		
+		private EntityRef<BienTheHangHoa> _BienTheHangHoa;
 		
 		private EntityRef<HangHoa> _HangHoa;
 		
@@ -4231,12 +4287,15 @@ namespace Manager.Models
     partial void OnMaHinhAnhChanged();
     partial void OnMaHangHoaChanging(string value);
     partial void OnMaHangHoaChanged();
+    partial void OnMaBienTheChanging(string value);
+    partial void OnMaBienTheChanged();
     partial void OnUrlAnhChanging(string value);
     partial void OnUrlAnhChanged();
     #endregion
 		
 		public HinhAnhHangHoa()
 		{
+			this._BienTheHangHoa = default(EntityRef<BienTheHangHoa>);
 			this._HangHoa = default(EntityRef<HangHoa>);
 			OnCreated();
 		}
@@ -4285,6 +4344,30 @@ namespace Manager.Models
 			}
 		}
 		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_MaBienThe", DbType="NVarChar(50)")]
+		public string MaBienThe
+		{
+			get
+			{
+				return this._MaBienThe;
+			}
+			set
+			{
+				if ((this._MaBienThe != value))
+				{
+					if (this._BienTheHangHoa.HasLoadedOrAssignedValue)
+					{
+						throw new System.Data.Linq.ForeignKeyReferenceAlreadyHasValueException();
+					}
+					this.OnMaBienTheChanging(value);
+					this.SendPropertyChanging();
+					this._MaBienThe = value;
+					this.SendPropertyChanged("MaBienThe");
+					this.OnMaBienTheChanged();
+				}
+			}
+		}
+		
 		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_UrlAnh", DbType="NVarChar(500)")]
 		public string UrlAnh
 		{
@@ -4301,6 +4384,40 @@ namespace Manager.Models
 					this._UrlAnh = value;
 					this.SendPropertyChanged("UrlAnh");
 					this.OnUrlAnhChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="BienTheHangHoa_HinhAnhHangHoa", Storage="_BienTheHangHoa", ThisKey="MaBienThe", OtherKey="MaBienThe", IsForeignKey=true)]
+		public BienTheHangHoa BienTheHangHoa
+		{
+			get
+			{
+				return this._BienTheHangHoa.Entity;
+			}
+			set
+			{
+				BienTheHangHoa previousValue = this._BienTheHangHoa.Entity;
+				if (((previousValue != value) 
+							|| (this._BienTheHangHoa.HasLoadedOrAssignedValue == false)))
+				{
+					this.SendPropertyChanging();
+					if ((previousValue != null))
+					{
+						this._BienTheHangHoa.Entity = null;
+						previousValue.HinhAnhHangHoas.Remove(this);
+					}
+					this._BienTheHangHoa.Entity = value;
+					if ((value != null))
+					{
+						value.HinhAnhHangHoas.Add(this);
+						this._MaBienThe = value.MaBienThe;
+					}
+					else
+					{
+						this._MaBienThe = default(string);
+					}
+					this.SendPropertyChanged("BienTheHangHoa");
 				}
 			}
 		}
@@ -7126,7 +7243,7 @@ namespace Manager.Models
 			}
 		}
 		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_MoTa", DbType="NVarChar(255)")]
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_MoTa", DbType="NVarChar(MAX)")]
 		public string MoTa
 		{
 			get

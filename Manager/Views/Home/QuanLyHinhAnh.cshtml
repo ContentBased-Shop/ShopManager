@@ -1,6 +1,7 @@
 ﻿@{
     ViewBag.Title = "Quản lý hình ảnh";
     Layout = "~/Views/Shared/_Layout.cshtml";
+    var bienThe = ViewBag.BienThe;
     var hangHoa = ViewBag.HangHoa;
     var danhSachHinhAnh = ViewBag.DanhSachHinhAnh as List<Manager.Models.HinhAnhHangHoa>;
 }
@@ -130,43 +131,65 @@
 </style>
 
 <div class="container py-4">
-    <h3 class="fw-bold mb-3">Quản lý hình ảnh sản phẩm</h3>
+    <h3 class="fw-bold mb-3">Quản lý hình ảnh biến thể</h3>
 
     <!-- Breadcrumb -->
     <nav aria-label="breadcrumb" class="mb-4">
         <ol class="breadcrumb bg-info bg-opacity-25 px-3 py-2 rounded">
             <li class="breadcrumb-item"><a href="@Url.Action("Dashboard", "Home")">Trang chủ</a></li>
             <li class="breadcrumb-item"><a href="@Url.Action("DanhSachHangHoa", "Home")">Sản phẩm</a></li>
+            <li class="breadcrumb-item"><a href="@Url.Action("DSBienTheHangHoa", "Home", new { maHangHoa = hangHoa.MaHangHoa })">Biến thể sản phẩm</a></li>
             <li class="breadcrumb-item active" aria-current="page">Quản lý hình ảnh</li>
         </ol>
     </nav>
 
     <!-- Back button -->
-    <a href="@Url.Action("DanhSachHangHoa", "Home")" class="btn btn-primary mb-3">
-        <i class="bi bi-arrow-left-circle"></i> Về danh sách
+    <a href="@Url.Action("DSBienTheHangHoa", "Home", new { maHangHoa = hangHoa.MaHangHoa })" class="btn btn-primary mb-3">
+        <i class="bi bi-arrow-left-circle"></i> Về danh sách biến thể
     </a>
 
     <div class="row">
         <div class="col-md-5">
             <div class="card border-0 shadow-sm mb-4">
                 <div class="card-header bg-white py-3">
-                    <h5 class="card-title mb-0">Thông tin sản phẩm</h5>
+                    <h5 class="card-title mb-0">Thông tin biến thể</h5>
                 </div>
                 <div class="card-body">
-                    <div class="d-flex align-items-center mb-3">
-                        @if (!string.IsNullOrEmpty(hangHoa.HinhAnh))
+                    <div class="mb-3">
+                        <h5 class="mb-1">@hangHoa.TenHangHoa</h5>
+                        <p class="text-muted mb-1">Mã hàng hóa: @hangHoa.MaHangHoa</p>
+                        <p class="text-muted mb-1">Danh mục: @(hangHoa.DanhMuc.TenDanhMuc ?? "Chưa phân loại")</p>
+                    </div>
+                    <hr />
+                    <div>
+                        <h6>Thông tin biến thể:</h6>
+                        <p class="mb-1"><strong>Mã biến thể:</strong> @bienThe.MaBienThe</p>
+                        @if (!string.IsNullOrEmpty(bienThe.MauSac))
                         {
-                            <img src="~/Content/img/hanghoa/@hangHoa.HinhAnh" alt="@hangHoa.TenHangHoa" class="img-thumbnail me-3" style="width: 80px; height: 80px; object-fit: cover;" />
+                            <p class="mb-1"><strong>Màu sắc:</strong> @bienThe.MauSac</p>
                         }
-                        else
+                        @if (!string.IsNullOrEmpty(bienThe.DungLuong))
                         {
-                            <img src="~/Content/img/hanghoa/no-image.png" alt="Không có hình" class="img-thumbnail me-3" style="width: 80px; height: 80px; object-fit: cover;" />
+                            <p class="mb-1"><strong>Dung lượng:</strong> @bienThe.DungLuong</p>
                         }
-                        <div>
-                            <h5 class="mb-1">@hangHoa.TenHangHoa</h5>
-                            <p class="text-muted mb-1">Mã: @hangHoa.MaHangHoa</p>
-                            <p class="text-muted mb-0">Danh mục: @(hangHoa.DanhMuc.TenDanhMuc ?? "Chưa phân loại")</p>
-                        </div>
+                        @if (!string.IsNullOrEmpty(bienThe.CPU))
+                        {
+                            <p class="mb-1"><strong>CPU:</strong> @bienThe.CPU</p>
+                        }
+                        @if (!string.IsNullOrEmpty(bienThe.RAM))
+                        {
+                            <p class="mb-1"><strong>RAM:</strong> @bienThe.RAM</p>
+                        }
+                        @if (!string.IsNullOrEmpty(bienThe.KichThuocManHinh))
+                        {
+                            <p class="mb-1"><strong>Màn hình:</strong> @bienThe.KichThuocManHinh</p>
+                        }
+                        @if (!string.IsNullOrEmpty(bienThe.LoaiBoNho))
+                        {
+                            <p class="mb-1"><strong>Loại bộ nhớ:</strong> @bienThe.LoaiBoNho</p>
+                        }
+                        <p class="mb-1"><strong>Giá bán:</strong> @(bienThe.GiaBan != null ? bienThe.GiaBan.ToString("N0") + " VNĐ" : "Chưa có")</p>
+                        <p class="mb-0"><strong>Tồn kho:</strong> @bienThe.SoLuongTonKho</p>
                     </div>
                 </div>
             </div>
@@ -177,7 +200,7 @@
                 </div>
                 <div class="card-body">
                     <form id="uploadForm" enctype="multipart/form-data">
-                        <input type="hidden" id="maHangHoa" name="MaHangHoa" value="@hangHoa.MaHangHoa" />
+                        <input type="hidden" id="maBienThe" name="MaBienThe" value="@bienThe.MaBienThe" />
 
                         <div class="upload-area" id="uploadArea">
                             <i class="bi bi-cloud-arrow-up upload-icon"></i>
@@ -210,36 +233,18 @@
             <div class="card border-0 shadow-sm">
                 <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
                     <h5 class="card-title mb-0">Thư viện hình ảnh</h5>
-                    @{
-                        var soLuongHinhAnh = (danhSachHinhAnh != null ? danhSachHinhAnh.Count : 0) + (!string.IsNullOrEmpty(hangHoa.HinhAnh) ? 1 : 0);
-                    }
-                    <span class="badge bg-info">@soLuongHinhAnh hình ảnh</span>
+                    <span class="badge bg-info">@(danhSachHinhAnh != null ? danhSachHinhAnh.Count : 0) hình ảnh</span>
                     
                 </div>
                 <div class="card-body">
                     <div class="row" id="imageGallery">
-                        @if (!string.IsNullOrEmpty(hangHoa.HinhAnh))
-                        {
-                            <div class="col-md-4 col-sm-6">
-                                <div class="img-container">
-                                    <div class="main-img-badge">Hình chính</div>
-                                    <img src="~/Content/img/hanghoa/@hangHoa.HinhAnh" alt="@hangHoa.TenHangHoa" />
-                                    <div class="img-actions">
-                                        <button class="btn btn-sm btn-danger btn-delete-image" data-filename="@hangHoa.HinhAnh">
-                                            <i class="bi bi-trash"></i> Xóa
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        }
-
                         @if (danhSachHinhAnh != null && danhSachHinhAnh.Count > 0)
                         {
                             foreach (var hinhAnh in danhSachHinhAnh)
                             {
                                 <div class="col-md-4 col-sm-6">
                                     <div class="img-container">
-                                        <img src="~/Content/img/hanghoa/@hinhAnh.UrlAnh" alt="Hình ảnh phụ" />
+                                        <img src="~/Content/img/hanghoa/@hinhAnh.UrlAnh" alt="Hình ảnh biến thể" />
                                         <div class="img-actions">
                                             <button class="btn btn-sm btn-primary btn-set-main" data-filename="@hinhAnh.UrlAnh" data-mahinhanh="@hinhAnh.MaHinhAnh">
                                                 <i class="bi bi-star"></i> Đặt chính
@@ -252,16 +257,15 @@
                                 </div>
                             }
                         }
+                        else
+                        {
+                            <div class="text-center py-5">
+                                <i class="bi bi-images" style="font-size: 48px; color: #ccc;"></i>
+                                <p class="text-muted mt-3">Chưa có hình ảnh nào cho biến thể này</p>
+                                <p class="text-muted">Tải lên hình ảnh để hiển thị biến thể đẹp hơn</p>
+                            </div>
+                        }
                     </div>
-
-                    @if (string.IsNullOrEmpty(hangHoa.HinhAnh) && (danhSachHinhAnh == null || danhSachHinhAnh.Count == 0))
-                    {
-                        <div class="text-center py-5">
-                            <i class="bi bi-images" style="font-size: 48px; color: #ccc;"></i>
-                            <p class="text-muted mt-3">Chưa có hình ảnh nào cho sản phẩm này</p>
-                            <p class="text-muted">Tải lên hình ảnh để hiển thị sản phẩm đẹp hơn</p>
-                        </div>
-                    }
                 </div>
             </div>
         </div>
@@ -388,7 +392,7 @@
         // Upload multiple images
         $('#btnUpload').click(function() {
             var files = $('#fileInput')[0].files;
-            var maHangHoa = $('#maHangHoa').val();
+            var maBienThe = $('#maBienThe').val();
             
             if (files.length === 0) {
                 alert('Vui lòng chọn ít nhất một hình ảnh');
@@ -405,7 +409,7 @@
             $('#btnUpload').prop('disabled', true).html('<i class="bi bi-hourglass-split"></i> Đang tải lên...');
             
             var formData = new FormData();
-            formData.append('MaHangHoa', maHangHoa);
+            formData.append('MaBienThe', maBienThe);
             
             // Thêm tất cả files vào formData
             for (var i = 0; i < files.length; i++) {
@@ -477,13 +481,13 @@
         $('#confirmDelete').click(function() {
             var fileName = $('#fileToDelete').val();
             var maHinhAnh = $('#maHinhAnhToDelete').val() || null;
-            var maHangHoa = $('#maHangHoa').val();
+            var maBienThe = $('#maBienThe').val();
             
             $.ajax({
                 url: '@Url.Action("XoaHinhAnh", "Home")',
                 type: 'POST',
                 data: {
-                    MaHangHoa: maHangHoa,
+                    MaBienThe: maBienThe,
                     fileName: fileName,
                     maHinhAnh: maHinhAnh
                 },
@@ -512,13 +516,13 @@
         $('.btn-set-main').click(function() {
             var fileName = $(this).data('filename');
             var maHinhAnh = $(this).data('mahinhanh');
-            var maHangHoa = $('#maHangHoa').val();
+            var maBienThe = $('#maBienThe').val();
             
             $.ajax({
                 url: '@Url.Action("DatHinhAnhChinh", "Home")',
                 type: 'POST',
                 data: {
-                    MaHangHoa: maHangHoa,
+                    MaBienThe: maBienThe,
                     fileName: fileName,
                     maHinhAnh: maHinhAnh
                 },

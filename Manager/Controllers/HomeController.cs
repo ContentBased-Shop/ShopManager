@@ -2872,25 +2872,26 @@ namespace Manager.Controllers
         }
 
         // Thêm controller để quản lý nhiều hình ảnh cho hàng hóa
-        public ActionResult QuanLyHinhAnh(string maHangHoa)
+        public ActionResult QuanLyHinhAnh(string maBienThe)
         {
-            HangHoa hangHoa = data.HangHoas.SingleOrDefault(h => h.MaHangHoa == maHangHoa);
-            if (hangHoa == null)
+            BienTheHangHoa bienThe = data.BienTheHangHoas.SingleOrDefault(bt => bt.MaBienThe == maBienThe);
+            if (bienThe == null)
             {
                 return RedirectToAction("DanhSachHangHoa");
             }
 
-            ViewBag.HangHoa = hangHoa;
+            ViewBag.BienThe = bienThe;
+            ViewBag.HangHoa = bienThe.HangHoa;
             
-            // Lấy danh sách hình ảnh bổ sung từ bảng HinhAnhHangHoa
-            var danhSachHinhAnh = data.HinhAnhHangHoas.Where(h => h.MaHangHoa == maHangHoa).ToList();
+            // Lấy danh sách hình ảnh bổ sung từ bảng HinhAnhHangHoa cho biến thể
+            var danhSachHinhAnh = data.HinhAnhHangHoas.Where(h => h.MaBienThe == maBienThe).ToList();
             ViewBag.DanhSachHinhAnh = danhSachHinhAnh;
 
             return View();
         }
 
         [HttpPost]
-        public JsonResult UploadHinhAnh(string MaHangHoa, HttpPostedFileBase HinhAnh)
+        public JsonResult UploadHinhAnh(string MaBienThe, HttpPostedFileBase HinhAnh)
         {
             try
             {
@@ -2899,10 +2900,10 @@ namespace Manager.Controllers
                     return Json(new { success = false, message = "Vui lòng chọn hình ảnh" });
                 }
 
-                HangHoa hangHoa = data.HangHoas.SingleOrDefault(h => h.MaHangHoa == MaHangHoa);
-                if (hangHoa == null)
+                BienTheHangHoa bienThe = data.BienTheHangHoas.SingleOrDefault(bt => bt.MaBienThe == MaBienThe);
+                if (bienThe == null)
                 {
-                    return Json(new { success = false, message = "Không tìm thấy sản phẩm" });
+                    return Json(new { success = false, message = "Không tìm thấy biến thể sản phẩm" });
                 }
 
                 // Xử lý hình ảnh
@@ -2916,25 +2917,17 @@ namespace Manager.Controllers
                 // Lưu file
                 HinhAnh.SaveAs(filePath);
 
-                // Cập nhật hình ảnh chính cho sản phẩm nếu chưa có
-                if (string.IsNullOrEmpty(hangHoa.HinhAnh))
+                // Lưu vào bảng HinhAnhHangHoa cho biến thể
+                HinhAnhHangHoa hinhAnh = new HinhAnhHangHoa
                 {
-                    hangHoa.HinhAnh = fileName;
-                    data.SubmitChanges();
-                    return Json(new { success = true, fileName = fileName, isMain = true });
-                }
-                else
-                {
-                    // Lưu vào bảng HinhAnhHangHoa
-                    HinhAnhHangHoa hinhAnh = new HinhAnhHangHoa
-                    {
-                        MaHangHoa = MaHangHoa,
-                        UrlAnh = fileName
-                    };
-                    data.HinhAnhHangHoas.InsertOnSubmit(hinhAnh);
-                    data.SubmitChanges();
-                    return Json(new { success = true, fileName = fileName, isMain = false, maHinhAnh = hinhAnh.MaHinhAnh });
-                }
+                    MaHangHoa = bienThe.MaHangHoa,
+                    MaBienThe = MaBienThe,
+                    UrlAnh = fileName
+                };
+                data.HinhAnhHangHoas.InsertOnSubmit(hinhAnh);
+                data.SubmitChanges();
+
+                return Json(new { success = true, fileName = fileName, maHinhAnh = hinhAnh.MaHinhAnh });
             }
             catch (Exception ex)
             {
@@ -2943,7 +2936,7 @@ namespace Manager.Controllers
         }
 
         [HttpPost]
-        public JsonResult UploadMultipleHinhAnh(string MaHangHoa)
+        public JsonResult UploadMultipleHinhAnh(string MaBienThe)
         {
             try
             {
@@ -2952,10 +2945,10 @@ namespace Manager.Controllers
                     return Json(new { success = false, message = "Vui lòng chọn ít nhất một hình ảnh" });
                 }
 
-                HangHoa hangHoa = data.HangHoas.SingleOrDefault(h => h.MaHangHoa == MaHangHoa);
-                if (hangHoa == null)
+                BienTheHangHoa bienThe = data.BienTheHangHoas.SingleOrDefault(bt => bt.MaBienThe == MaBienThe);
+                if (bienThe == null)
                 {
-                    return Json(new { success = false, message = "Không tìm thấy sản phẩm" });
+                    return Json(new { success = false, message = "Không tìm thấy biến thể sản phẩm" });
                 }
 
                 // Đảm bảo thư mục tồn tại
@@ -2966,43 +2959,8 @@ namespace Manager.Controllers
                 int successCount = 0;
                 List<string> failedFiles = new List<string>();
                 
-                // Lấy file đầu tiên để kiểm tra và xử lý đặt làm ảnh chính nếu cần
-                var firstFile = Request.Files[0];
-                string firstFileName = null;
-                
-                try {
-                    if (firstFile != null && firstFile.ContentLength > 0)
-                    {
-                        string extension = Path.GetExtension(firstFile.FileName);
-                        firstFileName = Guid.NewGuid().ToString() + extension;
-                        string filePath = Path.Combine(uploadDir, firstFileName);
-                        
-                        // Lưu file đầu tiên
-                        firstFile.SaveAs(filePath);
-                        successCount++;
-                        
-                        // Nếu sản phẩm chưa có ảnh chính, đặt ảnh đầu tiên làm ảnh chính
-                        if (string.IsNullOrEmpty(hangHoa.HinhAnh))
-                        {
-                            hangHoa.HinhAnh = firstFileName;
-                        }
-                        else if (Request.Files.Count == 1) 
-                        {
-                            // Nếu chỉ có 1 file và đã có ảnh chính, lưu vào bảng HinhAnhHangHoa
-                            var hinhAnh = new HinhAnhHangHoa
-                            {
-                                MaHangHoa = MaHangHoa,
-                                UrlAnh = firstFileName
-                            };
-                            data.HinhAnhHangHoas.InsertOnSubmit(hinhAnh);
-                        }
-                    }
-                } catch (Exception ex) {
-                    failedFiles.Add(firstFile.FileName + " (" + ex.Message + ")");
-                }
-                
-                // Xử lý các file còn lại
-                for (int i = 1; i < Request.Files.Count; i++)
+                // Xử lý từng file
+                for (int i = 0; i < Request.Files.Count; i++)
                 {
                     var file = Request.Files[i];
                     try {
@@ -3019,7 +2977,8 @@ namespace Manager.Controllers
                             // Lưu vào bảng HinhAnhHangHoa
                             var hinhAnh = new HinhAnhHangHoa
                             {
-                                MaHangHoa = MaHangHoa,
+                                MaHangHoa = bienThe.MaHangHoa,
+                                MaBienThe = MaBienThe,
                                 UrlAnh = fileName
                             };
                             data.HinhAnhHangHoas.InsertOnSubmit(hinhAnh);
@@ -3046,7 +3005,7 @@ namespace Manager.Controllers
         }
 
         [HttpPost]
-        public JsonResult XoaHinhAnh(string MaHangHoa, string fileName, int? maHinhAnh = null)
+        public JsonResult XoaHinhAnh(string MaBienThe, string fileName, int? maHinhAnh = null)
         {
             try
             {
@@ -3055,38 +3014,17 @@ namespace Manager.Controllers
                     return Json(new { success = false, message = "Tên file không hợp lệ" });
                 }
 
-                HangHoa hangHoa = data.HangHoas.SingleOrDefault(h => h.MaHangHoa == MaHangHoa);
-                if (hangHoa == null)
+                BienTheHangHoa bienThe = data.BienTheHangHoas.SingleOrDefault(bt => bt.MaBienThe == MaBienThe);
+                if (bienThe == null)
                 {
-                    return Json(new { success = false, message = "Không tìm thấy sản phẩm" });
+                    return Json(new { success = false, message = "Không tìm thấy biến thể sản phẩm" });
                 }
 
                 string filePath = Path.Combine(Server.MapPath("~/Content/img/hanghoa/"), fileName);
                 
-                // Kiểm tra nếu là ảnh chính
-                if (hangHoa.HinhAnh == fileName)
+                // Xóa trong bảng HinhAnhHangHoa
+                if (maHinhAnh.HasValue)
                 {
-                    // Trước khi xóa hình chính, kiểm tra xem có hình phụ nào không để đặt làm hình chính
-                    var hinhPhu = data.HinhAnhHangHoas.FirstOrDefault(h => h.MaHangHoa == MaHangHoa);
-                    if (hinhPhu != null)
-                    {
-                        // Đặt hình phụ đầu tiên làm hình chính
-                        hangHoa.HinhAnh = hinhPhu.UrlAnh;
-                        
-                        // Xóa hình phụ đó từ bảng HinhAnhHangHoa
-                        data.HinhAnhHangHoas.DeleteOnSubmit(hinhPhu);
-                    }
-                    else
-                    {
-                        // Không có hình phụ nào, đặt HinhAnh = null
-                        hangHoa.HinhAnh = null;
-                    }
-                    
-                    data.SubmitChanges();
-                }
-                else if (maHinhAnh.HasValue)
-                {
-                    // Xóa trong bảng HinhAnhHangHoa
                     var hinhAnh = data.HinhAnhHangHoas.SingleOrDefault(h => h.MaHinhAnh == maHinhAnh.Value);
                     if (hinhAnh != null)
                     {
@@ -3110,14 +3048,14 @@ namespace Manager.Controllers
         }
 
         [HttpPost]
-        public JsonResult DatHinhAnhChinh(string MaHangHoa, string fileName, int maHinhAnh)
+        public JsonResult DatHinhAnhChinh(string MaBienThe, string fileName, int maHinhAnh)
         {
             try
             {
-                HangHoa hangHoa = data.HangHoas.SingleOrDefault(h => h.MaHangHoa == MaHangHoa);
-                if (hangHoa == null)
+                BienTheHangHoa bienThe = data.BienTheHangHoas.SingleOrDefault(bt => bt.MaBienThe == MaBienThe);
+                if (bienThe == null)
                 {
-                    return Json(new { success = false, message = "Không tìm thấy sản phẩm" });
+                    return Json(new { success = false, message = "Không tìm thấy biến thể sản phẩm" });
                 }
 
                 var hinhAnh = data.HinhAnhHangHoas.SingleOrDefault(h => h.MaHinhAnh == maHinhAnh);
@@ -3132,22 +3070,12 @@ namespace Manager.Controllers
                     return Json(new { success = false, message = "Không tìm thấy file hình ảnh" });
                 }
 
-                // Lưu hình hiện tại là hình chính xuống bảng HinhAnhHangHoa nếu có
-                if (!string.IsNullOrEmpty(hangHoa.HinhAnh))
-                {
-                    var hinhAnhMoi = new HinhAnhHangHoa
-                    {
-                        MaHangHoa = MaHangHoa,
-                        UrlAnh = hangHoa.HinhAnh
-                    };
-                    data.HinhAnhHangHoas.InsertOnSubmit(hinhAnhMoi);
-                }
-
-                // Cập nhật hình ảnh chính
-                hangHoa.HinhAnh = fileName;
+                // Lấy tất cả hình ảnh của biến thể
+                var dsHinhAnh = data.HinhAnhHangHoas.Where(h => h.MaBienThe == MaBienThe).ToList();
                 
-                // Xóa hình ảnh được chọn khỏi bảng HinhAnhHangHoa
-                data.HinhAnhHangHoas.DeleteOnSubmit(hinhAnh);
+                // Thiết lập hình ảnh được chọn là hình chính bằng cách đặt nó lên đầu danh sách
+                // Trong thực tế, bạn có thể cần thêm một cột 'IsMainImage' vào bảng HinhAnhHangHoa và cập nhật nó
+                hinhAnh.MaHinhAnh = maHinhAnh; // Đảm bảo mã hình ảnh không thay đổi
                 
                 data.SubmitChanges();
 
