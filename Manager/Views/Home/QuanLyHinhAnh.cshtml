@@ -246,9 +246,6 @@
                                     <div class="img-container">
                                         <img src="~/Content/img/hanghoa/@hinhAnh.UrlAnh" alt="Hình ảnh biến thể" />
                                         <div class="img-actions">
-                                            <button class="btn btn-sm btn-primary btn-set-main" data-filename="@hinhAnh.UrlAnh" data-mahinhanh="@hinhAnh.MaHinhAnh">
-                                                <i class="bi bi-star"></i> Đặt chính
-                                            </button>
                                             <button class="btn btn-sm btn-danger btn-delete-image" data-filename="@hinhAnh.UrlAnh" data-mahinhanh="@hinhAnh.MaHinhAnh">
                                                 <i class="bi bi-trash"></i> Xóa
                                             </button>
@@ -504,39 +501,6 @@
                         });
                     } else {
                         alert(response.message || 'Xóa hình ảnh thất bại');
-                    }
-                },
-                error: function() {
-                    alert('Lỗi kết nối đến server');
-                }
-            });
-        });
-
-        // Set as main image
-        $('.btn-set-main').click(function() {
-            var fileName = $(this).data('filename');
-            var maHinhAnh = $(this).data('mahinhanh');
-            var maBienThe = $('#maBienThe').val();
-            
-            $.ajax({
-                url: '@Url.Action("DatHinhAnhChinh", "Home")',
-                type: 'POST',
-                data: {
-                    MaBienThe: maBienThe,
-                    fileName: fileName,
-                    maHinhAnh: maHinhAnh
-                },
-                success: function(response) {
-                    if (response.success) {
-                        $('#successMessage').text('Đã đặt làm hình ảnh chính!');
-                        $('#successModal').modal('show');
-                        
-                        // Reload page after closing the success modal
-                        $('#successModal').on('hidden.bs.modal', function() {
-                            location.reload();
-                        });
-                    } else {
-                        alert(response.message || 'Đặt làm hình ảnh chính thất bại');
                     }
                 },
                 error: function() {

@@ -85,6 +85,13 @@
                         <div class="mb-3">
                             <label class="form-label">Mô tả</label>
                             <textarea class="form-control" id="moTa" name="MoTa" rows="6" placeholder="Nhập mô tả sản phẩm">@Model.MoTa</textarea>
+                            <div class="form-text">Mô tả ngắn gọn về sản phẩm (dùng cho tính độ tương đồng)</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Mô tả chi tiết</label>
+                            <textarea class="form-control" id="moTaDai" name="MoTaDai" rows="8" placeholder="Nhập mô tả chi tiết về sản phẩm">@Model.MoTaDai</textarea>
+                            <div class="form-text">Thông tin chi tiết về sản phẩm</div>
                         </div>
 
                         <div class="mb-3">
@@ -154,6 +161,7 @@
                 MaDanhMuc: $('#maDanhMuc').val(),
                 MaThuongHieu: $('#maThuongHieu').val(),
                 MoTa: $('#moTa').val().trim(),
+                MoTaDai: $('#moTaDai').val().trim(),
                 TrangThai: $('#trangThai').val()
             };
 
