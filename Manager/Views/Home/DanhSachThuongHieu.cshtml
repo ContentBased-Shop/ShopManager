@@ -6,7 +6,7 @@
 
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
-
+<link href="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-bs4.min.css" rel="stylesheet">
 
 <div class="container py-4">
     <h3 class="fw-bold mb-3">Danh sách thương hiệu</h3>
@@ -53,7 +53,24 @@
                         </td>
                         <td class="ma-thuong-hieu">@item.MaThuongHieu</td>
                         <td class="ten-thuong-hieu">@item.TenThuongHieu</td>
-                        <td>@(item.MoTa ?? "Chưa có mô tả")</td>
+                        <td>
+                            <div class="mo-ta-wrapper">
+                                <div class="mo-ta-ngan">
+                                    @(string.IsNullOrEmpty(item.MoTa) ? "Chưa có mô tả" : 
+                                        (item.MoTa.Length > 100 ? item.MoTa.Substring(0, 100) + "..." : item.MoTa))
+                                </div>
+                                @if (!string.IsNullOrEmpty(item.MoTa) && item.MoTa.Length > 100)
+                                {
+                                    <button type="button" class="btn btn-link btn-sm p-0 ms-2" 
+                                            data-bs-toggle="modal" 
+                                            data-bs-target="#moTaModal" 
+                                            data-mota="@item.MoTa"
+                                            data-ten="@item.TenThuongHieu">
+                                        Xem thêm
+                                    </button>
+                                }
+                            </div>
+                        </td>
                         <td>
                             @if (!string.IsNullOrEmpty(item.Logo))
                             {
@@ -136,7 +153,7 @@
 
     <!-- Modal Tạo mới thương hiệu -->
     <div class="modal fade" id="createBrandModal" tabindex="-1" aria-labelledby="createBrandModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
+        <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="createBrandModalLabel">Thêm Thương Hiệu Mới</h5>
@@ -152,14 +169,16 @@
 
                         <div class="mb-3">
                             <label for="moTa" class="form-label">Mô Tả <span class="text-danger">*</span></label>
-                            <textarea class="form-control" id="moTa" maxlength="255" required></textarea>
+                            <textarea class="form-control summernote" id="moTa" name="moTa" required></textarea>
                             <div class="text-danger mt-1" id="moTaError" style="display: none;">Vui lòng nhập mô tả.</div>
                         </div>
+
                         <div class="mb-3">
                             <label for="logo" class="form-label">Logo <span class="text-danger">*</span></label>
                             <input type="file" class="form-control" id="logo" accept="image/*" required>
                             <div class="text-danger mt-1" id="logoError" style="display: none;">Vui lòng chọn file hình ảnh cho logo.</div>
                         </div>
+
                         <div class="mb-3">
                             <label for="trangThai" class="form-label">Trạng Thái <span class="text-danger">*</span></label>
                             <select class="form-select" id="trangThai" required>
@@ -213,7 +232,7 @@
     </div>
     <!-- Modal Chỉnh sửa thương hiệu -->
     <div class="modal fade" id="editBrandModal" tabindex="-1" aria-labelledby="editBrandModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
+        <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="editBrandModalLabel">Chỉnh sửa Thương Hiệu</h5>
@@ -232,7 +251,7 @@
                         </div>
                         <div class="mb-3">
                             <label for="editMoTa" class="form-label">Mô Tả <span class="text-danger">*</span></label>
-                            <textarea class="form-control" id="editMoTa" maxlength="255" required></textarea>
+                            <textarea class="form-control summernote" id="editMoTa" name="editMoTa" required></textarea>
                             <div class="text-danger mt-1" id="editMoTaError" style="display: none;">Vui lòng nhập mô tả.</div>
                         </div>
                         <div class="mb-3">
@@ -277,8 +296,137 @@
         </div>
     </div>
 
+    <!-- Thêm Modal xem mô tả chi tiết -->
+    <div class="modal fade" id="moTaModal" tabindex="-1" aria-labelledby="moTaModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="moTaModalLabel">Mô tả chi tiết</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <h6 id="moTaTenThuongHieu" class="mb-3"></h6>
+                    <div id="moTaNoiDung"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Summernote JS -->
+    <script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-bs4.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/lang/summernote-vi-VN.js"></script>
+
+    <style>
+        .mo-ta-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .mo-ta-ngan {
+            max-width: 300px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        #moTaNoiDung {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+    </style>
+
     <script>
     $(document).ready(function () {
+        // Khởi tạo Summernote cho form thêm mới
+        $('.summernote').summernote({
+            height: 300,
+            lang: 'vi-VN',
+            toolbar: [
+                ['style', ['style']],
+                ['font', ['bold', 'italic', 'underline', 'clear']],
+                ['fontname', ['fontname']],
+                ['color', ['color']],
+                ['para', ['ul', 'ol', 'paragraph']],
+                ['table', ['table']],
+                ['insert', ['link', 'picture', 'video']],
+                ['view', ['fullscreen', 'codeview', 'help']]
+            ],
+            callbacks: {
+                onImageUpload: function (files) {
+                    for (let i = 0; i < files.length; i++) {
+                        uploadImage(files[i], this);
+                    }
+                },
+                onPaste: function (e) {
+                    // Giữ nguyên định dạng khi paste
+                    var bufferText = ((e.originalEvent || e).clipboardData || window.clipboardData).getData('text/html');
+                    if (bufferText) {
+                        e.preventDefault();
+                        document.execCommand('insertHTML', false, bufferText);
+                    }
+                }
+            },
+            styleTags: [
+                'p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6'
+            ],
+            styleTagsOptions: {
+                // Cho phép tất cả các thuộc tính style
+                allowedTags: ['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'span', 'div', 'b', 'i', 'u', 'strong', 'em', 'a', 'img', 'table', 'tr', 'td', 'th', 'thead', 'tbody', 'ul', 'ol', 'li'],
+                allowedAttributes: {
+                    '*': ['style', 'class', 'id', 'href', 'src', 'alt', 'title', 'width', 'height', 'align', 'valign', 'colspan', 'rowspan']
+                }
+            }
+        });
+
+        // Hàm upload ảnh
+        function uploadImage(file, editor) {
+            let formData = new FormData();
+            formData.append('upload', file);
+            $.ajax({
+                url: '/Home/UploadImage',
+                method: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function (response) {
+                    if (response.success) {
+                        let img = document.createElement('img');
+                        img.src = '/Content/img/thuonghieu/' + response.fileName;
+                        $(editor).summernote('insertNode', img);
+                    } else {
+                        alert('Lỗi khi upload ảnh: ' + response.message);
+                    }
+                },
+                error: function () {
+                    alert('Lỗi khi upload ảnh');
+                }
+            });
+        }
+
+        // Hàm làm sạch HTML
+        function cleanHtml(html) {
+            if (!html) return '';
+            
+            // Loại bỏ các script và style
+            html = html.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
+            html = html.replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '');
+            
+            // Loại bỏ các thuộc tính không an toàn
+            html = html.replace(/on\w+="[^"]*"/g, '');
+            html = html.replace(/on\w+='[^']*'/g, '');
+            
+            // Chỉ cho phép các thẻ HTML cơ bản
+            var allowedTags = /<(\/)?(p|br|b|i|u|strong|em|ul|ol|li|h[1-6]|a|img|table|tr|td|th|thead|tbody|div|span)(\s+[^>]*)?>/gi;
+            var tempDiv = document.createElement('div');
+            tempDiv.innerHTML = html;
+            
+            // Lấy nội dung text và chuyển đổi lại thành HTML an toàn
+            var text = tempDiv.textContent || tempDiv.innerText;
+            return text.replace(/\n/g, '<br>');
+        }
+
         // Xử lý tìm kiếm
         function searchBrands() {
             var searchText = $('#searchInput').val().toLowerCase();
@@ -400,16 +548,57 @@
             });
         });
 
+        // Xử lý khi mở modal thêm mới
+        $('#createBrandModal').on('shown.bs.modal', function () {
+            $('#moTa').summernote('code', '');
+        });
+
+        // Xử lý khi mở modal chỉnh sửa
+        $('.btn-edit').click(function () {
+            var maThuongHieu = $(this).data('id');
+            var tenThuongHieu = $(this).data('name');
+            var moTa = $(this).data('mota');
+            var logo = $(this).data('logo');
+            var trangThai = $(this).data('trangthai');
+
+            $('#editMaThuongHieu').val(maThuongHieu);
+            $('#editTenThuongHieu').val(tenThuongHieu);
+            $('#editMoTa').summernote('code', moTa);
+
+            // Hiển thị tên file logo hiện tại
+            if (logo) {
+                $('#editLogo').after('<p id="currentLogo">Logo hiện tại: ' + logo + '</p>');
+            } else {
+                $('#editLogo').after('<p id="currentLogo">Không có logo</p>');
+            }
+
+            // Thiết lập trạng thái
+            $('#trangThaiEdit').val(trangThai.toString().toLowerCase());
+        });
+
+        // Xử lý khi đóng modal
+        $('#createBrandModal, #editBrandModal').on('hidden.bs.modal', function () {
+            if ($(this).attr('id') === 'createBrandModal') {
+                $("#createBrandForm")[0].reset();
+                $('#moTa').summernote('code', '');
+                $('#tenThuongHieu, #moTa, #logo').removeClass('is-invalid');
+                $('#tenThuongHieuError, #moTaError, #logoError').hide();
+            } else {
+                $('#editTenThuongHieu, #editMoTa, #editLogo').removeClass('is-invalid');
+                $('#editTenThuongHieuError, #editMoTaError, #editLogoError').hide();
+                $('#currentLogo').remove();
+            }
+        });
+
+        // Xử lý submit form thêm mới
         $('#saveBrand').click(function () {
-            // Kiểm tra form hợp lệ
             if (!validateCreateForm()) {
                 return;
             }
 
             var formData = new FormData();
-            formData.append('MaThuongHieu', $('#maThuongHieu').val());
             formData.append('TenThuongHieu', $('#tenThuongHieu').val().trim());
-            formData.append('MoTa', $('#moTa').val().trim());
+            formData.append('MoTa', $('#moTa').summernote('code'));
             formData.append('Logo', $('#logo')[0].files[0]);
             formData.append('TrangThai', $('#trangThai').val());
 
@@ -430,77 +619,49 @@
                         alert(response.message || "Thêm thương hiệu thất bại");
                     }
                 },
-                error: function () {
-                    alert("Lỗi khi gọi server.");
+                error: function (xhr, status, error) {
+                    console.log('Error:', xhr.responseText);
+                    alert("Lỗi khi gọi server: " + error);
                 }
             });
         });
 
-        // Xử lý sự kiện khi nhấn nút Sửa
-        $('.btn-edit').click(function () {
-            var maThuongHieu = $(this).data('id');
-            var tenThuongHieu = $(this).data('name');
-            var moTa = $(this).data('mota');
-            var logo = $(this).data('logo');
-            var trangThai = $(this).data('trangthai');
-
-            $('#editMaThuongHieu').val(maThuongHieu);
-            $('#editTenThuongHieu').val(tenThuongHieu);
-            $('#editMoTa').val(moTa);
-
-            // Hiển thị tên file logo hiện tại
-            if (logo) {
-                $('#editLogo').after('<p id="currentLogo">Logo hiện tại: ' + logo + '</p>');
-            } else {
-                $('#editLogo').after('<p id="currentLogo">Không có logo</p>');
+        // Xử lý submit form chỉnh sửa
+        $('#updateBrand').click(function () {
+            if (!validateEditForm()) {
+                return;
             }
 
-            // Thiết lập trạng thái
-            $('#editTrangThai').val(trangThai.toString().toLowerCase());
+            var formData = new FormData();
+            formData.append('MaThuongHieu', $('#editMaThuongHieu').val());
+            formData.append('TenThuongHieu', $('#editTenThuongHieu').val().trim());
+            formData.append('MoTa', $('#editMoTa').summernote('code'));
+            if ($('#editLogo')[0].files[0]) {
+                formData.append('Logo', $('#editLogo')[0].files[0]);
+            }
+            formData.append('TrangThai', $('#trangThaiEdit').val());
 
-
-            // Xóa thông tin logo hiện tại khi đóng modal
-            $('#editBrandModal').on('hidden.bs.modal', function () {
-                $('#currentLogo').remove();
-            });
-
-            // Xử lý sự kiện khi nhấn nút Lưu trong modal chỉnh sửa
-            $('#updateBrand').click(function () {
-                // Kiểm tra form hợp lệ
-                if (!validateEditForm()) {
-                    return;
-                }
-
-                var formData = new FormData();
-                formData.append('MaThuongHieu', $('#editMaThuongHieu').val());
-                formData.append('TenThuongHieu', $('#editTenThuongHieu').val().trim());
-                formData.append('MoTa', $('#editMoTa').val().trim());
-                if ($('#editLogo')[0].files[0]) {
-                    formData.append('Logo', $('#editLogo')[0].files[0]);
-                }
-                formData.append('TrangThai', $('#trangThaiEdit').val());
-                
-                $.ajax({
-                    url: '@Url.Action("SuaThuongHieu", "Home")',
-                    type: 'POST',
-                    data: formData,
-                    processData: false,
-                    contentType: false,
-                    success: function (response) {
-                        if (response.success) {
-                            $('#editBrandModal').modal('hide');
-                            $('#editSuccessModal').modal('show');
-                            setTimeout(function () {
-                                location.reload();
-                            }, 1500);
-                        } else {
-                            alert(response.message || "Chỉnh sửa thương hiệu thất bại");
-                        }
-                    },
-                    error: function () {
-                        alert("Lỗi khi gọi server.");
+            $.ajax({
+                url: '@Url.Action("SuaThuongHieu", "Home")',
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function (response) {
+                    if (response.success) {
+                        $('#editBrandModal').modal('hide');
+                        $('#editSuccessModal').modal('show');
+                        setTimeout(function () {
+                            location.reload();
+                        }, 1500);
+                    } else {
+                        alert(response.message || "Chỉnh sửa thương hiệu thất bại");
                     }
-                });
+                },
+                error: function (xhr, status, error) {
+                    console.log('Error:', xhr.responseText);
+                    alert("Lỗi khi gọi server: " + error);
+                }
             });
         });
 
@@ -508,7 +669,6 @@
         function validateCreateForm() {
             var isValid = true;
             
-            // Kiểm tra tên thương hiệu
             var tenThuongHieu = $('#tenThuongHieu').val().trim();
             if (tenThuongHieu === "") {
                 $('#tenThuongHieu').addClass('is-invalid');
@@ -519,8 +679,7 @@
                 $('#tenThuongHieuError').hide();
             }
             
-            // Kiểm tra mô tả
-            var moTa = $('#moTa').val().trim();
+            var moTa = $('#moTa').summernote('code');
             if (moTa === "") {
                 $('#moTa').addClass('is-invalid');
                 $('#moTaError').show();
@@ -530,7 +689,6 @@
                 $('#moTaError').hide();
             }
             
-            // Kiểm tra logo
             var logo = $('#logo')[0].files[0];
             if (!logo) {
                 $('#logo').addClass('is-invalid');
@@ -548,7 +706,6 @@
         function validateEditForm() {
             var isValid = true;
             
-            // Kiểm tra tên thương hiệu
             var tenThuongHieu = $('#editTenThuongHieu').val().trim();
             if (tenThuongHieu === "") {
                 $('#editTenThuongHieu').addClass('is-invalid');
@@ -559,8 +716,7 @@
                 $('#editTenThuongHieuError').hide();
             }
             
-            // Kiểm tra mô tả
-            var moTa = $('#editMoTa').val().trim();
+            var moTa = $('#editMoTa').summernote('code');
             if (moTa === "") {
                 $('#editMoTa').addClass('is-invalid');
                 $('#editMoTaError').show();
@@ -572,25 +728,17 @@
             
             return isValid;
         }
-        
-        // Reset form khi đóng modal
-        $("#createBrandModal").on("hidden.bs.modal", function() {
-            $("#createBrandForm")[0].reset();
-            $('#tenThuongHieu, #moTa, #logo').removeClass('is-invalid');
-            $('#tenThuongHieuError, #moTaError, #logoError').hide();
-        });
 
-        $("#editBrandModal").on("hidden.bs.modal", function() {
-            $('#editTenThuongHieu, #editMoTa, #editLogo').removeClass('is-invalid');
-            $('#editTenThuongHieuError, #editMoTaError, #editLogoError').hide();
-            $('#currentLogo').remove();
+        // Xử lý khi click vào nút "Xem thêm"
+        $('[data-bs-target="#moTaModal"]').click(function() {
+            var moTa = $(this).data('mota');
+            var tenThuongHieu = $(this).data('ten');
+            
+            $('#moTaTenThuongHieu').text(tenThuongHieu);
+            $('#moTaNoiDung').html(moTa);
         });
     });
     </script>
-
-
-
-
 </div>
 
 

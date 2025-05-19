@@ -482,10 +482,14 @@ namespace Manager.Controllers
         }
 
         [HttpPost]
+        [ValidateInput(false)]
         public JsonResult TaoThuongHieu(string TenThuongHieu, string MoTa, HttpPostedFileBase Logo, bool TrangThai)
         {
             try
             {
+                // Giải mã nội dung mô tả
+                MoTa = HttpUtility.UrlDecode(MoTa);
+
                 // Tạo mã thương hiệu tự động
                 string MaThuongHieu;
                 do
@@ -516,15 +520,19 @@ namespace Manager.Controllers
             }
             catch (Exception ex)
             {
-                return Json(new { success = false, message = "Có lỗi xảy ra khi thêm thương hiệu: " + ex.Message });
+                return Json(new { success = false, message = ex.Message });
             }
         }
 
         [HttpPost]
+        [ValidateInput(false)]
         public JsonResult SuaThuongHieu(string MaThuongHieu, string TenThuongHieu, string MoTa, HttpPostedFileBase Logo, bool TrangThai)
         {
             try
             {
+                // Giải mã nội dung mô tả
+                MoTa = HttpUtility.UrlDecode(MoTa);
+
                 var thuongHieu = data.ThuongHieus.FirstOrDefault(t => t.MaThuongHieu == MaThuongHieu);
                 if (thuongHieu == null)
                 {
@@ -549,7 +557,7 @@ namespace Manager.Controllers
             }
             catch (Exception ex)
             {
-                return Json(new { success = false, message = "Có lỗi xảy ra khi chỉnh sửa thương hiệu: " + ex.Message });
+                return Json(new { success = false, message = ex.Message });
             }
         }
 
@@ -3940,6 +3948,54 @@ namespace Manager.Controllers
                 return RedirectToAction("ChiTietDonBanHang", new { id = model.MaDonHang });
             }
         }
+
+        #region Upload Image
+        [HttpPost]
+        public ActionResult UploadImage(HttpPostedFileBase upload)
+        {
+            if (upload != null && upload.ContentLength > 0)
+            {
+                // Tạo tên file ngẫu nhiên để tránh trùng lặp
+                var fileName = Path.GetFileName(upload.FileName);
+                var extension = Path.GetExtension(fileName);
+                var newFileName = "th_" + DateTime.Now.Ticks + extension;
+
+                // Tạo đường dẫn đầy đủ
+                var path = Path.Combine(Server.MapPath("~/Content/img/thuonghieu"), newFileName);
+
+                // Đảm bảo thư mục tồn tại
+                var directory = Path.GetDirectoryName(path);
+                if (!Directory.Exists(directory))
+                {
+                    Directory.CreateDirectory(directory);
+                }
+
+                // Lưu file
+                upload.SaveAs(path);
+
+                // Trả về URL của file
+                var url = Url.Content("~/Content/img/thuonghieu/" + newFileName);
+                var ckEditorFuncNum = System.Web.HttpContext.Current.Request["CKEditorFuncNum"];
+                return Content("<script>window.parent.CKEDITOR.tools.callFunction(" + ckEditorFuncNum + ", '" + url + "');</script>");
+            }
+            return HttpNotFound();
+        }
+
+        public ActionResult BrowseImages()
+        {
+            var path = Server.MapPath("~/Content/img/thuonghieu");
+            var files = Directory.GetFiles(path, "*.*")
+                .Where(f => f.EndsWith(".jpg") || f.EndsWith(".jpeg") || f.EndsWith(".png") || f.EndsWith(".gif"))
+                .Select(f => new
+                {
+                    url = Url.Content("~/Content/img/thuonghieu/" + Path.GetFileName(f)),
+                    name = Path.GetFileName(f)
+                })
+                .ToList();
+
+            return Json(files, JsonRequestBehavior.AllowGet);
+        }
+        #endregion
 
     }
 }
