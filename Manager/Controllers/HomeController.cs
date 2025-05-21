@@ -4084,40 +4084,43 @@ namespace Manager.Controllers
                     NgayBatDau = voucher.NgayBatDau,
                     NgayKetThuc = voucher.NgayKetThuc,
                     TrangThai = voucher.TrangThai,
-                    IsPublic = voucher.IsPublic ?? false,
-                    NgayTao = DateTime.Now
+                    NgayTao = DateTime.Now,
+                    IsPublic = voucher.IsPublic
                 };
 
-                // Không gán MaVoucher vì nó sẽ được tự động tạo bởi database
                 data.Vouchers.InsertOnSubmit(newVoucher);
                 data.SubmitChanges();
 
-                // Xử lý thông báo
-                if (voucher.IsPublic == true)
+                // Gửi thông báo và email cho khách hàng
+                if ((bool)voucher.IsPublic)
                 {
-                    // Gửi thông báo cho tất cả khách hàng
+                    // Nếu voucher công khai, gửi cho tất cả khách hàng
                     var khachHangs = data.KhachHangs.Where(k => k.TrangThai == "HoatDong").ToList();
-                    foreach (var kh in khachHangs)
+                    foreach (var khachHang in khachHangs)
                     {
-                        string tieuDe = "Voucher mới: " + voucher.TenVoucher;
-                        string noiDung = $"Chúng tôi vừa phát hành voucher mới: {voucher.TenVoucher}\n" +
-                                       $"Mã code: {voucher.MaVoucherCode}\n" +
-                                       $"Giá trị: {(voucher.LoaiGiamGia == "TienMat" ? ((decimal)voucher.GiaTriGiamGia).ToString("N0") + "₫" : ((decimal)voucher.GiaTriGiamGia).ToString("N0") + "%")}\n" +
-                                       $"Thời hạn: {voucher.NgayBatDau.Value.ToString("dd/MM/yyyy")} - {voucher.NgayKetThuc.Value.ToString("dd/MM/yyyy")}";
-                        GuiThongBaoVoucher(kh.MaKhachHang, tieuDe, noiDung);
+                        GuiThongBaoVoucher(
+                            khachHang.MaKhachHang,
+                            $"Voucher mới: {voucher.TenVoucher}",
+                            $"Chúng tôi có voucher mới dành cho bạn: {voucher.TenVoucher}. Mã code: {voucher.MaVoucherCode}. " +
+                            $"Giảm giá {(voucher.LoaiGiamGia == "TienMat" ? voucher.GiaTriGiamGia.Value.ToString("N0") + "₫" : voucher.GiaTriGiamGia.Value.ToString("N0") + "%")} " +
+                            $"cho đơn hàng từ {voucher.DonHangToiThieu.Value.ToString("N0")}₫. " +
+                            $"Thời hạn từ {voucher.NgayBatDau.Value.ToString("dd/MM/yyyy")} đến {voucher.NgayKetThuc.Value.ToString("dd/MM/yyyy")}."
+                        );
                     }
                 }
                 else if (voucher.DanhSachKhachHang != null && voucher.DanhSachKhachHang.Any())
                 {
-                    // Gửi thông báo cho khách hàng được chọn
-                    foreach (var maKh in voucher.DanhSachKhachHang)
+                    // Nếu voucher không công khai, chỉ gửi cho khách hàng được chọn
+                    foreach (var maKhachHang in voucher.DanhSachKhachHang)
                     {
-                        string tieuDe = "Voucher mới: " + voucher.TenVoucher;
-                        string noiDung = $"Chúng tôi vừa phát hành voucher mới: {voucher.TenVoucher}\n" +
-                                       $"Mã code: {voucher.MaVoucherCode}\n" +
-                                       $"Giá trị: {(voucher.LoaiGiamGia == "TienMat" ? ((decimal)voucher.GiaTriGiamGia).ToString("N0") + "₫" : ((decimal)voucher.GiaTriGiamGia).ToString("N0") + "%")}\n" +
-                                       $"Thời hạn: {voucher.NgayBatDau.Value.ToString("dd/MM/yyyy")} - {voucher.NgayKetThuc.Value.ToString("dd/MM/yyyy")}";
-                        GuiThongBaoVoucher(maKh, tieuDe, noiDung);
+                        GuiThongBaoVoucher(
+                            maKhachHang,
+                            $"Voucher đặc biệt: {voucher.TenVoucher}",
+                            $"Chúng tôi có voucher đặc biệt dành riêng cho bạn: {voucher.TenVoucher}. Mã code: {voucher.MaVoucherCode}. " +
+                            $"Giảm giá {(voucher.LoaiGiamGia == "TienMat" ? voucher.GiaTriGiamGia.Value.ToString("N0") + "₫" : voucher.GiaTriGiamGia.Value.ToString("N0") + "%")} " +
+                            $"cho đơn hàng từ {voucher.DonHangToiThieu.Value.ToString("N0")}₫. " +
+                            $"Thời hạn từ {voucher.NgayBatDau.Value.ToString("dd/MM/yyyy")} đến {voucher.NgayKetThuc.Value.ToString("dd/MM/yyyy")}."
+                        );
                     }
                 }
 
@@ -4125,7 +4128,7 @@ namespace Manager.Controllers
             }
             catch (Exception ex)
             {
-                return Json(new { success = false, message = ex.Message });
+                return Json(new { success = false, message = "Lỗi khi tạo voucher: " + ex.Message });
             }
         }
 
@@ -4157,36 +4160,40 @@ namespace Manager.Controllers
                 existingVoucher.NgayBatDau = voucher.NgayBatDau;
                 existingVoucher.NgayKetThuc = voucher.NgayKetThuc;
                 existingVoucher.TrangThai = voucher.TrangThai;
-                existingVoucher.IsPublic = voucher.IsPublic ?? false;
+                existingVoucher.IsPublic = voucher.IsPublic;
 
                 data.SubmitChanges();
 
                 // Xử lý thông báo
-                if (voucher.IsPublic == true)
+                if ((bool)voucher.IsPublic)
                 {
                     // Gửi thông báo cho tất cả khách hàng
                     var khachHangs = data.KhachHangs.Where(k => k.TrangThai == "HoatDong").ToList();
-                    foreach (var kh in khachHangs)
+                    foreach (var khachHang in khachHangs)
                     {
-                        string tieuDe = "Cập nhật voucher: " + voucher.TenVoucher;
-                        string noiDung = $"Voucher đã được cập nhật: {voucher.TenVoucher}\n" +
-                                       $"Mã code: {voucher.MaVoucherCode}\n" +
-                                       $"Giá trị: {(voucher.LoaiGiamGia == "TienMat" ? ((decimal)voucher.GiaTriGiamGia).ToString("N0") + "₫" : ((decimal)voucher.GiaTriGiamGia).ToString("N0") + "%")}\n" +
-                                       $"Thời hạn: {voucher.NgayBatDau.Value.ToString("dd/MM/yyyy")} - {voucher.NgayKetThuc.Value.ToString("dd/MM/yyyy")}";
-                        GuiThongBaoVoucher(kh.MaKhachHang, tieuDe, noiDung);
+                        GuiThongBaoVoucher(
+                            khachHang.MaKhachHang,
+                            $"Cập nhật voucher: {voucher.TenVoucher}",
+                            $"Voucher đã được cập nhật: {voucher.TenVoucher}. Mã code: {voucher.MaVoucherCode}. " +
+                            $"Giảm giá {(voucher.LoaiGiamGia == "TienMat" ? voucher.GiaTriGiamGia.Value.ToString("N0") + "₫" : voucher.GiaTriGiamGia.Value.ToString("N0") + "%")} " +
+                            $"cho đơn hàng từ {voucher.DonHangToiThieu.Value.ToString("N0")}₫. " +
+                            $"Thời hạn từ {voucher.NgayBatDau.Value.ToString("dd/MM/yyyy")} đến {voucher.NgayKetThuc.Value.ToString("dd/MM/yyyy")}."
+                        );
                     }
                 }
                 else if (voucher.DanhSachKhachHang != null && voucher.DanhSachKhachHang.Any())
                 {
-                    // Gửi thông báo cho khách hàng được chọn
-                    foreach (var maKh in voucher.DanhSachKhachHang)
+                    // Nếu voucher không công khai, chỉ gửi cho khách hàng được chọn
+                    foreach (var maKhachHang in voucher.DanhSachKhachHang)
                     {
-                        string tieuDe = "Cập nhật voucher: " + voucher.TenVoucher;
-                        string noiDung = $"Voucher đã được cập nhật: {voucher.TenVoucher}\n" +
-                                       $"Mã code: {voucher.MaVoucherCode}\n" +
-                                       $"Giá trị: {(voucher.LoaiGiamGia == "TienMat" ? ((decimal)voucher.GiaTriGiamGia).ToString("N0") + "₫" : ((decimal)voucher.GiaTriGiamGia).ToString("N0") + "%")}\n" +
-                                       $"Thời hạn: {voucher.NgayBatDau.Value.ToString("dd/MM/yyyy")} - {voucher.NgayKetThuc.Value.ToString("dd/MM/yyyy")}";
-                        GuiThongBaoVoucher(maKh, tieuDe, noiDung);
+                        GuiThongBaoVoucher(
+                            maKhachHang,
+                            $"Cập nhật voucher: {voucher.TenVoucher}",
+                            $"Voucher đã được cập nhật: {voucher.TenVoucher}. Mã code: {voucher.MaVoucherCode}. " +
+                            $"Giảm giá {(voucher.LoaiGiamGia == "TienMat" ? voucher.GiaTriGiamGia.Value.ToString("N0") + "₫" : voucher.GiaTriGiamGia.Value.ToString("N0") + "%")} " +
+                            $"cho đơn hàng từ {voucher.DonHangToiThieu.Value.ToString("N0")}₫. " +
+                            $"Thời hạn từ {voucher.NgayBatDau.Value.ToString("dd/MM/yyyy")} đến {voucher.NgayKetThuc.Value.ToString("dd/MM/yyyy")}."
+                        );
                     }
                 }
 
@@ -4194,7 +4201,7 @@ namespace Manager.Controllers
             }
             catch (Exception ex)
             {
-                return Json(new { success = false, message = ex.Message });
+                return Json(new { success = false, message = "Lỗi khi sửa voucher: " + ex.Message });
             }
         }
 

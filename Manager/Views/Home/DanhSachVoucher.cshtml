@@ -680,6 +680,13 @@ $(document).ready(function () {
             return;
         }
 
+        // Kiểm tra nếu không công khai thì phải chọn khách hàng
+        const isPublic = $('#isPublic').val() === 'true';
+        if (!isPublic && (!window.selectedCustomers || window.selectedCustomers.length === 0)) {
+            alert('Vui lòng chọn ít nhất một khách hàng khi voucher không công khai');
+            return;
+        }
+
         // Tạo đối tượng voucher
         var voucher = {
             MaVoucherCode: maCode,
@@ -692,14 +699,15 @@ $(document).ready(function () {
             NgayBatDau: $('#ngayBatDau').val(),
             NgayKetThuc: $('#ngayKetThuc').val(),
             TrangThai: $('#trangThai').val(),
-            IsPublic: $('#isPublic').val() === 'true',
+            IsPublic: isPublic,
             DanhSachKhachHang: window.selectedCustomers || []
         };
 
         $.ajax({
             url: '/Home/TaoVoucher',
             type: 'POST',
-            data: voucher,
+            contentType: 'application/json',
+            data: JSON.stringify(voucher),
             success: function (response) {
                 if (response.success) {
                     $('#createVoucherModal').modal('hide');
