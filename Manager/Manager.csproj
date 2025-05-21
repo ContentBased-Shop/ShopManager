@@ -143,6 +143,7 @@
       <DependentUpon>SHOP.dbml</DependentUpon>
     </Compile>
     <Compile Include="Models\TopKhachHangViewModel.cs" />
+    <Compile Include="Models\VoucherModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

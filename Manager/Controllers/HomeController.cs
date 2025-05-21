@@ -2450,44 +2450,6 @@ namespace Manager.Controllers
             }
         }
 
-        [HttpPost]
-        public JsonResult SuaVoucher(Voucher voucher)
-        {
-            try
-            {
-                var existingVoucher = data.Vouchers.FirstOrDefault(v => v.MaVoucher == voucher.MaVoucher);
-                if (existingVoucher == null)
-                {
-                    return Json(new { success = false, message = "Không tìm thấy voucher" });
-                }
-
-                // Kiểm tra mã code mới có trùng với mã code khác không
-                if (existingVoucher.MaVoucherCode != voucher.MaVoucherCode &&
-                    data.Vouchers.Any(v => v.MaVoucherCode == voucher.MaVoucherCode))
-                {
-                    return Json(new { success = false, message = "Mã voucher code đã tồn tại" });
-                }
-
-                existingVoucher.MaVoucherCode = voucher.MaVoucherCode;
-                existingVoucher.TenVoucher = voucher.TenVoucher;
-                existingVoucher.MoTa = voucher.MoTa;
-                existingVoucher.LoaiGiamGia = voucher.LoaiGiamGia;
-                existingVoucher.GiaTriGiamGia = voucher.GiaTriGiamGia;
-                existingVoucher.DonHangToiThieu = voucher.DonHangToiThieu;
-                existingVoucher.SoLuong = voucher.SoLuong;
-                existingVoucher.NgayBatDau = voucher.NgayBatDau;
-                existingVoucher.NgayKetThuc = voucher.NgayKetThuc;
-                existingVoucher.TrangThai = voucher.TrangThai;
-
-                data.SubmitChanges();
-
-                return Json(new { success = true });
-            }
-            catch (Exception ex)
-            {
-                return Json(new { success = false, message = "Có lỗi xảy ra khi cập nhật voucher: " + ex.Message });
-            }
-        }
 
         [HttpPost]
         public JsonResult TaoBienTheHangHoa(string MaHangHoa, string MauSac, string DungLuong, string CPU, 
@@ -2839,47 +2801,6 @@ namespace Manager.Controllers
         }
         #endregion
 
-        [HttpPost]
-        public JsonResult TaoVoucher(Voucher voucher)
-        {
-            try
-            {
-                // Kiểm tra mã code đã tồn tại chưa
-                if (data.Vouchers.Any(v => v.MaVoucherCode == voucher.MaVoucherCode))
-                {
-                    return Json(new { success = false, message = "Mã voucher code đã tồn tại" });
-                }
-
-                // Kiểm tra ngày bắt đầu phải lớn hơn ngày hiện tại
-                if (voucher.NgayBatDau <= DateTime.Now.Date)
-                {
-                    return Json(new { success = false, message = "Ngày bắt đầu phải lớn hơn ngày hiện tại" });
-                }
-
-                // Kiểm tra ngày kết thúc phải lớn hơn ngày bắt đầu
-                if (voucher.NgayKetThuc <= voucher.NgayBatDau)
-                {
-                    return Json(new { success = false, message = "Ngày kết thúc phải lớn hơn ngày bắt đầu" });
-                }
-
-                // Lấy mã voucher lớn nhất và tăng thêm 1
-                int maxMaVoucher = data.Vouchers.Any() ? data.Vouchers.Max(v => v.MaVoucher) : 0;
-                voucher.MaVoucher = maxMaVoucher + 1;
-
-                // Thiết lập các giá trị mặc định
-                voucher.SoLuongDaDung = 0;
-                voucher.NgayTao = DateTime.Now;
-
-                data.Vouchers.InsertOnSubmit(voucher);
-                data.SubmitChanges();
-
-                return Json(new { success = true });
-            }
-            catch (Exception ex)
-            {
-                return Json(new { success = false, message = "Có lỗi xảy ra khi thêm voucher: " + ex.Message });
-            }
-        }
 
         // Thêm controller để quản lý nhiều hình ảnh cho hàng hóa
         public ActionResult QuanLyHinhAnh(string maBienThe)
@@ -3996,6 +3917,286 @@ namespace Manager.Controllers
             return Json(files, JsonRequestBehavior.AllowGet);
         }
         #endregion
+
+        [HttpPost]
+        public JsonResult PhanPhoiVoucher(int maVoucher, List<string> danhSachKhachHang)
+        {
+            try
+            {
+                var voucher = data.Vouchers.FirstOrDefault(v => v.MaVoucher == maVoucher);
+                if (voucher == null)
+                {
+                    return Json(new { success = false, message = "Không tìm thấy voucher" });
+                }
+
+                // Kiểm tra số lượng voucher còn lại
+                int soLuongConLai = voucher.SoLuong.Value - voucher.SoLuongDaDung.Value;
+                if (soLuongConLai < danhSachKhachHang.Count)
+                {
+                    return Json(new { success = false, message = "Số lượng voucher còn lại không đủ để phân phối" });
+                }
+
+                // Thêm các bản ghi phân phối
+                foreach (var maKhachHang in danhSachKhachHang)
+                {
+                    var phanPhoi = new PhanPhoiVoucher
+                    {
+                        MaVoucher = maVoucher,
+                        MaKhachHang = maKhachHang,
+                        DaSuDung = false
+                    };
+                    data.PhanPhoiVouchers.InsertOnSubmit(phanPhoi);
+                }
+
+                data.SubmitChanges();
+                return Json(new { success = true });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Có lỗi xảy ra khi phân phối voucher: " + ex.Message });
+            }
+        }
+
+        [HttpPost]
+        public JsonResult HuyPhanPhoiVoucher(int maVoucher, List<string> danhSachKhachHang)
+        {
+            try
+            {
+                var phanPhoiCanXoa = data.PhanPhoiVouchers
+                    .Where(p => p.MaVoucher == maVoucher && 
+                           danhSachKhachHang.Contains(p.MaKhachHang) && 
+                           !p.DaSuDung.Value);
+
+                if (!phanPhoiCanXoa.Any())
+                {
+                    return Json(new { success = false, message = "Không tìm thấy bản ghi phân phối cần hủy" });
+                }
+
+                data.PhanPhoiVouchers.DeleteAllOnSubmit(phanPhoiCanXoa);
+                data.SubmitChanges();
+
+                return Json(new { success = true });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Có lỗi xảy ra khi hủy phân phối voucher: " + ex.Message });
+            }
+        }
+
+        [HttpGet]
+        public JsonResult LayDanhSachPhanPhoiVoucher(int maVoucher)
+        {
+            try
+            {
+                var danhSachPhanPhoi = data.PhanPhoiVouchers
+                    .Where(p => p.MaVoucher == maVoucher)
+                    .Select(p => new
+                    {
+                        p.MaKhachHang,
+                        p.DaSuDung,
+                        p.NgaySuDung,
+                        TenKhachHang = p.KhachHang.HoTen
+                    })
+                    .ToList();
+
+                return Json(new { success = true, data = danhSachPhanPhoi }, JsonRequestBehavior.AllowGet);
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Có lỗi xảy ra khi lấy danh sách phân phối: " + ex.Message }, JsonRequestBehavior.AllowGet);
+            }
+        }
+
+        [HttpGet]
+        public JsonResult LayDanhSachKhachHang()
+        {
+            try
+            {
+                var khachHang = data.KhachHangs
+                    .Where(k => k.TrangThai == "HoatDong")
+                    .Select(k => new {
+                        k.MaKhachHang,
+                        k.HoTen,
+                        k.Email,
+                        k.SoDienThoai,
+                        k.TrangThai
+                    }).ToList();
+                return Json(khachHang, JsonRequestBehavior.AllowGet);
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message }, JsonRequestBehavior.AllowGet);
+            }
+        }
+
+        private void GuiThongBaoVoucher(string maKhachHang, string tieuDe, string noiDung)
+        {
+            try
+            {
+                var thongBao = new ThongBao
+                {
+                    MaThongBao = Guid.NewGuid().ToString(),
+                    MaKhachHang = maKhachHang,
+                    TieuDe = tieuDe,
+                    NoiDung = noiDung,
+                    DaDoc = false,
+                    NgayGui = DateTime.Now
+                };
+                data.ThongBaos.InsertOnSubmit(thongBao);
+                data.SubmitChanges();
+
+                // Gửi email thông báo
+                var khachHang = data.KhachHangs.FirstOrDefault(k => k.MaKhachHang == maKhachHang);
+                if (khachHang != null && !string.IsNullOrEmpty(khachHang.Email))
+                {
+                    SendEmail(khachHang.Email, tieuDe, noiDung);
+                }
+            }
+            catch (Exception ex)
+            {
+                // Log lỗi nhưng không ảnh hưởng đến quá trình tạo voucher
+                System.Diagnostics.Debug.WriteLine($"Lỗi gửi thông báo: {ex.Message}");
+            }
+        }
+
+        [HttpPost]
+        public JsonResult TaoVoucher(VoucherModel voucher)
+        {
+            try
+            {
+                // Kiểm tra mã code đã tồn tại chưa
+                if (data.Vouchers.Any(v => v.MaVoucherCode == voucher.MaVoucherCode))
+                {
+                    return Json(new { success = false, message = "Mã code voucher đã tồn tại" });
+                }
+
+                // Tạo voucher mới
+                var newVoucher = new Voucher
+                {
+                    MaVoucherCode = voucher.MaVoucherCode,
+                    TenVoucher = voucher.TenVoucher,
+                    MoTa = voucher.MoTa,
+                    LoaiGiamGia = voucher.LoaiGiamGia,
+                    GiaTriGiamGia = voucher.GiaTriGiamGia,
+                    DonHangToiThieu = voucher.DonHangToiThieu,
+                    SoLuong = (int)voucher.SoLuong,
+                    SoLuongDaDung = 0,
+                    NgayBatDau = voucher.NgayBatDau,
+                    NgayKetThuc = voucher.NgayKetThuc,
+                    TrangThai = voucher.TrangThai,
+                    IsPublic = voucher.IsPublic ?? false,
+                    NgayTao = DateTime.Now
+                };
+
+                // Không gán MaVoucher vì nó sẽ được tự động tạo bởi database
+                data.Vouchers.InsertOnSubmit(newVoucher);
+                data.SubmitChanges();
+
+                // Xử lý thông báo
+                if (voucher.IsPublic == true)
+                {
+                    // Gửi thông báo cho tất cả khách hàng
+                    var khachHangs = data.KhachHangs.Where(k => k.TrangThai == "HoatDong").ToList();
+                    foreach (var kh in khachHangs)
+                    {
+                        string tieuDe = "Voucher mới: " + voucher.TenVoucher;
+                        string noiDung = $"Chúng tôi vừa phát hành voucher mới: {voucher.TenVoucher}\n" +
+                                       $"Mã code: {voucher.MaVoucherCode}\n" +
+                                       $"Giá trị: {(voucher.LoaiGiamGia == "TienMat" ? ((decimal)voucher.GiaTriGiamGia).ToString("N0") + "₫" : ((decimal)voucher.GiaTriGiamGia).ToString("N0") + "%")}\n" +
+                                       $"Thời hạn: {voucher.NgayBatDau.Value.ToString("dd/MM/yyyy")} - {voucher.NgayKetThuc.Value.ToString("dd/MM/yyyy")}";
+                        GuiThongBaoVoucher(kh.MaKhachHang, tieuDe, noiDung);
+                    }
+                }
+                else if (voucher.DanhSachKhachHang != null && voucher.DanhSachKhachHang.Any())
+                {
+                    // Gửi thông báo cho khách hàng được chọn
+                    foreach (var maKh in voucher.DanhSachKhachHang)
+                    {
+                        string tieuDe = "Voucher mới: " + voucher.TenVoucher;
+                        string noiDung = $"Chúng tôi vừa phát hành voucher mới: {voucher.TenVoucher}\n" +
+                                       $"Mã code: {voucher.MaVoucherCode}\n" +
+                                       $"Giá trị: {(voucher.LoaiGiamGia == "TienMat" ? ((decimal)voucher.GiaTriGiamGia).ToString("N0") + "₫" : ((decimal)voucher.GiaTriGiamGia).ToString("N0") + "%")}\n" +
+                                       $"Thời hạn: {voucher.NgayBatDau.Value.ToString("dd/MM/yyyy")} - {voucher.NgayKetThuc.Value.ToString("dd/MM/yyyy")}";
+                        GuiThongBaoVoucher(maKh, tieuDe, noiDung);
+                    }
+                }
+
+                return Json(new { success = true });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
+        [HttpPost]
+        public JsonResult SuaVoucher(VoucherModel voucher)
+        {
+            try
+            {
+                var existingVoucher = data.Vouchers.FirstOrDefault(v => v.MaVoucher == voucher.MaVoucher);
+                if (existingVoucher == null)
+                {
+                    return Json(new { success = false, message = "Không tìm thấy voucher" });
+                }
+
+                // Kiểm tra mã code đã tồn tại chưa (trừ voucher hiện tại)
+                if (data.Vouchers.Any(v => v.MaVoucherCode == voucher.MaVoucherCode && v.MaVoucher != voucher.MaVoucher))
+                {
+                    return Json(new { success = false, message = "Mã code voucher đã tồn tại" });
+                }
+
+                // Cập nhật thông tin voucher
+                existingVoucher.MaVoucherCode = voucher.MaVoucherCode;
+                existingVoucher.TenVoucher = voucher.TenVoucher;
+                existingVoucher.MoTa = voucher.MoTa;
+                existingVoucher.LoaiGiamGia = voucher.LoaiGiamGia;
+                existingVoucher.GiaTriGiamGia = voucher.GiaTriGiamGia;
+                existingVoucher.DonHangToiThieu = voucher.DonHangToiThieu;
+                existingVoucher.SoLuong = voucher.SoLuong;
+                existingVoucher.NgayBatDau = voucher.NgayBatDau;
+                existingVoucher.NgayKetThuc = voucher.NgayKetThuc;
+                existingVoucher.TrangThai = voucher.TrangThai;
+                existingVoucher.IsPublic = voucher.IsPublic ?? false;
+
+                data.SubmitChanges();
+
+                // Xử lý thông báo
+                if (voucher.IsPublic == true)
+                {
+                    // Gửi thông báo cho tất cả khách hàng
+                    var khachHangs = data.KhachHangs.Where(k => k.TrangThai == "HoatDong").ToList();
+                    foreach (var kh in khachHangs)
+                    {
+                        string tieuDe = "Cập nhật voucher: " + voucher.TenVoucher;
+                        string noiDung = $"Voucher đã được cập nhật: {voucher.TenVoucher}\n" +
+                                       $"Mã code: {voucher.MaVoucherCode}\n" +
+                                       $"Giá trị: {(voucher.LoaiGiamGia == "TienMat" ? ((decimal)voucher.GiaTriGiamGia).ToString("N0") + "₫" : ((decimal)voucher.GiaTriGiamGia).ToString("N0") + "%")}\n" +
+                                       $"Thời hạn: {voucher.NgayBatDau.Value.ToString("dd/MM/yyyy")} - {voucher.NgayKetThuc.Value.ToString("dd/MM/yyyy")}";
+                        GuiThongBaoVoucher(kh.MaKhachHang, tieuDe, noiDung);
+                    }
+                }
+                else if (voucher.DanhSachKhachHang != null && voucher.DanhSachKhachHang.Any())
+                {
+                    // Gửi thông báo cho khách hàng được chọn
+                    foreach (var maKh in voucher.DanhSachKhachHang)
+                    {
+                        string tieuDe = "Cập nhật voucher: " + voucher.TenVoucher;
+                        string noiDung = $"Voucher đã được cập nhật: {voucher.TenVoucher}\n" +
+                                       $"Mã code: {voucher.MaVoucherCode}\n" +
+                                       $"Giá trị: {(voucher.LoaiGiamGia == "TienMat" ? ((decimal)voucher.GiaTriGiamGia).ToString("N0") + "₫" : ((decimal)voucher.GiaTriGiamGia).ToString("N0") + "%")}\n" +
+                                       $"Thời hạn: {voucher.NgayBatDau.Value.ToString("dd/MM/yyyy")} - {voucher.NgayKetThuc.Value.ToString("dd/MM/yyyy")}";
+                        GuiThongBaoVoucher(maKh, tieuDe, noiDung);
+                    }
+                }
+
+                return Json(new { success = true });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
 
     }
 }

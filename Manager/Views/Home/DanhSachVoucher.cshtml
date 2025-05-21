@@ -44,6 +44,7 @@
                     <th>Đã dùng</th>
                     <th>Thời gian</th>
                     <th>Trạng thái</th>
+                    <th>Công khai</th>
                     <th>Thao tác</th>
                 </tr>
             </thead>
@@ -84,6 +85,16 @@
                             }
                         </td>
                         <td>
+                            @if (v.IsPublic == true)
+                            {
+                                <span class="badge text-bg-success">Có</span>
+                            }
+                            else
+                            {
+                                <span class="badge text-bg-secondary">Không</span>
+                            }
+                        </td>
+                        <td>
                             <a href="#" class="btn btn-sm btn-primary btn-edit"
                                data-id="@v.MaVoucher"
                                data-code="@v.MaVoucherCode"
@@ -96,6 +107,7 @@
                                data-start="@(v.NgayBatDau != null ? v.NgayBatDau.Value.ToString("yyyy-MM-dd") : "")"
                                data-end="@(v.NgayKetThuc != null ? v.NgayKetThuc.Value.ToString("yyyy-MM-dd") : "")"
                                data-status="@v.TrangThai"
+                               data-public="@v.IsPublic"
                                data-bs-toggle="modal"
                                data-bs-target="#editVoucherModal">
                                 <i class="bi bi-pencil-square"></i>
@@ -265,6 +277,13 @@
                             <option value="HetHan">Hết hạn</option>
                         </select>
                     </div>
+                    <div class="mb-3">
+                        <label for="isPublic" class="form-label">Công khai</label>
+                        <select class="form-select" id="isPublic" required>
+                            <option value="false">Không</option>
+                            <option value="true">Có</option>
+                        </select>
+                    </div>
                 </form>
             </div>
             <div class="modal-footer">
@@ -339,11 +358,57 @@
                             <option value="HetHan">Hết hạn</option>
                         </select>
                     </div>
+                    <div class="mb-3">
+                        <label for="editIsPublic" class="form-label">Công khai</label>
+                        <select class="form-select" id="editIsPublic" required>
+                            <option value="false">Không</option>
+                            <option value="true">Có</option>
+                        </select>
+                    </div>
                 </form>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
                 <button type="button" class="btn btn-primary" id="updateVoucher">Lưu</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Danh sách khách hàng -->
+<div class="modal fade" id="customerListModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Chọn khách hàng nhận voucher</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <input type="text" class="form-control" id="customerSearchInput" placeholder="Tìm kiếm khách hàng...">
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-bordered">
+                        <thead class="table-light">
+                            <tr>
+                                <th style="width: 50px;">
+                                    <input type="checkbox" id="checkAllCustomers" />
+                                </th>
+                                <th>Mã KH</th>
+                                <th>Họ tên</th>
+                                <th>Email</th>
+                                <th>Số điện thoại</th>
+                                <th>Trạng thái</th>
+                            </tr>
+                        </thead>
+                        <tbody id="customerListBody">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                <button type="button" class="btn btn-primary" id="confirmCustomerSelection">Xác nhận</button>
             </div>
         </div>
     </div>
@@ -626,7 +691,9 @@ $(document).ready(function () {
             SoLuong: soLuong,
             NgayBatDau: $('#ngayBatDau').val(),
             NgayKetThuc: $('#ngayKetThuc').val(),
-            TrangThai: $('#trangThai').val()
+            TrangThai: $('#trangThai').val(),
+            IsPublic: $('#isPublic').val() === 'true',
+            DanhSachKhachHang: window.selectedCustomers || []
         };
 
         $.ajax({
@@ -663,6 +730,7 @@ $(document).ready(function () {
         var ngayBatDau = $(this).data('start');
         var ngayKetThuc = $(this).data('end');
         var trangThai = $(this).data('status');
+        var isPublic = $(this).data('public');
 
         $('#editMaVoucher').val(maVoucher);
         $('#editMaVoucherCode').val(maCode);
@@ -675,6 +743,7 @@ $(document).ready(function () {
         $('#editNgayBatDau').val(ngayBatDau);
         $('#editNgayKetThuc').val(ngayKetThuc);
         $('#editTrangThai').val(trangThai);
+        $('#editIsPublic').val(isPublic);
     });
 
     $('#updateVoucher').click(function () {
@@ -720,7 +789,9 @@ $(document).ready(function () {
             SoLuong: parseInt($('#editSoLuong').val()),
             NgayBatDau: $('#editNgayBatDau').val(),
             NgayKetThuc: $('#editNgayKetThuc').val(),
-            TrangThai: $('#editTrangThai').val()
+            TrangThai: $('#editTrangThai').val(),
+            IsPublic: $('#editIsPublic').val() === 'true',
+            DanhSachKhachHang: window.selectedCustomers || []
         };
 
         $.ajax({
@@ -758,6 +829,86 @@ $(document).ready(function () {
         if (value < 0) {
             $(this).val(Math.abs(value));
         }
+    });
+
+    // Xử lý khi thay đổi trạng thái công khai
+    $('#isPublic, #editIsPublic').change(function() {
+        var isPublic = $(this).val() === 'true';
+        if (!isPublic) {
+            // Nếu không công khai, hiển thị modal chọn khách hàng
+            loadCustomerList();
+            $('#customerListModal').modal('show');
+        }
+    });
+
+    // Hàm tải danh sách khách hàng
+    function loadCustomerList() {
+        $.ajax({
+            url: '/Home/LayDanhSachKhachHang',
+            type: 'GET',
+            success: function(response) {
+                var html = '';
+                response.forEach(function(customer) {
+                    html += `
+                        <tr>
+                            <td>
+                                <input type="checkbox" class="customer-check" value="${customer.MaKhachHang}" />
+                            </td>
+                            <td>${customer.MaKhachHang}</td>
+                            <td>${customer.HoTen}</td>
+                            <td>${customer.Email}</td>
+                            <td>${customer.SoDienThoai}</td>
+                            <td>
+                                <span class="badge ${customer.TrangThai === 'HoatDong' ? 'text-bg-success' : 'text-bg-danger'}">
+                                    ${customer.TrangThai === 'HoatDong' ? 'Hoạt động' : 'Cấm'}
+                                </span>
+                            </td>
+                        </tr>
+                    `;
+                });
+                $('#customerListBody').html(html);
+            },
+            error: function() {
+                alert('Có lỗi xảy ra khi tải danh sách khách hàng');
+            }
+        });
+    }
+
+    // Xử lý tìm kiếm khách hàng
+    $('#customerSearchInput').on('input', function() {
+        var searchText = $(this).val().toLowerCase();
+        $('#customerListBody tr').each(function() {
+            var hoTen = $(this).find('td:eq(2)').text().toLowerCase();
+            var email = $(this).find('td:eq(3)').text().toLowerCase();
+            var sdt = $(this).find('td:eq(4)').text().toLowerCase();
+            
+            if(hoTen.includes(searchText) || email.includes(searchText) || sdt.includes(searchText)) {
+                $(this).show();
+            } else {
+                $(this).hide();
+            }
+        });
+    });
+
+    // Xử lý checkbox "Chọn tất cả" khách hàng
+    $('#checkAllCustomers').change(function() {
+        $('.customer-check').prop('checked', $(this).prop('checked'));
+    });
+
+    // Xử lý khi chọn khách hàng
+    $('#confirmCustomerSelection').click(function() {
+        var selectedCustomers = $('.customer-check:checked').map(function() {
+            return $(this).val();
+        }).get();
+
+        if(selectedCustomers.length === 0) {
+            alert('Vui lòng chọn ít nhất một khách hàng');
+            return;
+        }
+
+        // Lưu danh sách khách hàng đã chọn
+        window.selectedCustomers = selectedCustomers;
+        $('#customerListModal').modal('hide');
     });
 });
 </script>
