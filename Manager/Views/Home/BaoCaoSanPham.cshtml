@@ -125,9 +125,8 @@
                             <thead class="table-light">
                                 <tr>
                                     <th class="ps-4">#</th>
-                                    <th>Mã biến thể</th>
-                                    <th>Màu sắc</th>
-                                    <th>Dung lượng</th>
+                                    <th>Tên sản phẩm</th>
+                                    <th>Chi tiết biến thể</th>
                                     <th>Tồn kho</th>
                                     <th>Giá nhập</th>
                                     <th>Giá bán</th>
@@ -140,9 +139,33 @@
                                     {
                                         <tr>
                                             <td class="ps-4">@sttTonKho</td>
-                                            <td>@bt.MaBienThe</td>
-                                            <td>@bt.MauSac</td>
-                                            <td>@bt.DungLuong</td>
+                                            <td>@bt.HangHoa.TenHangHoa</td>
+                                            <td>
+                                                @if (!string.IsNullOrEmpty(bt.MauSac))
+                                                {
+                                                    <span>@bt.MauSac</span>
+                                                }
+                                                @if (!string.IsNullOrEmpty(bt.DungLuong))
+                                                {
+                                                    <span>, @bt.DungLuong</span>
+                                                }
+                                                @if (!string.IsNullOrEmpty(bt.CPU))
+                                                {
+                                                    <span>, @bt.CPU</span>
+                                                }
+                                                @if (!string.IsNullOrEmpty(bt.RAM))
+                                                {
+                                                    <span>, @bt.RAM</span>
+                                                }
+                                                @if (!string.IsNullOrEmpty(bt.KichThuocManHinh))
+                                                {
+                                                    <span>, @bt.KichThuocManHinh</span>
+                                                }
+                                                @if (!string.IsNullOrEmpty(bt.LoaiBoNho))
+                                                {
+                                                    <span>, @bt.LoaiBoNho</span>
+                                                }
+                                            </td>
                                             <td>@bt.SoLuongTonKho</td>
                                             <td>@string.Format("{0:N0}", bt.GiaNhap)đ</td>
                                             <td>@string.Format("{0:N0}", bt.GiaBan)đ</td>
