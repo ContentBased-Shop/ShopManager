@@ -4020,9 +4020,14 @@ namespace Manager.Controllers
         {
             try
             {
+                // Lấy thông tin khách hàng
+                var khachHang = data.KhachHangs.FirstOrDefault(k => k.MaKhachHang == maKhachHang);
+                if (khachHang == null) return;
+
+                // Thêm vào bảng thông báo
                 var thongBao = new ThongBao
                 {
-                    MaThongBao = Guid.NewGuid().ToString(),
+                    MaThongBao = "TB" + DateTime.Now.Ticks.ToString(),
                     MaKhachHang = maKhachHang,
                     TieuDe = tieuDe,
                     NoiDung = noiDung,
@@ -4032,17 +4037,146 @@ namespace Manager.Controllers
                 data.ThongBaos.InsertOnSubmit(thongBao);
                 data.SubmitChanges();
 
-                // Gửi email thông báo
-                var khachHang = data.KhachHangs.FirstOrDefault(k => k.MaKhachHang == maKhachHang);
-                if (khachHang != null && !string.IsNullOrEmpty(khachHang.Email))
+                // Gửi email nếu có email
+                if (!string.IsNullOrEmpty(khachHang.Email))
                 {
-                    SendEmail(khachHang.Email, tieuDe, noiDung);
+                    // Template HTML cho email
+                    string emailBody = $@"
+                    <!DOCTYPE html>
+                    <html>
+                    <head>
+                        <meta charset='utf-8'>
+                        <style>
+                            body {{
+                                font-family: Arial, sans-serif;
+                                line-height: 1.6;
+                                color: #333;
+                            }}
+                            .container {{
+                                max-width: 600px;
+                                margin: 0 auto;
+                                padding: 20px;
+                            }}
+                            .header {{
+                                background: linear-gradient(135deg, #FF6B6B, #FF8E53);
+                                color: white;
+                                padding: 30px;
+                                text-align: center;
+                                border-radius: 10px 10px 0 0;
+                            }}
+                            .content {{
+                                background-color: #ffffff;
+                                padding: 30px;
+                                border: 1px solid #e0e0e0;
+                                border-radius: 0 0 10px 10px;
+                                box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+                            }}
+                            .voucher-box {{
+                                background: linear-gradient(135deg, #f6f9fc, #eef2f7);
+                                border: 2px dashed #FF6B6B;
+                                border-radius: 10px;
+                                padding: 20px;
+                                margin: 20px 0;
+                                text-align: center;
+                            }}
+                            .voucher-code {{
+                                font-size: 24px;
+                                font-weight: bold;
+                                color: #FF6B6B;
+                                letter-spacing: 2px;
+                                margin: 15px 0;
+                                padding: 10px;
+                                background: white;
+                                border-radius: 5px;
+                                display: inline-block;
+                            }}
+                            .discount {{
+                                font-size: 20px;
+                                color: #FF6B6B;
+                                font-weight: bold;
+                                margin: 10px 0;
+                            }}
+                            .validity {{
+                                background-color: #f8f9fa;
+                                padding: 15px;
+                                border-radius: 5px;
+                                margin: 20px 0;
+                            }}
+                            .button {{
+                                display: inline-block;
+                                padding: 12px 30px;
+                                background: linear-gradient(135deg, #FF6B6B, #FF8E53);
+                                color: white;
+                                text-decoration: none;
+                                border-radius: 25px;
+                                margin-top: 20px;
+                                font-weight: bold;
+                                transition: transform 0.3s ease;
+                            }}
+                            .button:hover {{
+                                transform: translateY(-2px);
+                            }}
+                            .footer {{
+                                text-align: center;
+                                margin-top: 30px;
+                                color: #666;
+                                font-size: 12px;
+                            }}
+                            .highlight {{
+                                color: #FF6B6B;
+                                font-weight: bold;
+                            }}
+                        </style>
+                    </head>
+                    <body>
+                        <div class='container'>
+                            <div class='header'>
+                                <h2>🎉 Ưu đãi đặc biệt dành cho bạn! 🎉</h2>
+                            </div>
+                            <div class='content'>
+                                <p>Xin chào <strong>{khachHang.HoTen}</strong>,</p>
+                                <p>Chúng tôi rất vui mừng thông báo rằng bạn đã nhận được một voucher đặc biệt!</p>
+                                
+                                <div class='voucher-box'>
+                                    <h3 style='color: #FF6B6B;'>{tieuDe}</h3>
+                                    <div class='voucher-code'>{noiDung.Split(new[] { "Mã code: " }, StringSplitOptions.None)[1].Split('.')[0]}</div>
+                                    <div class='discount'>
+                                        {noiDung.Split(new[] { "Giảm giá " }, StringSplitOptions.None)[1].Split('.')[0]}
+                                    </div>
+                                    <p>Áp dụng cho đơn hàng từ {noiDung.Split(new[] { "cho đơn hàng từ " }, StringSplitOptions.None)[1].Split('.')[0]}</p>
+                                </div>
+
+                                <div class='validity'>
+                                    <h4>📅 Thời hạn sử dụng:</h4>
+                                    <p>{noiDung.Split(new[] { "Thời hạn từ " }, StringSplitOptions.None)[1]}</p>
+                                </div>
+
+                                <div style='text-align: center;'>
+                                    <a href='#' class='button'>Sử dụng ngay</a>
+                                </div>
+
+                                <p style='margin-top: 30px;'>Nếu bạn có bất kỳ thắc mắc nào, vui lòng liên hệ với chúng tôi qua:</p>
+                                <ul>
+                                    <li>📧 Email: support@primetech.com</li>
+                                    <li>📞 Hotline: 1900-xxxx</li>
+                                </ul>
+
+                                <p>Trân trọng,<br>Đội ngũ PrimeTech</p>
+                            </div>
+                            <div class='footer'>
+                                <p>© {DateTime.Now.Year} PrimeTech. Tất cả các quyền được bảo lưu.</p>
+                                <p>Đây là email tự động, vui lòng không trả lời email này.</p>
+                            </div>
+                        </div>
+                    </body>
+                    </html>";
+
+                    SendEmail(khachHang.Email, tieuDe, emailBody);
                 }
             }
             catch (Exception ex)
             {
-                // Log lỗi nhưng không ảnh hưởng đến quá trình tạo voucher
-                System.Diagnostics.Debug.WriteLine($"Lỗi gửi thông báo: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine("Lỗi gửi thông báo voucher: " + ex.Message);
             }
         }
 
