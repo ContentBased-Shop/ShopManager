@@ -129,7 +129,8 @@
                                     <th>Màu sắc</th>
                                     <th>Dung lượng</th>
                                     <th>Tồn kho</th>
-                                    <th>Giá</th>
+                                    <th>Giá nhập</th>
+                                    <th>Giá bán</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -143,7 +144,8 @@
                                             <td>@bt.MauSac</td>
                                             <td>@bt.DungLuong</td>
                                             <td>@bt.SoLuongTonKho</td>
-                                            <td>@string.Format("{0:N0}", bt.GiaGoc)đ</td>
+                                            <td>@string.Format("{0:N0}", bt.GiaNhap)đ</td>
+                                            <td>@string.Format("{0:N0}", bt.GiaBan)đ</td>
                                         </tr>
                                         sttTonKho++;
                                     }

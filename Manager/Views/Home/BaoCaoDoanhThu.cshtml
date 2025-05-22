@@ -1,4 +1,5 @@
-﻿@{
+﻿@model Manager.Models.BaoCaoDoanhThuViewModel
+@{
     ViewBag.Title = "Báo cáo doanh thu";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
@@ -7,20 +8,20 @@
 <div class="container-fluid">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h2 class="fw-bold text-primary">Báo cáo doanh thu</h2>
-            <p class="text-muted">Thống kê doanh thu của cửa hàng</p>
+            <h2 class="fw-bold text-primary">Báo cáo doanh thu & lợi nhuận</h2>
+            <p class="text-muted">Thống kê doanh thu và lợi nhuận của cửa hàng</p>
         </div>
     </div>
 
     <!-- Thẻ thống kê nhanh -->
     <div class="row mb-4">
-        <div class="col-md-4">
+        <div class="col-md-3">
             <div class="card border-0 shadow-sm">
                 <div class="card-body p-4">
                     <div class="d-flex justify-content-between mb-2">
                         <div>
                             <h6 class="text-muted mb-1">Doanh thu hôm nay</h6>
-                            <h3 class="fw-bold mb-0">@string.Format("{0:N0}", ViewBag.DoanhThuHomNay)đ</h3>
+                            <h3 class="fw-bold mb-0">@string.Format("{0:N0}", Model.DoanhThuHomNay)đ</h3>
                         </div>
                         <div class="bg-primary bg-opacity-10 rounded-circle p-3">
                             <i class="bi bi-calendar-day text-primary fs-4"></i>
@@ -29,28 +30,28 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-4">
+        <div class="col-md-3">
             <div class="card border-0 shadow-sm">
                 <div class="card-body p-4">
                     <div class="d-flex justify-content-between mb-2">
                         <div>
-                            <h6 class="text-muted mb-1">Doanh thu tuần này</h6>
-                            <h3 class="fw-bold mb-0">@string.Format("{0:N0}", ViewBag.DoanhThuTuanNay)đ</h3>
+                            <h6 class="text-muted mb-1">Lợi nhuận hôm nay</h6>
+                            <h3 class="fw-bold mb-0">@string.Format("{0:N0}", Model.LoiNhuanHomNay)đ</h3>
                         </div>
                         <div class="bg-success bg-opacity-10 rounded-circle p-3">
-                            <i class="bi bi-calendar-week text-success fs-4"></i>
+                            <i class="bi bi-graph-up-arrow text-success fs-4"></i>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-        <div class="col-md-4">
+        <div class="col-md-3">
             <div class="card border-0 shadow-sm">
                 <div class="card-body p-4">
                     <div class="d-flex justify-content-between mb-2">
                         <div>
                             <h6 class="text-muted mb-1">Doanh thu tháng này</h6>
-                            <h3 class="fw-bold mb-0">@string.Format("{0:N0}", ViewBag.DoanhThuThangNay)đ</h3>
+                            <h3 class="fw-bold mb-0">@string.Format("{0:N0}", Model.DoanhThuThangNay)đ</h3>
                         </div>
                         <div class="bg-warning bg-opacity-10 rounded-circle p-3">
                             <i class="bi bi-calendar-month text-warning fs-4"></i>
@@ -59,14 +60,29 @@
                 </div>
             </div>
         </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between mb-2">
+                        <div>
+                            <h6 class="text-muted mb-1">Lợi nhuận tháng này</h6>
+                            <h3 class="fw-bold mb-0">@string.Format("{0:N0}", Model.LoiNhuanThangNay)đ</h3>
+                        </div>
+                        <div class="bg-info bg-opacity-10 rounded-circle p-3">
+                            <i class="bi bi-cash-stack text-info fs-4"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <!-- Biểu đồ doanh thu theo tháng và danh mục sản phẩm -->
+    <!-- Biểu đồ doanh thu và lợi nhuận theo tháng -->
     <div class="row mb-4">
         <div class="col-md-8">
             <div class="card border-0 shadow-sm h-100">
                 <div class="card-header bg-white border-0 pt-4 pb-0">
-                    <h5 class="card-title fw-bold">Doanh thu theo tháng</h5>
+                    <h5 class="card-title fw-bold">Doanh thu & Lợi nhuận theo tháng</h5>
                 </div>
                 <div class="card-body p-4">
                     <canvas id="revenueChart" style="height: 300px;"></canvas>
@@ -77,10 +93,48 @@
         <div class="col-md-4">
             <div class="card border-0 shadow-sm h-100">
                 <div class="card-header bg-white border-0 pt-4 pb-0">
-                    <h5 class="card-title fw-bold">Doanh thu theo danh mục</h5>
+                    <h5 class="card-title fw-bold">Tỷ suất lợi nhuận</h5>
                 </div>
                 <div class="card-body p-4">
-                    <canvas id="categoryChart" style="height: 300px;"></canvas>
+                    <canvas id="profitMarginChart" style="height: 300px;"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bảng chi tiết doanh thu và lợi nhuận theo danh mục -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white pt-4 pb-3 border-0">
+                    <h5 class="card-title fw-bold">Chi tiết doanh thu & lợi nhuận theo danh mục</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="ps-4">Danh mục</th>
+                                    <th>Doanh thu</th>
+                                    <th>Chi phí</th>
+                                    <th>Lợi nhuận</th>
+                                    <th>Tỷ suất lợi nhuận</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model.ChiTietDoanhThuTheoDanhMuc)
+                                {
+                                    <tr>
+                                        <td class="ps-4">@item.TenDanhMuc</td>
+                                        <td>@string.Format("{0:N0}", item.DoanhThu)đ</td>
+                                        <td>@string.Format("{0:N0}", item.ChiPhi)đ</td>
+                                        <td>@string.Format("{0:N0}", item.LoiNhuan)đ</td>
+                                        <td>@string.Format("{0:N1}", item.TySuatLoiNhuan)%</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
@@ -92,17 +146,24 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        // Biểu đồ doanh thu theo tháng
+        // Biểu đồ doanh thu và lợi nhuận theo tháng
         var revenueCtx = document.getElementById('revenueChart').getContext('2d');
         var revenueChart = new Chart(revenueCtx, {
             type: 'bar',
             data: {
                 labels: ['Tháng 1', 'Tháng 2', 'Tháng 3', 'Tháng 4', 'Tháng 5', 'Tháng 6', 'Tháng 7', 'Tháng 8', 'Tháng 9', 'Tháng 10', 'Tháng 11', 'Tháng 12'],
                 datasets: [{
-                    label: 'Doanh thu (VNĐ)',
-                    data: @Html.Raw(Json.Encode(ViewBag.DoanhThuTheoThang)),
+                    label: 'Doanh thu',
+                    data: @Html.Raw(Json.Encode(Model.DoanhThuTheoThang)),
                     backgroundColor: 'rgba(54, 162, 235, 0.5)',
                     borderColor: 'rgba(54, 162, 235, 1)',
+                    borderWidth: 1
+                },
+                {
+                    label: 'Lợi nhuận',
+                    data: @Html.Raw(Json.Encode(Model.LoiNhuanTheoThang)),
+                    backgroundColor: 'rgba(75, 192, 192, 0.5)',
+                    borderColor: 'rgba(75, 192, 192, 1)',
                     borderWidth: 1
                 }]
             },
@@ -122,45 +183,30 @@
             }
         });
 
-        // Biểu đồ doanh thu theo danh mục
-        var categoryData = @Html.Raw(Json.Encode(ViewBag.DoanhThuTheoDanhMuc));
-        var categoryLabels = categoryData.map(function(item) { return item.TenDanhMuc; });
-        var categoryValues = categoryData.map(function(item) { return item.DoanhThu; });
-
-        var categoryCtx = document.getElementById('categoryChart').getContext('2d');
-        var categoryChart = new Chart(categoryCtx, {
-            type: 'pie',
+        // Biểu đồ tỷ suất lợi nhuận
+        var marginCtx = document.getElementById('profitMarginChart').getContext('2d');
+        var marginChart = new Chart(marginCtx, {
+            type: 'line',
             data: {
-                labels: categoryLabels,
+                labels: ['Tháng 1', 'Tháng 2', 'Tháng 3', 'Tháng 4', 'Tháng 5', 'Tháng 6', 'Tháng 7', 'Tháng 8', 'Tháng 9', 'Tháng 10', 'Tháng 11', 'Tháng 12'],
                 datasets: [{
-                    data: categoryValues,
-                    backgroundColor: [
-                        'rgba(255, 99, 132, 0.7)',
-                        'rgba(54, 162, 235, 0.7)',
-                        'rgba(255, 206, 86, 0.7)',
-                        'rgba(75, 192, 192, 0.7)',
-                        'rgba(153, 102, 255, 0.7)'
-                    ],
-                    borderColor: [
-                        'rgba(255, 99, 132, 1)',
-                        'rgba(54, 162, 235, 1)',
-                        'rgba(255, 206, 86, 1)',
-                        'rgba(75, 192, 192, 1)',
-                        'rgba(153, 102, 255, 1)'
-                    ],
-                    borderWidth: 1
+                    label: 'Tỷ suất lợi nhuận (%)',
+                    data: @Html.Raw(Json.Encode(Model.TySuatLoiNhuanTheoThang)),
+                    borderColor: 'rgba(255, 99, 132, 1)',
+                    backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                    fill: true,
+                    tension: 0.4
                 }]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                plugins: {
-                    tooltip: {
-                        callbacks: {
-                            label: function(context) {
-                                var label = context.label || '';
-                                var value = context.raw.toLocaleString('vi-VN');
-                                return label + ': ' + value + 'đ';
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return value + '%';
                             }
                         }
                     }

@@ -3107,66 +3107,95 @@ namespace Manager.Controllers
 
         public ActionResult BaoCaoDoanhThu()
         {
-            // Kiểm tra đăng nhập
-            if (Session["UserID"] == null)
-            {
-                return RedirectToAction("Index");
-            }
-
-            // Lấy dữ liệu doanh thu
-            var today = DateTime.Today;
-            var startOfMonth = new DateTime(today.Year, today.Month, 1);
-            var endOfMonth = startOfMonth.AddMonths(1).AddDays(-1);
-
-            // Doanh thu hôm nay
+            // Tính doanh thu và lợi nhuận hôm nay
             var doanhThuHomNay = data.DonHangs
-                .Where(d => d.NgayTao.Value.Date == today && d.TrangThaiDonHang == "HoanThanh")
+                .Where(d => d.NgayTao.Value.Date == DateTime.Now.Date && d.TrangThaiDonHang == "HoanThanh")
                 .Sum(d => d.TongTien) ?? 0;
 
-            // Doanh thu tuần này
-            var startOfWeek = today.AddDays(-(int)today.DayOfWeek);
-            var endOfWeek = startOfWeek.AddDays(6);
-            var doanhThuTuanNay = data.DonHangs
-                .Where(d => d.NgayTao.Value.Date >= startOfWeek && d.NgayTao.Value.Date <= endOfWeek && d.TrangThaiDonHang == "HoanThanh")
-                .Sum(d => d.TongTien) ?? 0;
+            var chiPhiHomNay = data.ChiTietDonHangs
+                .Where(ct => ct.DonHang.NgayTao.Value.Date == DateTime.Now.Date && ct.DonHang.TrangThaiDonHang == "HoanThanh")
+                .Sum(ct => ct.SoLuong * ct.BienTheHangHoa.GiaNhap) ?? 0;
 
-            // Doanh thu tháng này
+            var loiNhuanHomNay = doanhThuHomNay - chiPhiHomNay;
+
+            // Tính doanh thu và lợi nhuận tháng này
+            var thangHienTai = DateTime.Now.Month;
+            var namHienTai = DateTime.Now.Year;
+
             var doanhThuThangNay = data.DonHangs
-                .Where(d => d.NgayTao.Value.Date >= startOfMonth && d.NgayTao.Value.Date <= endOfMonth && d.TrangThaiDonHang == "HoanThanh")
+                .Where(d => d.NgayTao.Value.Month == thangHienTai && d.NgayTao.Value.Year == namHienTai && d.TrangThaiDonHang == "HoanThanh")
                 .Sum(d => d.TongTien) ?? 0;
 
-            // Doanh thu theo từng tháng trong năm nay
-            var doanhThuTheoThang = new double[12];
-            for (int i = 0; i < 12; i++)
+            var chiPhiThangNay = data.ChiTietDonHangs
+                .Where(ct => ct.DonHang.NgayTao.Value.Month == thangHienTai && ct.DonHang.NgayTao.Value.Year == namHienTai && ct.DonHang.TrangThaiDonHang == "HoanThanh")
+                .Sum(ct => ct.SoLuong * ct.BienTheHangHoa.GiaNhap) ?? 0;
+
+            var loiNhuanThangNay = doanhThuThangNay - chiPhiThangNay;
+
+            // Tính doanh thu và lợi nhuận theo tháng trong năm
+            var doanhThuTheoThang = new List<double>();
+            var loiNhuanTheoThang = new List<double>();
+            var tySuatLoiNhuanTheoThang = new List<double>();
+
+            for (int thang = 1; thang <= 12; thang++)
             {
-                var startOfMonthI = new DateTime(today.Year, i + 1, 1);
-                var endOfMonthI = startOfMonthI.AddMonths(1).AddDays(-1);
-                doanhThuTheoThang[i] = (double)(data.DonHangs
-                    .Where(d => d.NgayTao.Value.Date >= startOfMonthI && d.NgayTao.Value.Date <= endOfMonthI && d.TrangThaiDonHang == "HoanThanh")
-                    .Sum(d => d.TongTien) ?? 0);
+                var doanhThu = data.DonHangs
+                    .Where(d => d.NgayTao.Value.Month == thang && d.NgayTao.Value.Year == namHienTai && d.TrangThaiDonHang == "HoanThanh")
+                    .Sum(d => d.TongTien) ?? 0;
+
+                var chiPhi = data.ChiTietDonHangs
+                    .Where(ct => ct.DonHang.NgayTao.Value.Month == thang && ct.DonHang.NgayTao.Value.Year == namHienTai && ct.DonHang.TrangThaiDonHang == "HoanThanh")
+                    .Sum(ct => ct.SoLuong * ct.BienTheHangHoa.GiaNhap) ?? 0;
+
+                var loiNhuan = doanhThu - chiPhi;
+                var tySuatLoiNhuan = doanhThu > 0 ? (loiNhuan / doanhThu) * 100 : 0;
+
+                doanhThuTheoThang.Add(doanhThu);
+                loiNhuanTheoThang.Add(loiNhuan);
+                tySuatLoiNhuanTheoThang.Add(tySuatLoiNhuan);
             }
 
-            // Doanh thu theo danh mục sản phẩm
-            var doanhThuTheoDanhMuc = data.ChiTietDonHangs
-                .Where(ct => ct.DonHang.TrangThaiDonHang == "HoanThanh")
-                .GroupBy(ct => ct.BienTheHangHoa.HangHoa.DanhMuc)
-                .Select(g => new
+            // Tính chi tiết doanh thu và lợi nhuận theo danh mục
+            var chiTietDoanhThuTheoDanhMuc = data.DanhMucs
+                .Select(dm => new ThongKeDoanhThuModel
                 {
-                    TenDanhMuc = g.Key.TenDanhMuc,
-                    DoanhThu = (double)g.Sum(ct => ct.SoLuong * ct.DonGia)
+                    TenDanhMuc = dm.TenDanhMuc,
+                    DoanhThu = data.ChiTietDonHangs
+                        .Where(ct => ct.BienTheHangHoa.HangHoa.MaDanhMuc == dm.MaDanhMuc && 
+                               ct.DonHang.TrangThaiDonHang == "HoanThanh" &&
+                               ct.DonHang.NgayTao.Value.Year == namHienTai)
+                        .Sum(ct => ct.SoLuong * ct.DonGia) ?? 0,
+                    ChiPhi = data.ChiTietDonHangs
+                        .Where(ct => ct.BienTheHangHoa.HangHoa.MaDanhMuc == dm.MaDanhMuc && 
+                               ct.DonHang.TrangThaiDonHang == "HoanThanh" &&
+                               ct.DonHang.NgayTao.Value.Year == namHienTai)
+                        .Sum(ct => ct.SoLuong * ct.BienTheHangHoa.GiaNhap) ?? 0
+                })
+                .Select(x => new ThongKeDoanhThuModel
+                {
+                    TenDanhMuc = x.TenDanhMuc,
+                    DoanhThu = x.DoanhThu,
+                    ChiPhi = x.ChiPhi,
+                    LoiNhuan = x.DoanhThu - x.ChiPhi,
+                    TySuatLoiNhuan = x.DoanhThu > 0 ? ((x.DoanhThu - x.ChiPhi) / x.DoanhThu) * 100 : 0
                 })
                 .OrderByDescending(x => x.DoanhThu)
-                .Take(5)
                 .ToList();
 
-            // Truyền dữ liệu vào view
-            ViewBag.DoanhThuHomNay = doanhThuHomNay;
-            ViewBag.DoanhThuTuanNay = doanhThuTuanNay;
-            ViewBag.DoanhThuThangNay = doanhThuThangNay;
-            ViewBag.DoanhThuTheoThang = doanhThuTheoThang;
-            ViewBag.DoanhThuTheoDanhMuc = doanhThuTheoDanhMuc;
+            // Tạo view model để truyền dữ liệu
+            var viewModel = new BaoCaoDoanhThuViewModel
+            {
+                ChiTietDoanhThuTheoDanhMuc = chiTietDoanhThuTheoDanhMuc,
+                DoanhThuHomNay = doanhThuHomNay,
+                LoiNhuanHomNay = loiNhuanHomNay,
+                DoanhThuThangNay = doanhThuThangNay,
+                LoiNhuanThangNay = loiNhuanThangNay,
+                DoanhThuTheoThang = doanhThuTheoThang,
+                LoiNhuanTheoThang = loiNhuanTheoThang,
+                TySuatLoiNhuanTheoThang = tySuatLoiNhuanTheoThang
+            };
 
-            return View();
+            return View(viewModel);
         }
 
         public ActionResult BaoCaoSanPham()

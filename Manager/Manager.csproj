@@ -134,6 +134,7 @@
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
+    <Compile Include="Models\BaoCaoDoanhThuViewModel.cs" />
     <Compile Include="Models\ChiTietDonHangViewModel.cs" />
     <Compile Include="Models\NhapHangViewModel.cs" />
     <Compile Include="Models\SanPhamBanChayModel.cs" />
@@ -142,6 +143,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>SHOP.dbml</DependentUpon>
     </Compile>
+    <Compile Include="Models\ThongKeDoanhThuModel.cs" />
     <Compile Include="Models\TopKhachHangViewModel.cs" />
     <Compile Include="Models\VoucherModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
