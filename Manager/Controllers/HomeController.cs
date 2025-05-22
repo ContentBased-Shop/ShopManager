@@ -4203,22 +4203,116 @@ namespace Manager.Controllers
                 // Tạo nội dung thông báo
                 string tieuDe = "Cập nhật trạng thái đơn hàng";
                 string noiDung = $"Đơn hàng {maDonHang} của bạn đã được cập nhật trạng thái thành: ";
+                string trangThaiText = "";
+                string mauSac = "";
                 
                 switch (trangThaiMoi)
                 {
                     case "DangXuLy":
-                        noiDung += "Đang xử lý";
+                        trangThaiText = "Đang xử lý";
+                        mauSac = "#FFA500"; // Màu cam
                         break;
                     case "DangGiao":
-                        noiDung += "Đang giao hàng";
+                        trangThaiText = "Đang giao hàng";
+                        mauSac = "#1E90FF"; // Màu xanh dương
                         break;
                     case "HoanThanh":
-                        noiDung += "Hoàn thành";
+                        trangThaiText = "Hoàn thành";
+                        mauSac = "#32CD32"; // Màu xanh lá
                         break;
                     case "DaHuy":
-                        noiDung += "Đã hủy";
+                        trangThaiText = "Đã hủy";
+                        mauSac = "#FF0000"; // Màu đỏ
                         break;
                 }
+
+                // Template HTML cho email
+                string emailBody = $@"
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <meta charset='utf-8'>
+                    <style>
+                        body {{
+                            font-family: Arial, sans-serif;
+                            line-height: 1.6;
+                            color: #333;
+                        }}
+                        .container {{
+                            max-width: 600px;
+                            margin: 0 auto;
+                            padding: 20px;
+                        }}
+                        .header {{
+                            background-color: #4CAF50;
+                            color: white;
+                            padding: 20px;
+                            text-align: center;
+                            border-radius: 5px 5px 0 0;
+                        }}
+                        .content {{
+                            background-color: #f9f9f9;
+                            padding: 20px;
+                            border: 1px solid #ddd;
+                            border-radius: 0 0 5px 5px;
+                        }}
+                        .status {{
+                            background-color: {mauSac};
+                            color: white;
+                            padding: 10px 20px;
+                            border-radius: 20px;
+                            display: inline-block;
+                            margin: 10px 0;
+                        }}
+                        .footer {{
+                            text-align: center;
+                            margin-top: 20px;
+                            color: #666;
+                            font-size: 12px;
+                        }}
+                        .button {{
+                            display: inline-block;
+                            padding: 10px 20px;
+                            background-color: #4CAF50;
+                            color: white;
+                            text-decoration: none;
+                            border-radius: 5px;
+                            margin-top: 15px;
+                        }}
+                    </style>
+                </head>
+                <body>
+                    <div class='container'>
+                        <div class='header'>
+                            <h2>Thông báo cập nhật đơn hàng</h2>
+                        </div>
+                        <div class='content'>
+                            <p>Xin chào <strong>{khachHang.HoTen}</strong>,</p>
+                            <p>Chúng tôi xin thông báo rằng đơn hàng của bạn đã được cập nhật trạng thái:</p>
+                            
+                            <div style='margin: 20px 0;'>
+                                <p><strong>Mã đơn hàng:</strong> {maDonHang}</p>
+                                <p><strong>Trạng thái mới:</strong></p>
+                                <div class='status'>{trangThaiText}</div>
+                            </div>
+
+                            <p>Bạn có thể theo dõi đơn hàng của mình bằng cách đăng nhập vào tài khoản của bạn.</p>
+                            
+                            <p>Nếu bạn có bất kỳ thắc mắc nào, vui lòng liên hệ với chúng tôi qua:</p>
+                            <ul>
+                                <li>Email: support@primetech.com</li>
+                                <li>Hotline: 1900-xxxx</li>
+                            </ul>
+
+                            <p>Trân trọng,<br>Đội ngũ PrimeTech</p>
+                        </div>
+                        <div class='footer'>
+                            <p>© {DateTime.Now.Year} PrimeTech. Tất cả các quyền được bảo lưu.</p>
+                            <p>Đây là email tự động, vui lòng không trả lời email này.</p>
+                        </div>
+                    </div>
+                </body>
+                </html>";
 
                 // Thêm vào bảng thông báo
                 var thongBao = new ThongBao
@@ -4226,7 +4320,7 @@ namespace Manager.Controllers
                     MaThongBao = "TB" + DateTime.Now.Ticks.ToString(),
                     MaKhachHang = maKhachHang,
                     TieuDe = tieuDe,
-                    NoiDung = noiDung,
+                    NoiDung = noiDung + trangThaiText,
                     DaDoc = false,
                     NgayGui = DateTime.Now
                 };
@@ -4236,7 +4330,7 @@ namespace Manager.Controllers
                 // Gửi email nếu có email
                 if (!string.IsNullOrEmpty(khachHang.Email))
                 {
-                    SendEmail(khachHang.Email, tieuDe, noiDung);
+                    SendEmail(khachHang.Email, tieuDe, emailBody);
                 }
             }
             catch (Exception ex)
