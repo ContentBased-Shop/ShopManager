@@ -1718,37 +1718,24 @@ namespace Manager.Controllers
                     return Json(new { success = false, message = "Không tìm thấy đơn hàng" });
                 }
 
+                // Lưu trạng thái cũ để so sánh
+                var trangThaiCu = donHang.TrangThaiDonHang;
+
                 donHang.TrangThaiDonHang = TrangThaiDonHang;
                 donHang.TrangThaiThanhToan = TrangThaiThanhToan;
-                
-                // Cập nhật trạng thái thanh toán nếu đơn hàng đã thanh toán
-                if (TrangThaiThanhToan == "DaThanhToan")
+                data.SubmitChanges();
+
+                // Gửi thông báo nếu trạng thái đơn hàng thay đổi
+                if (trangThaiCu != TrangThaiDonHang)
                 {
-                    var thanhToan = data.ThanhToans.FirstOrDefault(t => t.MaDonHang == MaDonHang);
-                    if (thanhToan != null)
-                    {
-                        thanhToan.TrangThai = "ThanhCong";
-                        thanhToan.NgayThanhToan = DateTime.Now;
-                    }
-                }
-                
-                // Cập nhật trạng thái giao hàng nếu đơn hàng đã giao
-                if (TrangThaiDonHang == "DaGiao" || TrangThaiDonHang == "HoanThanh")
-                {
-                    var giaoHang = data.GiaoHangs.FirstOrDefault(g => g.MaDonHang == MaDonHang);
-                    if (giaoHang != null)
-                    {
-                        giaoHang.TrangThaiGiaoHang = TrangThaiDonHang == "DaGiao" ? "DaGiao" : "DaGiao";
-                        giaoHang.NgayNhanHang = DateTime.Now;
-                    }
+                    GuiThongBaoDonHang(donHang.MaKhachHang, MaDonHang, TrangThaiDonHang);
                 }
 
-                data.SubmitChanges();
                 return Json(new { success = true });
             }
             catch (Exception ex)
             {
-                return Json(new { success = false, message = "Có lỗi xảy ra: " + ex.Message });
+                return Json(new { success = false, message = "Lỗi: " + ex.Message });
             }
         }
         
@@ -4202,6 +4189,60 @@ namespace Manager.Controllers
             catch (Exception ex)
             {
                 return Json(new { success = false, message = "Lỗi khi sửa voucher: " + ex.Message });
+            }
+        }
+
+        private void GuiThongBaoDonHang(string maKhachHang, string maDonHang, string trangThaiMoi)
+        {
+            try
+            {
+                // Lấy thông tin khách hàng
+                var khachHang = data.KhachHangs.FirstOrDefault(k => k.MaKhachHang == maKhachHang);
+                if (khachHang == null) return;
+
+                // Tạo nội dung thông báo
+                string tieuDe = "Cập nhật trạng thái đơn hàng";
+                string noiDung = $"Đơn hàng {maDonHang} của bạn đã được cập nhật trạng thái thành: ";
+                
+                switch (trangThaiMoi)
+                {
+                    case "DangXuLy":
+                        noiDung += "Đang xử lý";
+                        break;
+                    case "DangGiao":
+                        noiDung += "Đang giao hàng";
+                        break;
+                    case "HoanThanh":
+                        noiDung += "Hoàn thành";
+                        break;
+                    case "DaHuy":
+                        noiDung += "Đã hủy";
+                        break;
+                }
+
+                // Thêm vào bảng thông báo
+                var thongBao = new ThongBao
+                {
+                    MaThongBao = "TB" + DateTime.Now.Ticks.ToString(),
+                    MaKhachHang = maKhachHang,
+                    TieuDe = tieuDe,
+                    NoiDung = noiDung,
+                    DaDoc = false,
+                    NgayGui = DateTime.Now
+                };
+                data.ThongBaos.InsertOnSubmit(thongBao);
+                data.SubmitChanges();
+
+                // Gửi email nếu có email
+                if (!string.IsNullOrEmpty(khachHang.Email))
+                {
+                    SendEmail(khachHang.Email, tieuDe, noiDung);
+                }
+            }
+            catch (Exception ex)
+            {
+                // Log lỗi nếu cần
+                System.Diagnostics.Debug.WriteLine("Lỗi gửi thông báo: " + ex.Message);
             }
         }
 
