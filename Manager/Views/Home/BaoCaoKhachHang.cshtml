@@ -274,7 +274,7 @@
             ["", "", "", "", "", ""],
             ["Tên cửa hàng: " + "PrimeShop", "", "", "", "", "CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM"],
             ["Địa chỉ: " + "140 Lê Trọng Tấn, Phường Tây Thạnh, Quận Tân Phú, TP.HCM", "", "", "", "", "Độc lập - Tự do - Hạnh phúc"],
-            ["Người xuất báo cáo: " + "TÊN NGƯỜI XUẤT", "", "", "", "", "Ngày: " + new Date().toLocaleDateString('vi-VN')],
+            ["Người xuất báo cáo: " + "................", "", "", "", "", "Ngày: " + new Date().toLocaleDateString('vi-VN')],
             ["", "", "", "", "", ""],
             // Tiêu đề báo cáo
             ["", "", "BÁO CÁO KHÁCH HÀNG", "", "", ""],
@@ -290,9 +290,14 @@
             ["TOP 10 KHÁCH HÀNG CHI TIÊU NHIỀU NHẤT", "", "", "", "", ""],
             ["STT", "Tên khách hàng", "Email", "Số điện thoại", "Số đơn hàng", "Tổng chi tiêu"],
             ...Array.from(document.querySelectorAll('#topCustomersTable tbody tr')).map((row, index) => {
+                const cells = Array.from(row.cells);
                 return [
                     index + 1,
-                    ...Array.from(row.cells).map(cell => cell.textContent)
+                    cells[1].textContent, // Tên khách hàng
+                    cells[2].textContent, // Email
+                    cells[3].textContent, // Số điện thoại
+                    cells[4].textContent, // Số đơn hàng
+                    cells[5].textContent  // Tổng chi tiêu
                 ];
             }),
             ["", "", "", "", "", ""],
@@ -369,7 +374,7 @@
                         }
                     }),
                     new Paragraph({
-                        text: "Người xuất báo cáo: " + "TÊN NGƯỜI XUẤT",
+                        text: "Người xuất báo cáo: " + "................",
                         spacing: {
                             after: 200
                         }
@@ -478,15 +483,26 @@
                             }),
                             // Dữ liệu
                             ...Array.from(document.querySelectorAll('#topCustomersTable tbody tr')).map((row, index) => {
+                                const cells = Array.from(row.cells);
                                 return new TableRow({
                                     children: [
                                         new TableCell({
                                             children: [new Paragraph((index + 1).toString())],
                                         }),
-                                        ...Array.from(row.cells).map(cell => {
-                                            return new TableCell({
-                                                children: [new Paragraph(cell.textContent)],
-                                            });
+                                        new TableCell({
+                                            children: [new Paragraph(cells[1].textContent)],
+                                        }),
+                                        new TableCell({
+                                            children: [new Paragraph(cells[2].textContent)],
+                                        }),
+                                        new TableCell({
+                                            children: [new Paragraph(cells[3].textContent)],
+                                        }),
+                                        new TableCell({
+                                            children: [new Paragraph(cells[4].textContent)],
+                                        }),
+                                        new TableCell({
+                                            children: [new Paragraph(cells[5].textContent)],
                                         }),
                                     ],
                                 });

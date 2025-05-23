@@ -295,61 +295,110 @@
         const wb = XLSX.utils.book_new();
         
         // Tạo worksheet mới
-        const ws = XLSX.utils.aoa_to_sheet([
+        // Lấy dữ liệu chỉ từ bảng sản phẩm bán chạy (bảng đầu tiên)
+        const topSellingTable = document.querySelectorAll('table')[0];
+        const ws_data = [
             // Header
-            ["", "", "", "", "", ""],
-            ["Tên cửa hàng: " + "PrimeShop", "", "", "", "", "CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM"],
-            ["Địa chỉ: " + "140 Lê Trọng Tấn, Phường Tây Thạnh, Quận Tân Phú, TP.HCM", "", "", "", "", "Độc lập - Tự do - Hạnh phúc"],
-            ["Người xuất báo cáo: " + "TÊN NGƯỜI XUẤT", "", "", "", "", "Ngày: " + new Date().toLocaleDateString('vi-VN')],
-            ["", "", "", "", "", ""],
+            ["", "", "", "", ""],
+            ["Tên cửa hàng: " + "PrimeShop", "", "", "", "CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM"],
+            ["Địa chỉ: " + "140 Lê Trọng Tấn, Phường Tây Thạnh, Quận Tân Phú, TP.HCM", "", "", "", "Độc lập - Tự do - Hạnh phúc"],
+            ["Người xuất báo cáo: " + "................", "", "", "", "Ngày: " + new Date().toLocaleDateString('vi-VN')],
+            ["", "", "", "", ""],
             // Tiêu đề báo cáo
-            ["", "", "BÁO CÁO SẢN PHẨM", "", "", ""],
-            ["", "", "Thống kê về sản phẩm của cửa hàng", "", "", ""],
-            ["", "", "", "", "", ""],
+            ["", "", "BÁO CÁO SẢN PHẨM", "", ""],
+            ["", "", "Thống kê về sản phẩm của cửa hàng", "", ""],
+            ["", "", "", "", ""],
             // Thống kê nhanh
-            ["Tổng số sản phẩm:", @ViewBag.TongSoSanPham, "", "", "", ""],
-            ["Tổng số biến thể:", @ViewBag.TongSoBienThe, "", "", "", ""],
-            ["", "", "", "", "", ""],
+            ["Tổng số sản phẩm:", @ViewBag.TongSoSanPham, "", "", ""],
+            ["Tổng số biến thể:", @ViewBag.TongSoBienThe, "", "", ""],
+            ["", "", "", "", ""],
             // Top 10 sản phẩm bán chạy
-            ["TOP 10 SẢN PHẨM BÁN CHẠY NHẤT", "", "", "", "", ""],
-            ["STT", "Tên sản phẩm", "Số lượng bán", "Doanh thu", "", ""],
-            ...Array.from(document.querySelectorAll('table:first-of-type tbody tr')).map((row, index) => {
-                return [
-                    index + 1,
-                    ...Array.from(row.cells).map(cell => cell.textContent)
-                ];
-            }),
-            ["", "", "", "", "", ""],
-            // Top 10 sản phẩm tồn kho
-            ["TOP 10 SẢN PHẨM TỒN KHO NHIỀU NHẤT", "", "", "", "", ""],
-            ["STT", "Tên sản phẩm", "Chi tiết biến thể", "Tồn kho", "Giá nhập", "Giá bán"],
-            ...Array.from(document.querySelectorAll('table:last-of-type tbody tr')).map((row, index) => {
-                return [
-                    index + 1,
-                    ...Array.from(row.cells).map(cell => cell.textContent)
-                ];
+            ["TOP 10 SẢN PHẨM BÁN CHẠY NHẤT", "", "", "", ""],
+            // Lấy header của bảng sản phẩm bán chạy
+            Array.from(topSellingTable.querySelectorAll('thead th')).map(th => th.textContent.trim()),
+            // Lấy dữ liệu từ tbody của bảng sản phẩm bán chạy
+            ...Array.from(topSellingTable.querySelectorAll('tbody tr')).map(row => {
+                return Array.from(row.cells).map(cell => cell.textContent.trim());
             })
-        ]);
+        ];
 
-        // Thiết lập độ rộng cột
+        // Thêm tiêu đề và dữ liệu cho bảng tồn kho
+        ws_data.push(["", "", "", "", ""]); // Dòng trống ngăn cách
+        ws_data.push(["TOP 10 SẢN PHẨM TỒN KHO NHIỀU NHẤT", "", "", "", ""]);
+
+        const inventoryTable = document.querySelectorAll('table')[1];
+        // Lấy header của bảng tồn kho
+        ws_data.push(Array.from(inventoryTable.querySelectorAll('thead th')).map(th => th.textContent.trim()));
+        // Lấy dữ liệu từ tbody của bảng tồn kho
+        Array.from(inventoryTable.querySelectorAll('tbody tr')).forEach(row => {
+            ws_data.push(Array.from(row.cells).map(cell => cell.textContent.trim()));
+        });
+
+        const ws = XLSX.utils.aoa_to_sheet(ws_data);
+
+        // Thiết lập độ rộng cột (ước lượng dựa trên cả hai bảng)
         const wscols = [
-            {wch: 5},  // STT
+            {wch: 20},  // STT
             {wch: 30}, // Tên sản phẩm
-            {wch: 30}, // Chi tiết biến thể
-            {wch: 15}, // Số lượng/Tồn kho
-            {wch: 15}, // Giá nhập/Doanh thu
-            {wch: 15}  // Giá bán
+            {wch: 30}, // Chi tiết biến thể (cột thêm cho tồn kho)
+            {wch: 15}, // Số lượng bán / Tồn kho
+            {wch: 15}, // Doanh thu / Giá nhập
+            {wch: 15}  // Giá bán (cột thêm cho tồn kho)
         ];
         ws['!cols'] = wscols;
 
         // Thiết lập style cho các ô
         // Merge cells cho tiêu đề
         ws['!merges'] = [
-            {s: {r: 5, c: 2}, e: {r: 5, c: 4}}, // Tiêu đề báo cáo
-            {s: {r: 6, c: 2}, e: {r: 6, c: 4}}, // Mô tả báo cáo
-            {s: {r: 12, c: 0}, e: {r: 12, c: 5}}, // Tiêu đề top bán chạy
-            {s: {r: 18, c: 0}, e: {r: 18, c: 5}}  // Tiêu đề top tồn kho
+            {s: {r: 1, c: 0}, e: {r: 1, c: 2}}, // Tên cửa hàng
+            {s: {r: 2, c: 0}, e: {r: 2, c: 2}}, // Địa chỉ
+            {s: {r: 3, c: 0}, e: {r: 3, c: 2}}, // Người xuất báo cáo
+            {s: {r: 5, c: 2}, e: {r: 5, c: 3}}, // Tiêu đề báo cáo chính
+            {s: {r: 6, c: 2}, e: {r: 6, c: 3}}, // Mô tả báo cáo chính
+            {s: {r: 11, c: 0}, e: {r: 11, c: 5}}, // Tiêu đề top bán chạy
+            {s: {r: ws_data.findIndex(row => row[0] === "TOP 10 SẢN PHẨM TỒN KHO NHIỀU NHẤT"), c: 0}, e: {r: ws_data.findIndex(row => row[0] === "TOP 10 SẢN PHẨM TỒN KHO NHIỀU NHẤT"), c: 5}} // Tiêu đề top tồn kho
         ];
+
+        // Style cho tiêu đề báo cáo chính (cỡ chữ 16)
+        const reportTitleCell = ws[XLSX.utils.encode_cell({r: 5, c: 2})]; // Cell C6 (0-indexed r=5, c=2)
+         if (reportTitleCell) {
+            reportTitleCell.s = {
+                font: { sz: 16, bold: true },
+                alignment: { horizontal: "center", vertical: "center" }
+            };
+        }
+         const reportDescCell = ws[XLSX.utils.encode_cell({r: 6, c: 2})]; // Cell C7 (0-indexed r=6, c=2)
+          if (reportDescCell) {
+             reportDescCell.s = {
+                 font: { sz: 16 },
+                 alignment: { horizontal: "center", vertical: "center" }
+             };
+         }
+
+        // Style cho header bảng bán chạy (màu nền #a7ddf2)
+        const topSellingHeaderRowIndex = 13; // Header nằm ngay sau tiêu đề TOP 10 (r=12)
+        const topSellingHeaderRow = ws_data[topSellingHeaderRowIndex];
+        for(let c = 0; c < topSellingHeaderRow.length; c++) {
+            const cellAddress = XLSX.utils.encode_cell({r: topSellingHeaderRowIndex, c: c});
+            if (!ws[cellAddress]) ws[cellAddress] = {};
+            ws[cellAddress].s = {
+                fill: { fgColor: { rgb: "FFA7DDF2" } }, // Thêm tiền tố FF cho alpha full
+                font: { bold: true }
+            };
+        }
+
+        // Style cho header bảng tồn kho (màu nền #f0e69e)
+        const inventoryTitleRowIndex = ws_data.findIndex(row => row[0] === "TOP 10 SẢN PHẨM TỒN KHO NHIỀU NHẤT");
+        const inventoryHeaderRowIndex = inventoryTitleRowIndex + 1; // Header nằm ngay sau tiêu đề TOP 10 tồn kho
+        const inventoryHeaderRow = ws_data[inventoryHeaderRowIndex];
+        for(let c = 0; c < inventoryHeaderRow.length; c++) {
+            const cellAddress = XLSX.utils.encode_cell({r: inventoryHeaderRowIndex, c: c});
+            if (!ws[cellAddress]) ws[cellAddress] = {};
+            ws[cellAddress].s = {
+                fill: { fgColor: { rgb: "FFF0E69E" } }, // Thêm tiền tố FF cho alpha full
+                font: { bold: true }
+            };
+        }
 
         // Thêm worksheet vào workbook
         XLSX.utils.book_append_sheet(wb, ws, "Báo cáo sản phẩm");
@@ -396,7 +445,7 @@
                         }
                     }),
                     new Paragraph({
-                        text: "Người xuất báo cáo: " + "TÊN NGƯỜI XUẤT",
+                        text: "Người xuất báo cáo: " + "................",
                         spacing: {
                             after: 200
                         }
@@ -444,52 +493,23 @@
                             type: WidthType.PERCENTAGE,
                         },
                         rows: [
-                            // Header
+                            // Lấy header của bảng sản phẩm bán chạy
                             new TableRow({
-                                children: [
-                                    new TableCell({
-                                        children: [new Paragraph("STT")],
-                                        width: {
-                                            size: 10,
-                                            type: WidthType.PERCENTAGE,
-                                        },
-                                    }),
-                                    new TableCell({
-                                        children: [new Paragraph("Tên sản phẩm")],
-                                        width: {
-                                            size: 40,
-                                            type: WidthType.PERCENTAGE,
-                                        },
-                                    }),
-                                    new TableCell({
-                                        children: [new Paragraph("Số lượng bán")],
-                                        width: {
-                                            size: 25,
-                                            type: WidthType.PERCENTAGE,
-                                        },
-                                    }),
-                                    new TableCell({
-                                        children: [new Paragraph("Doanh thu")],
-                                        width: {
-                                            size: 25,
-                                            type: WidthType.PERCENTAGE,
-                                        },
-                                    }),
-                                ],
+                                children: Array.from(document.querySelectorAll('table')[0].querySelectorAll('thead th')).map(th => {
+                                    return new TableCell({
+                                        children: [new Paragraph(th.textContent.trim())],
+                                        // Có thể cần điều chỉnh lại độ rộng cột ở đây tùy thuộc vào số cột trong bảng bán chạy
+                                    });
+                                }),
                             }),
-                            // Dữ liệu
-                            ...Array.from(document.querySelectorAll('table:first-of-type tbody tr')).map((row, index) => {
+                            // Lấy dữ liệu từ tbody của bảng sản phẩm bán chạy
+                            ...Array.from(document.querySelectorAll('table')[0].querySelectorAll('tbody tr')).map(row => {
                                 return new TableRow({
-                                    children: [
-                                        new TableCell({
-                                            children: [new Paragraph((index + 1).toString())],
-                                        }),
-                                        ...Array.from(row.cells).map(cell => {
-                                            return new TableCell({
-                                                children: [new Paragraph(cell.textContent)],
-                                            });
-                                        }),
-                                    ],
+                                    children: Array.from(row.cells).map(cell => {
+                                        return new TableCell({
+                                            children: [new Paragraph(cell.textContent.trim())],
+                                        });
+                                    }),
                                 });
                             }),
                         ],
@@ -499,6 +519,7 @@
                         text: "TOP 10 SẢN PHẨM TỒN KHO NHIỀU NHẤT",
                         heading: HeadingLevel.HEADING_2,
                         spacing: {
+                            before: 400, // Thêm khoảng cách trước tiêu đề bảng mới
                             after: 200
                         }
                     }),
@@ -508,66 +529,23 @@
                             type: WidthType.PERCENTAGE,
                         },
                         rows: [
-                            // Header
+                            // Lấy header của bảng sản phẩm tồn kho
                             new TableRow({
-                                children: [
-                                    new TableCell({
-                                        children: [new Paragraph("STT")],
-                                        width: {
-                                            size: 10,
-                                            type: WidthType.PERCENTAGE,
-                                        },
-                                    }),
-                                    new TableCell({
-                                        children: [new Paragraph("Tên sản phẩm")],
-                                        width: {
-                                            size: 25,
-                                            type: WidthType.PERCENTAGE,
-                                        },
-                                    }),
-                                    new TableCell({
-                                        children: [new Paragraph("Chi tiết biến thể")],
-                                        width: {
-                                            size: 25,
-                                            type: WidthType.PERCENTAGE,
-                                        },
-                                    }),
-                                    new TableCell({
-                                        children: [new Paragraph("Tồn kho")],
-                                        width: {
-                                            size: 15,
-                                            type: WidthType.PERCENTAGE,
-                                        },
-                                    }),
-                                    new TableCell({
-                                        children: [new Paragraph("Giá nhập")],
-                                        width: {
-                                            size: 15,
-                                            type: WidthType.PERCENTAGE,
-                                        },
-                                    }),
-                                    new TableCell({
-                                        children: [new Paragraph("Giá bán")],
-                                        width: {
-                                            size: 15,
-                                            type: WidthType.PERCENTAGE,
-                                        },
-                                    }),
-                                ],
+                                children: Array.from(document.querySelectorAll('table')[1].querySelectorAll('thead th')).map(th => {
+                                    return new TableCell({
+                                        children: [new Paragraph(th.textContent.trim())],
+                                        // Có thể cần điều chỉnh lại độ rộng cột ở đây
+                                    });
+                                }),
                             }),
-                            // Dữ liệu
-                            ...Array.from(document.querySelectorAll('table:last-of-type tbody tr')).map((row, index) => {
+                            // Lấy dữ liệu từ tbody của bảng sản phẩm tồn kho
+                            ...Array.from(document.querySelectorAll('table')[1].querySelectorAll('tbody tr')).map(row => {
                                 return new TableRow({
-                                    children: [
-                                        new TableCell({
-                                            children: [new Paragraph((index + 1).toString())],
-                                        }),
-                                        ...Array.from(row.cells).map(cell => {
-                                            return new TableCell({
-                                                children: [new Paragraph(cell.textContent)],
-                                            });
-                                        }),
-                                    ],
+                                    children: Array.from(row.cells).map(cell => {
+                                        return new TableCell({
+                                            children: [new Paragraph(cell.textContent.trim())],
+                                        });
+                                    }),
                                 });
                             }),
                         ],
