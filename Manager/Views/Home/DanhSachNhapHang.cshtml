@@ -1,4 +1,12 @@
 ﻿@model List<Manager.Models.NhapHang>
+@{
+    var nhapHangSapXep = Model.OrderByDescending(n => n.NgayNhap).ToList();
+    var pageSize = 10; // Số phiếu nhập trên mỗi trang
+    var currentPage = Request.QueryString["page"] != null ? int.Parse(Request.QueryString["page"]) : 1;
+    var totalItems = nhapHangSapXep.Count;
+    var totalPages = (int)Math.Ceiling((double)totalItems / pageSize);
+    var itemsToShow = nhapHangSapXep.Skip((currentPage - 1) * pageSize).Take(pageSize).ToList();
+}
 
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
@@ -106,7 +114,7 @@
                 </tr>
             </thead>
             <tbody>
-                @foreach (var item in Model)
+                @foreach (var item in itemsToShow)
                 {
                     <tr>
                         <td class="text-center">
@@ -152,6 +160,40 @@
             </tbody>
         </table>
     </div>
+
+    <!-- Phân trang -->
+    <nav aria-label="Page navigation" class="mt-3">
+        <ul class="pagination justify-content-center">
+            <li class="page-item @(currentPage == 1 ? "disabled" : "")">
+                <a class="page-link" href="@Url.Action("DanhSachNhapHang", new { page = 1 })" aria-label="First">
+                    <span aria-hidden="true">&laquo;&laquo;</span>
+                </a>
+            </li>
+            <li class="page-item @(currentPage == 1 ? "disabled" : "")">
+                <a class="page-link" href="@Url.Action("DanhSachNhapHang", new { page = currentPage - 1 })" aria-label="Previous">
+                    <span aria-hidden="true">&laquo;</span>
+                </a>
+            </li>
+            
+            @for (int i = Math.Max(1, currentPage - 2); i <= Math.Min(totalPages, currentPage + 2); i++)
+            {
+                <li class="page-item @(i == currentPage ? "active" : "")">
+                    <a class="page-link" href="@Url.Action("DanhSachNhapHang", new { page = i })">@i</a>
+                </li>
+            }
+            
+            <li class="page-item @(currentPage == totalPages ? "disabled" : "")">
+                <a class="page-link" href="@Url.Action("DanhSachNhapHang", new { page = currentPage + 1 })" aria-label="Next">
+                    <span aria-hidden="true">&raquo;</span>
+                </a>
+            </li>
+            <li class="page-item @(currentPage == totalPages ? "disabled" : "")">
+                <a class="page-link" href="@Url.Action("DanhSachNhapHang", new { page = totalPages })" aria-label="Last">
+                    <span aria-hidden="true">&raquo;&raquo;</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
 
     <!-- Modal Xác nhận xóa -->
     <div class="modal fade" id="confirmDeleteModal" tabindex="-1">
