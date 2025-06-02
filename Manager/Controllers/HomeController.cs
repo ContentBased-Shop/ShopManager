@@ -731,13 +731,16 @@ namespace Manager.Controllers
                 {
                     string extension = Path.GetExtension(HinhAnh.FileName);
                     hinhAnhFileName = Guid.NewGuid().ToString() + extension;
-                    string filePath = Path.Combine(Server.MapPath("~/Content/img/hanghoa/"), hinhAnhFileName);
                     
-                    // Đảm bảo thư mục tồn tại
-                    Directory.CreateDirectory(Path.GetDirectoryName(filePath));
-                    
-                    // Lưu file
-                    HinhAnh.SaveAs(filePath);
+                    // Lưu vào thư mục Manager
+                    string filePath1 = Path.Combine(Server.MapPath("~/Content/img/hanghoa/"), hinhAnhFileName);
+                    Directory.CreateDirectory(Path.GetDirectoryName(filePath1));
+                    HinhAnh.SaveAs(filePath1);
+
+                    // Lưu vào thư mục Shop
+                    string filePath2 = Path.Combine(Server.MapPath("~/../../../ContentBased-Shop/Shop/Shop/assets/Image/Product"), hinhAnhFileName);
+                    Directory.CreateDirectory(Path.GetDirectoryName(filePath2));
+                    HinhAnh.SaveAs(filePath2);
                 }
 
                 var hangHoa = new HangHoa
@@ -941,22 +944,31 @@ namespace Manager.Controllers
                     // Xóa hình cũ nếu có
                     if (!string.IsNullOrEmpty(hangHoa.HinhAnh))
                     {
-                        string oldImagePath = Path.Combine(Server.MapPath("~/Content/img/hanghoa/"), hangHoa.HinhAnh);
-                        if (System.IO.File.Exists(oldImagePath))
+                        string oldImagePath1 = Path.Combine(Server.MapPath("~/Content/img/hanghoa/"), hangHoa.HinhAnh);
+                        string oldImagePath2 = Path.Combine(Server.MapPath("~/../../../ContentBased-Shop/Shop/Shop/assets/Image/Product"), hangHoa.HinhAnh);
+                        
+                        if (System.IO.File.Exists(oldImagePath1))
                         {
-                            System.IO.File.Delete(oldImagePath);
+                            System.IO.File.Delete(oldImagePath1);
+                        }
+                        if (System.IO.File.Exists(oldImagePath2))
+                        {
+                            System.IO.File.Delete(oldImagePath2);
                         }
                     }
 
                     string extension = Path.GetExtension(HinhAnh.FileName);
                     string hinhAnhFileName = Guid.NewGuid().ToString() + extension;
-                    string filePath = Path.Combine(Server.MapPath("~/Content/img/hanghoa/"), hinhAnhFileName);
                     
-                    // Đảm bảo thư mục tồn tại
-                    Directory.CreateDirectory(Path.GetDirectoryName(filePath));
-                    
-                    // Lưu file
-                    HinhAnh.SaveAs(filePath);
+                    // Lưu vào thư mục Manager
+                    string filePath1 = Path.Combine(Server.MapPath("~/Content/img/hanghoa/"), hinhAnhFileName);
+                    Directory.CreateDirectory(Path.GetDirectoryName(filePath1));
+                    HinhAnh.SaveAs(filePath1);
+
+                    // Lưu vào thư mục Shop
+                    string filePath2 = Path.Combine(Server.MapPath("~/../../../ContentBased-Shop/Shop/Shop/assets/Image/Product"), hinhAnhFileName);
+                    Directory.CreateDirectory(Path.GetDirectoryName(filePath2));
+                    HinhAnh.SaveAs(filePath2);
                     
                     // Cập nhật tên file
                     hangHoa.HinhAnh = hinhAnhFileName;
