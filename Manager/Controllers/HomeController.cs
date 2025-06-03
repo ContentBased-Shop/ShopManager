@@ -20,7 +20,7 @@ namespace Manager.Controllers
 {
     public class HomeController : Controller
     {
-        SHOPDataContext data = new SHOPDataContext("Data Source=ACERNITRO5;Initial Catalog=CuaHang2;Persist Security Info=True;Use" +
+        SHOPDataContext data = new SHOPDataContext("Data Source=ACERNITRO5;Initial Catalog=CuaHang3;Persist Security Info=True;Use" +
                   "r ID=sa;Password=123;Encrypt=True;TrustServerCertificate=True");
 
         // Khai báo thông tin email
@@ -786,6 +786,12 @@ namespace Manager.Controllers
                 // Nếu không có sản phẩm nào khác để so sánh thì dừng lại
                 if (!danhSachHangHoa.Any()) return;
 
+                // Xóa tất cả điểm tương đồng cũ của hàng hóa này
+                var diemTuongDongCu = data.ContentBasedFilterings
+                    .Where(c => c.MaHangHoa1 == maHangHoaMoi || c.MaHangHoa2 == maHangHoaMoi)
+                    .ToList();
+                data.ContentBasedFilterings.DeleteAllOnSubmit(diemTuongDongCu);
+
                 // Tính điểm tương đồng với từng sản phẩm
                 foreach (var hangHoaKhac in danhSachHangHoa)
                 {
@@ -841,27 +847,15 @@ namespace Manager.Controllers
                     // Chuẩn hóa điểm tương đồng (nếu có ít nhất một yếu tố để so sánh)
                     double diemTuongDongChuanHoa = tongTrongSo > 0 ? diemTuongDong / tongTrongSo : 0;
 
-                    // Kiểm tra xem đã có bản ghi tương đồng này chưa
-                    var existingRecord = data.ContentBasedFilterings.FirstOrDefault(
-                        c => (c.MaHangHoa1 == maHangHoa1 && c.MaHangHoa2 == maHangHoa2));
-
-                    if (existingRecord != null)
+                    // Tạo bản ghi mới trong ContentBasedFiltering
+                    var contentBasedFiltering = new ContentBasedFiltering
                     {
-                        // Nếu đã có thì cập nhật
-                        existingRecord.DiemTuongDong = diemTuongDongChuanHoa;
-                    }
-                    else
-                    {
-                        // Nếu chưa có thì tạo mới
-                        var contentBasedFiltering = new ContentBasedFiltering
-                        {
-                            MaHangHoa1 = maHangHoa1,
-                            MaHangHoa2 = maHangHoa2,
-                            DiemTuongDong = diemTuongDongChuanHoa
-                        };
+                        MaHangHoa1 = maHangHoa1,
+                        MaHangHoa2 = maHangHoa2,
+                        DiemTuongDong = diemTuongDongChuanHoa
+                    };
 
-                        data.ContentBasedFilterings.InsertOnSubmit(contentBasedFiltering);
-                    }
+                    data.ContentBasedFilterings.InsertOnSubmit(contentBasedFiltering);
                 }
 
                 // Lưu các thay đổi vào cơ sở dữ liệu
@@ -923,6 +917,7 @@ namespace Manager.Controllers
         }
 
         [HttpPost]
+        [ValidateInput(false)]
         public JsonResult SuaHangHoa(string MaHangHoa, string TenHangHoa, string MaDanhMuc, string MaThuongHieu, string MoTa, string MoTaDai, string TrangThai, HttpPostedFileBase HinhAnh)
         {
             try
@@ -945,7 +940,7 @@ namespace Manager.Controllers
                     if (!string.IsNullOrEmpty(hangHoa.HinhAnh))
                     {
                         string oldImagePath1 = Path.Combine(Server.MapPath("~/Content/img/hanghoa/"), hangHoa.HinhAnh);
-                        string oldImagePath2 = Path.Combine(Server.MapPath("~/../../../ContentBased-Shop/Shop/Shop/assets/Image/Product"), hangHoa.HinhAnh);
+                        string oldImagePath2 = Path.Combine(Server.MapPath("~/ContentBased-Shop/Shop/Shop/assets/Image/Product"), hangHoa.HinhAnh);
                         
                         if (System.IO.File.Exists(oldImagePath1))
                         {
@@ -957,6 +952,7 @@ namespace Manager.Controllers
                         }
                     }
 
+                    // Lưu hình mới
                     string extension = Path.GetExtension(HinhAnh.FileName);
                     string hinhAnhFileName = Guid.NewGuid().ToString() + extension;
                     
@@ -965,16 +961,16 @@ namespace Manager.Controllers
                     Directory.CreateDirectory(Path.GetDirectoryName(filePath1));
                     HinhAnh.SaveAs(filePath1);
 
-                    // Lưu vào thư mục Shop
-                    string filePath2 = Path.Combine(Server.MapPath("~/../../../ContentBased-Shop/Shop/Shop/assets/Image/Product"), hinhAnhFileName);
+                    // Lưu vào thư mục Shop (sử dụng đường dẫn tuyệt đối)
+                    string shopPath = Path.Combine(Server.MapPath("~/"), "ContentBased-Shop", "Shop", "Shop", "assets", "Image", "Product");
+                    string filePath2 = Path.Combine(shopPath, hinhAnhFileName);
                     Directory.CreateDirectory(Path.GetDirectoryName(filePath2));
                     HinhAnh.SaveAs(filePath2);
-                    
-                    // Cập nhật tên file
+
                     hangHoa.HinhAnh = hinhAnhFileName;
                 }
-                
-                // Cập nhật thông tin mới
+
+                // Cập nhật thông tin
                 hangHoa.TenHangHoa = TenHangHoa;
                 hangHoa.MaDanhMuc = string.IsNullOrEmpty(MaDanhMuc) ? null : MaDanhMuc;
                 hangHoa.MaThuongHieu = string.IsNullOrEmpty(MaThuongHieu) ? null : MaThuongHieu;
@@ -984,11 +980,19 @@ namespace Manager.Controllers
 
                 data.SubmitChanges();
 
-                // Kiểm tra nếu có thay đổi về danh mục, thương hiệu hoặc mô tả thì mới cập nhật lại điểm tương đồng
-                if (maDanhMucCu != MaDanhMuc || maThuongHieuCu != MaThuongHieu || moTaCu != MoTa)
+                // Kiểm tra xem có cần cập nhật điểm tương đồng không
+                bool canUpdateSimilarity = maDanhMucCu != hangHoa.MaDanhMuc || 
+                                         maThuongHieuCu != hangHoa.MaThuongHieu || 
+                                         moTaCu != hangHoa.MoTa;
+
+                // Kiểm tra xem đã có điểm tương đồng chưa
+                bool hasSimilarity = data.ContentBasedFilterings.Any(c => 
+                    c.MaHangHoa1 == MaHangHoa || c.MaHangHoa2 == MaHangHoa);
+
+                if (!hasSimilarity || canUpdateSimilarity)
                 {
-                    // Cập nhật lại điểm tương đồng
-                    CapNhatDiemTuongDongChoHangHoa(MaHangHoa);
+                    // Nếu chưa có điểm tương đồng hoặc cần cập nhật
+                    TinhDiemTuongDongChoHangHoa(MaHangHoa);
                 }
 
                 return Json(new { success = true });
