@@ -714,6 +714,7 @@ namespace Manager.Controllers
         }
 
         [HttpPost]
+        [ValidateInput(false)]
         public JsonResult TaoHangHoa(string TenHangHoa, string MaDanhMuc, string MaThuongHieu, string MoTa, string MoTaDai, string TrangThai, HttpPostedFileBase HinhAnh)
         {
             try
@@ -733,14 +734,14 @@ namespace Manager.Controllers
                     hinhAnhFileName = Guid.NewGuid().ToString() + extension;
                     
                     // Lưu vào thư mục Manager
-                    string filePath1 = Path.Combine(Server.MapPath("~/Content/img/hanghoa/"), hinhAnhFileName);
-                    Directory.CreateDirectory(Path.GetDirectoryName(filePath1));
-                    HinhAnh.SaveAs(filePath1);
+                    string managerPath = Path.Combine(Server.MapPath("~/Content/img/hanghoa"), hinhAnhFileName);
+                    Directory.CreateDirectory(Path.GetDirectoryName(managerPath));
+                    HinhAnh.SaveAs(managerPath);
 
                     // Lưu vào thư mục Shop
-                    string filePath2 = Path.Combine(Server.MapPath("~/../../../ContentBased-Shop/Shop/Shop/assets/Image/Product"), hinhAnhFileName);
-                    Directory.CreateDirectory(Path.GetDirectoryName(filePath2));
-                    HinhAnh.SaveAs(filePath2);
+                    string shopPath = Path.Combine(Server.MapPath("~/"), "..", "..", "ContentBased-Shop", "Shop", "Shop", "assets", "Image", "Product", hinhAnhFileName);
+                    Directory.CreateDirectory(Path.GetDirectoryName(shopPath));
+                    HinhAnh.SaveAs(shopPath);
                 }
 
                 var hangHoa = new HangHoa
@@ -752,16 +753,13 @@ namespace Manager.Controllers
                     MoTa = MoTa,
                     MoTaDai = MoTaDai,
                     HinhAnh = hinhAnhFileName,
-                    DanhGiaTrungBinh = 0,
+                    DanhGiaTrungBinh = 5,
                     NgayTao = DateTime.Now,
                     TrangThai = TrangThai
                 };
 
                 data.HangHoas.InsertOnSubmit(hangHoa);
                 data.SubmitChanges();
-
-                // Tính toán điểm tương đồng với các sản phẩm khác và lưu vào ContentBasedFiltering
-                TinhDiemTuongDongChoHangHoa(MaHangHoa);
 
                 return Json(new { success = true, maHangHoa = MaHangHoa });
             }
