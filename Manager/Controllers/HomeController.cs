@@ -937,8 +937,8 @@ namespace Manager.Controllers
                     // Xóa hình cũ nếu có
                     if (!string.IsNullOrEmpty(hangHoa.HinhAnh))
                     {
-                        string oldImagePath1 = Path.Combine(Server.MapPath("~/Content/img/hanghoa/"), hangHoa.HinhAnh);
-                        string oldImagePath2 = Path.Combine(Server.MapPath("~/ContentBased-Shop/Shop/Shop/assets/Image/Product"), hangHoa.HinhAnh);
+                        string oldImagePath1 = Path.Combine(Server.MapPath("~/Content/img/hanghoa"), hangHoa.HinhAnh);
+                        string oldImagePath2 = Path.Combine(Server.MapPath("~/"), "..", "..", "ContentBased-Shop", "Shop", "Shop", "assets", "Image", "Product", hangHoa.HinhAnh);
                         
                         if (System.IO.File.Exists(oldImagePath1))
                         {
@@ -955,15 +955,14 @@ namespace Manager.Controllers
                     string hinhAnhFileName = Guid.NewGuid().ToString() + extension;
                     
                     // Lưu vào thư mục Manager
-                    string filePath1 = Path.Combine(Server.MapPath("~/Content/img/hanghoa/"), hinhAnhFileName);
-                    Directory.CreateDirectory(Path.GetDirectoryName(filePath1));
-                    HinhAnh.SaveAs(filePath1);
+                    string managerPath = Path.Combine(Server.MapPath("~/Content/img/hanghoa"), hinhAnhFileName);
+                    Directory.CreateDirectory(Path.GetDirectoryName(managerPath));
+                    HinhAnh.SaveAs(managerPath);
 
-                    // Lưu vào thư mục Shop (sử dụng đường dẫn tuyệt đối)
-                    string shopPath = Path.Combine(Server.MapPath("~/"), "ContentBased-Shop", "Shop", "Shop", "assets", "Image", "Product");
-                    string filePath2 = Path.Combine(shopPath, hinhAnhFileName);
-                    Directory.CreateDirectory(Path.GetDirectoryName(filePath2));
-                    HinhAnh.SaveAs(filePath2);
+                    // Lưu vào thư mục Shop
+                    string shopPath = Path.Combine(Server.MapPath("~/"), "..", "..", "ContentBased-Shop", "Shop", "Shop", "assets", "Image", "Product", hinhAnhFileName);
+                    Directory.CreateDirectory(Path.GetDirectoryName(shopPath));
+                    HinhAnh.SaveAs(shopPath);
 
                     hangHoa.HinhAnh = hinhAnhFileName;
                 }
@@ -978,26 +977,11 @@ namespace Manager.Controllers
 
                 data.SubmitChanges();
 
-                // Kiểm tra xem có cần cập nhật điểm tương đồng không
-                bool canUpdateSimilarity = maDanhMucCu != hangHoa.MaDanhMuc || 
-                                         maThuongHieuCu != hangHoa.MaThuongHieu || 
-                                         moTaCu != hangHoa.MoTa;
-
-                // Kiểm tra xem đã có điểm tương đồng chưa
-                bool hasSimilarity = data.ContentBasedFilterings.Any(c => 
-                    c.MaHangHoa1 == MaHangHoa || c.MaHangHoa2 == MaHangHoa);
-
-                if (!hasSimilarity || canUpdateSimilarity)
-                {
-                    // Nếu chưa có điểm tương đồng hoặc cần cập nhật
-                    TinhDiemTuongDongChoHangHoa(MaHangHoa);
-                }
-
                 return Json(new { success = true });
             }
             catch (Exception ex)
             {
-                return Json(new { success = false, message = "Có lỗi xảy ra khi chỉnh sửa hàng hóa: " + ex.Message });
+                return Json(new { success = false, message = "Có lỗi xảy ra khi cập nhật hàng hóa: " + ex.Message });
             }
         }
 
