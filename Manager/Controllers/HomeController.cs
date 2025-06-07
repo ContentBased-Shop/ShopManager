@@ -731,6 +731,7 @@ namespace Manager.Controllers
         }
 
         [HttpPost]
+        [ValidateInput(false)]
         public JsonResult TaoHangHoa(string TenHangHoa, string MaDanhMuc, string MaThuongHieu, string MoTa, string MoTaDai, string TrangThai, HttpPostedFileBase HinhAnh)
         {
             data = new SHOPDataContext(connStr);
@@ -749,13 +750,16 @@ namespace Manager.Controllers
                 {
                     string extension = Path.GetExtension(HinhAnh.FileName);
                     hinhAnhFileName = Guid.NewGuid().ToString() + extension;
-                    string filePath = Path.Combine(Server.MapPath("~/Content/img/hanghoa/"), hinhAnhFileName);
                     
-                    // Đảm bảo thư mục tồn tại
-                    Directory.CreateDirectory(Path.GetDirectoryName(filePath));
-                    
-                    // Lưu file
-                    HinhAnh.SaveAs(filePath);
+                    // Lưu vào thư mục Manager
+                    string managerPath = Path.Combine(Server.MapPath("~/Content/img/hanghoa"), hinhAnhFileName);
+                    Directory.CreateDirectory(Path.GetDirectoryName(managerPath));
+                    HinhAnh.SaveAs(managerPath);
+
+                    // Lưu vào thư mục Shop
+                    string shopPath = Path.Combine(Server.MapPath("~/"), "..", "..", "ContentBased-Shop", "Shop", "Shop", "assets", "Image", "Product", hinhAnhFileName);
+                    Directory.CreateDirectory(Path.GetDirectoryName(shopPath));
+                    HinhAnh.SaveAs(shopPath);
                 }
 
                 var hangHoa = new HangHoa
@@ -767,16 +771,13 @@ namespace Manager.Controllers
                     MoTa = MoTa,
                     MoTaDai = MoTaDai,
                     HinhAnh = hinhAnhFileName,
-                    DanhGiaTrungBinh = 0,
+                    DanhGiaTrungBinh = 5,
                     NgayTao = DateTime.Now,
                     TrangThai = TrangThai
                 };
 
                 data.HangHoas.InsertOnSubmit(hangHoa);
                 data.SubmitChanges();
-
-                // Tính toán điểm tương đồng với các sản phẩm khác và lưu vào ContentBasedFiltering
-                TinhDiemTuongDongChoHangHoa(MaHangHoa);
 
                 return Json(new { success = true, maHangHoa = MaHangHoa });
             }
@@ -801,6 +802,12 @@ namespace Manager.Controllers
 
                 // Nếu không có sản phẩm nào khác để so sánh thì dừng lại
                 if (!danhSachHangHoa.Any()) return;
+
+                // Xóa tất cả điểm tương đồng cũ của hàng hóa này
+                var diemTuongDongCu = data.ContentBasedFilterings
+                    .Where(c => c.MaHangHoa1 == maHangHoaMoi || c.MaHangHoa2 == maHangHoaMoi)
+                    .ToList();
+                data.ContentBasedFilterings.DeleteAllOnSubmit(diemTuongDongCu);
 
                 // Tính điểm tương đồng với từng sản phẩm
                 foreach (var hangHoaKhac in danhSachHangHoa)
@@ -857,27 +864,15 @@ namespace Manager.Controllers
                     // Chuẩn hóa điểm tương đồng (nếu có ít nhất một yếu tố để so sánh)
                     double diemTuongDongChuanHoa = tongTrongSo > 0 ? diemTuongDong / tongTrongSo : 0;
 
-                    // Kiểm tra xem đã có bản ghi tương đồng này chưa
-                    var existingRecord = data.ContentBasedFilterings.FirstOrDefault(
-                        c => (c.MaHangHoa1 == maHangHoa1 && c.MaHangHoa2 == maHangHoa2));
-
-                    if (existingRecord != null)
+                    // Tạo bản ghi mới trong ContentBasedFiltering
+                    var contentBasedFiltering = new ContentBasedFiltering
                     {
-                        // Nếu đã có thì cập nhật
-                        existingRecord.DiemTuongDong = diemTuongDongChuanHoa;
-                    }
-                    else
-                    {
-                        // Nếu chưa có thì tạo mới
-                        var contentBasedFiltering = new ContentBasedFiltering
-                        {
-                            MaHangHoa1 = maHangHoa1,
-                            MaHangHoa2 = maHangHoa2,
-                            DiemTuongDong = diemTuongDongChuanHoa
-                        };
+                        MaHangHoa1 = maHangHoa1,
+                        MaHangHoa2 = maHangHoa2,
+                        DiemTuongDong = diemTuongDongChuanHoa
+                    };
 
-                        data.ContentBasedFilterings.InsertOnSubmit(contentBasedFiltering);
-                    }
+                    data.ContentBasedFilterings.InsertOnSubmit(contentBasedFiltering);
                 }
 
                 // Lưu các thay đổi vào cơ sở dữ liệu
@@ -939,6 +934,7 @@ namespace Manager.Controllers
         }
 
         [HttpPost]
+        [ValidateInput(false)]
         public JsonResult SuaHangHoa(string MaHangHoa, string TenHangHoa, string MaDanhMuc, string MaThuongHieu, string MoTa, string MoTaDai, string TrangThai, HttpPostedFileBase HinhAnh)
         {
             data = new SHOPDataContext(connStr);
@@ -961,28 +957,37 @@ namespace Manager.Controllers
                     // Xóa hình cũ nếu có
                     if (!string.IsNullOrEmpty(hangHoa.HinhAnh))
                     {
-                        string oldImagePath = Path.Combine(Server.MapPath("~/Content/img/hanghoa/"), hangHoa.HinhAnh);
-                        if (System.IO.File.Exists(oldImagePath))
+                        string oldImagePath1 = Path.Combine(Server.MapPath("~/Content/img/hanghoa"), hangHoa.HinhAnh);
+                        string oldImagePath2 = Path.Combine(Server.MapPath("~/"), "..", "..", "ContentBased-Shop", "Shop", "Shop", "assets", "Image", "Product", hangHoa.HinhAnh);
+                        
+                        if (System.IO.File.Exists(oldImagePath1))
                         {
-                            System.IO.File.Delete(oldImagePath);
+                            System.IO.File.Delete(oldImagePath1);
+                        }
+                        if (System.IO.File.Exists(oldImagePath2))
+                        {
+                            System.IO.File.Delete(oldImagePath2);
                         }
                     }
 
+                    // Lưu hình mới
                     string extension = Path.GetExtension(HinhAnh.FileName);
                     string hinhAnhFileName = Guid.NewGuid().ToString() + extension;
-                    string filePath = Path.Combine(Server.MapPath("~/Content/img/hanghoa/"), hinhAnhFileName);
                     
-                    // Đảm bảo thư mục tồn tại
-                    Directory.CreateDirectory(Path.GetDirectoryName(filePath));
-                    
-                    // Lưu file
-                    HinhAnh.SaveAs(filePath);
-                    
-                    // Cập nhật tên file
+                    // Lưu vào thư mục Manager
+                    string managerPath = Path.Combine(Server.MapPath("~/Content/img/hanghoa"), hinhAnhFileName);
+                    Directory.CreateDirectory(Path.GetDirectoryName(managerPath));
+                    HinhAnh.SaveAs(managerPath);
+
+                    // Lưu vào thư mục Shop
+                    string shopPath = Path.Combine(Server.MapPath("~/"), "..", "..", "ContentBased-Shop", "Shop", "Shop", "assets", "Image", "Product", hinhAnhFileName);
+                    Directory.CreateDirectory(Path.GetDirectoryName(shopPath));
+                    HinhAnh.SaveAs(shopPath);
+
                     hangHoa.HinhAnh = hinhAnhFileName;
                 }
-                
-                // Cập nhật thông tin mới
+
+                // Cập nhật thông tin
                 hangHoa.TenHangHoa = TenHangHoa;
                 hangHoa.MaDanhMuc = string.IsNullOrEmpty(MaDanhMuc) ? null : MaDanhMuc;
                 hangHoa.MaThuongHieu = string.IsNullOrEmpty(MaThuongHieu) ? null : MaThuongHieu;
@@ -992,18 +997,11 @@ namespace Manager.Controllers
 
                 data.SubmitChanges();
 
-                // Kiểm tra nếu có thay đổi về danh mục, thương hiệu hoặc mô tả thì mới cập nhật lại điểm tương đồng
-                if (maDanhMucCu != MaDanhMuc || maThuongHieuCu != MaThuongHieu || moTaCu != MoTa)
-                {
-                    // Cập nhật lại điểm tương đồng
-                    CapNhatDiemTuongDongChoHangHoa(MaHangHoa);
-                }
-
                 return Json(new { success = true });
             }
             catch (Exception ex)
             {
-                return Json(new { success = false, message = "Có lỗi xảy ra khi chỉnh sửa hàng hóa: " + ex.Message });
+                return Json(new { success = false, message = "Có lỗi xảy ra khi cập nhật hàng hóa: " + ex.Message });
             }
         }
 
