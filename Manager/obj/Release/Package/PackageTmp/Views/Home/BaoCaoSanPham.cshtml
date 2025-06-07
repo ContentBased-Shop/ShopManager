@@ -1,0 +1,591 @@
+﻿@{
+    ViewBag.Title = "Báo cáo sản phẩm";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@using System.Web.Helpers;
+
+<!-- Thêm các thư viện cần thiết -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://unpkg.com/docx@7.8.2/build/index.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold text-primary">Báo cáo sản phẩm</h2>
+            <p class="text-muted">Thống kê về sản phẩm của cửa hàng</p>
+        </div>
+        <div>
+            <button class="btn btn-success me-2" onclick="exportToExcel()">
+                <i class="bi bi-file-earmark-excel me-2"></i>Xuất Excel
+            </button>
+            <button class="btn btn-primary" onclick="exportToWord()">
+                <i class="bi bi-file-earmark-word me-2"></i>Xuất Word
+            </button>
+        </div>
+    </div>
+
+    <!-- Thẻ thống kê nhanh -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between mb-2">
+                        <div>
+                            <h6 class="text-muted mb-1">Tổng số sản phẩm</h6>
+                            <h3 class="fw-bold mb-0">@ViewBag.TongSoSanPham</h3>
+                        </div>
+                        <div class="bg-primary bg-opacity-10 rounded-circle p-3">
+                            <i class="bi bi-box-seam text-primary fs-4"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between mb-2">
+                        <div>
+                            <h6 class="text-muted mb-1">Tổng số biến thể</h6>
+                            <h3 class="fw-bold mb-0">@ViewBag.TongSoBienThe</h3>
+                        </div>
+                        <div class="bg-success bg-opacity-10 rounded-circle p-3">
+                            <i class="bi bi-grid-3x3-gap text-success fs-4"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Biểu đồ sản phẩm theo danh mục và thương hiệu -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-white border-0 pt-4 pb-0">
+                    <h5 class="card-title fw-bold">Sản phẩm theo danh mục</h5>
+                </div>
+                <div class="card-body p-4">
+                    <canvas id="categoryChart" style="height: 300px;"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-white border-0 pt-4 pb-0">
+                    <h5 class="card-title fw-bold">Sản phẩm theo thương hiệu</h5>
+                </div>
+                <div class="card-body p-4">
+                    <canvas id="brandChart" style="height: 300px;"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bảng top 10 sản phẩm bán chạy nhất -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white pt-4 pb-3 border-0">
+                    <h5 class="card-title fw-bold">Top 10 sản phẩm bán chạy nhất</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="ps-4">#</th>
+                                    <th>Tên sản phẩm</th>
+                                    <th>Số lượng bán</th>
+                                    <th>Doanh thu</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @{
+                                    int stt = 1;
+                                    foreach (var sp in ViewBag.SanPhamBanChayNhat)
+                                    {
+                                        <tr>
+                                            <td class="ps-4">@stt</td>
+                                            <td>@sp.TenHangHoa</td>
+                                            <td>@sp.SoLuongBan</td>
+                                            <td>@string.Format("{0:N0}", sp.DoanhThu)đ</td>
+                                        </tr>
+                                        stt++;
+                                    }
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bảng top 10 sản phẩm tồn kho nhiều nhất -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white pt-4 pb-3 border-0">
+                    <h5 class="card-title fw-bold">Top 10 sản phẩm tồn kho nhiều nhất</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="ps-4">#</th>
+                                    <th>Tên sản phẩm</th>
+                                    <th>Chi tiết biến thể</th>
+                                    <th>Tồn kho</th>
+                                    <th>Giá nhập</th>
+                                    <th>Giá bán</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @{
+                                    int sttTonKho = 1;
+                                    foreach (var bt in ViewBag.SanPhamTonKhoNhieuNhat)
+                                    {
+                                        <tr>
+                                            <td class="ps-4">@sttTonKho</td>
+                                            <td>@bt.HangHoa.TenHangHoa</td>
+                                            <td>
+                                                @if (!string.IsNullOrEmpty(bt.MauSac))
+                                                {
+                                                    <span>@bt.MauSac</span>
+                                                }
+                                                @if (!string.IsNullOrEmpty(bt.DungLuong))
+                                                {
+                                                    <span>, @bt.DungLuong</span>
+                                                }
+                                                @if (!string.IsNullOrEmpty(bt.CPU))
+                                                {
+                                                    <span>, @bt.CPU</span>
+                                                }
+                                                @if (!string.IsNullOrEmpty(bt.RAM))
+                                                {
+                                                    <span>, @bt.RAM</span>
+                                                }
+                                                @if (!string.IsNullOrEmpty(bt.KichThuocManHinh))
+                                                {
+                                                    <span>, @bt.KichThuocManHinh</span>
+                                                }
+                                                @if (!string.IsNullOrEmpty(bt.LoaiBoNho))
+                                                {
+                                                    <span>, @bt.LoaiBoNho</span>
+                                                }
+                                            </td>
+                                            <td>@bt.SoLuongTonKho</td>
+                                            <td>@string.Format("{0:N0}", bt.GiaNhap)đ</td>
+                                            <td>@string.Format("{0:N0}", bt.GiaBan)đ</td>
+                                        </tr>
+                                        sttTonKho++;
+                                    }
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Thêm Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Biểu đồ sản phẩm theo danh mục
+        var categoryData = @Html.Raw(Json.Encode(ViewBag.SanPhamTheoDanhMuc));
+        var categoryLabels = categoryData.map(function(item) { return item.TenDanhMuc; });
+        var categoryValues = categoryData.map(function(item) { return item.SoLuong; });
+
+        var categoryCtx = document.getElementById('categoryChart').getContext('2d');
+        var categoryChart = new Chart(categoryCtx, {
+            type: 'doughnut',
+            data: {
+                labels: categoryLabels,
+                datasets: [{
+                    data: categoryValues,
+                    backgroundColor: [
+                        'rgba(255, 99, 132, 0.7)',
+                        'rgba(54, 162, 235, 0.7)',
+                        'rgba(255, 206, 86, 0.7)',
+                        'rgba(75, 192, 192, 0.7)',
+                        'rgba(153, 102, 255, 0.7)',
+                        'rgba(255, 159, 64, 0.7)',
+                        'rgba(199, 199, 199, 0.7)',
+                        'rgba(83, 102, 255, 0.7)',
+                        'rgba(40, 159, 64, 0.7)',
+                        'rgba(210, 199, 199, 0.7)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                var label = context.label || '';
+                                var value = context.raw;
+                                return label + ': ' + value + ' sản phẩm';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Biểu đồ sản phẩm theo thương hiệu
+        var brandData = @Html.Raw(Json.Encode(ViewBag.SanPhamTheoThuongHieu));
+        var brandLabels = brandData.map(function(item) { return item.TenThuongHieu; });
+        var brandValues = brandData.map(function(item) { return item.SoLuong; });
+
+        var brandCtx = document.getElementById('brandChart').getContext('2d');
+        var brandChart = new Chart(brandCtx, {
+            type: 'pie',
+            data: {
+                labels: brandLabels,
+                datasets: [{
+                    data: brandValues,
+                    backgroundColor: [
+                        'rgba(54, 162, 235, 0.7)',
+                        'rgba(255, 99, 132, 0.7)',
+                        'rgba(255, 206, 86, 0.7)',
+                        'rgba(75, 192, 192, 0.7)',
+                        'rgba(153, 102, 255, 0.7)',
+                        'rgba(255, 159, 64, 0.7)',
+                        'rgba(199, 199, 199, 0.7)',
+                        'rgba(83, 102, 255, 0.7)',
+                        'rgba(40, 159, 64, 0.7)',
+                        'rgba(210, 199, 199, 0.7)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                var label = context.label || '';
+                                var value = context.raw;
+                                return label + ': ' + value + ' sản phẩm';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    });
+
+    // Hàm xuất file Excel
+    function exportToExcel() {
+        // Tạo workbook mới
+        const wb = XLSX.utils.book_new();
+        
+        // Tạo worksheet mới
+        // Lấy dữ liệu chỉ từ bảng sản phẩm bán chạy (bảng đầu tiên)
+        const topSellingTable = document.querySelectorAll('table')[0];
+        const ws_data = [
+            // Header
+            ["", "", "", "", ""],
+            ["Tên cửa hàng: " + "PrimeShop", "", "", "", "CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM"],
+            ["Địa chỉ: " + "140 Lê Trọng Tấn, Phường Tây Thạnh, Quận Tân Phú, TP.HCM", "", "", "", "Độc lập - Tự do - Hạnh phúc"],
+            ["Người xuất báo cáo: " + "................", "", "", "", "Ngày: " + new Date().toLocaleDateString('vi-VN')],
+            ["", "", "", "", ""],
+            // Tiêu đề báo cáo
+            ["", "", "BÁO CÁO SẢN PHẨM", "", ""],
+            ["", "", "Thống kê về sản phẩm của cửa hàng", "", ""],
+            ["", "", "", "", ""],
+            // Thống kê nhanh
+            ["Tổng số sản phẩm:", @ViewBag.TongSoSanPham, "", "", ""],
+            ["Tổng số biến thể:", @ViewBag.TongSoBienThe, "", "", ""],
+            ["", "", "", "", ""],
+            // Top 10 sản phẩm bán chạy
+            ["TOP 10 SẢN PHẨM BÁN CHẠY NHẤT", "", "", "", ""],
+            // Lấy header của bảng sản phẩm bán chạy
+            Array.from(topSellingTable.querySelectorAll('thead th')).map(th => th.textContent.trim()),
+            // Lấy dữ liệu từ tbody của bảng sản phẩm bán chạy
+            ...Array.from(topSellingTable.querySelectorAll('tbody tr')).map(row => {
+                return Array.from(row.cells).map(cell => cell.textContent.trim());
+            })
+        ];
+
+        // Thêm tiêu đề và dữ liệu cho bảng tồn kho
+        ws_data.push(["", "", "", "", ""]); // Dòng trống ngăn cách
+        ws_data.push(["TOP 10 SẢN PHẨM TỒN KHO NHIỀU NHẤT", "", "", "", ""]);
+
+        const inventoryTable = document.querySelectorAll('table')[1];
+        // Lấy header của bảng tồn kho
+        ws_data.push(Array.from(inventoryTable.querySelectorAll('thead th')).map(th => th.textContent.trim()));
+        // Lấy dữ liệu từ tbody của bảng tồn kho
+        Array.from(inventoryTable.querySelectorAll('tbody tr')).forEach(row => {
+            ws_data.push(Array.from(row.cells).map(cell => cell.textContent.trim()));
+        });
+
+        const ws = XLSX.utils.aoa_to_sheet(ws_data);
+
+        // Thiết lập độ rộng cột (ước lượng dựa trên cả hai bảng)
+        const wscols = [
+            {wch: 20},  // STT
+            {wch: 30}, // Tên sản phẩm
+            {wch: 30}, // Chi tiết biến thể (cột thêm cho tồn kho)
+            {wch: 15}, // Số lượng bán / Tồn kho
+            {wch: 15}, // Doanh thu / Giá nhập
+            {wch: 15}  // Giá bán (cột thêm cho tồn kho)
+        ];
+        ws['!cols'] = wscols;
+
+        // Thiết lập style cho các ô
+        // Merge cells cho tiêu đề
+        ws['!merges'] = [
+            {s: {r: 1, c: 0}, e: {r: 1, c: 2}}, // Tên cửa hàng
+            {s: {r: 2, c: 0}, e: {r: 2, c: 2}}, // Địa chỉ
+            {s: {r: 3, c: 0}, e: {r: 3, c: 2}}, // Người xuất báo cáo
+            {s: {r: 5, c: 2}, e: {r: 5, c: 3}}, // Tiêu đề báo cáo chính
+            {s: {r: 6, c: 2}, e: {r: 6, c: 3}}, // Mô tả báo cáo chính
+            {s: {r: 11, c: 0}, e: {r: 11, c: 5}}, // Tiêu đề top bán chạy
+            {s: {r: ws_data.findIndex(row => row[0] === "TOP 10 SẢN PHẨM TỒN KHO NHIỀU NHẤT"), c: 0}, e: {r: ws_data.findIndex(row => row[0] === "TOP 10 SẢN PHẨM TỒN KHO NHIỀU NHẤT"), c: 5}} // Tiêu đề top tồn kho
+        ];
+
+        // Style cho tiêu đề báo cáo chính (cỡ chữ 16)
+        const reportTitleCell = ws[XLSX.utils.encode_cell({r: 5, c: 2})]; // Cell C6 (0-indexed r=5, c=2)
+         if (reportTitleCell) {
+            reportTitleCell.s = {
+                font: { sz: 16, bold: true },
+                alignment: { horizontal: "center", vertical: "center" }
+            };
+        }
+         const reportDescCell = ws[XLSX.utils.encode_cell({r: 6, c: 2})]; // Cell C7 (0-indexed r=6, c=2)
+          if (reportDescCell) {
+             reportDescCell.s = {
+                 font: { sz: 16 },
+                 alignment: { horizontal: "center", vertical: "center" }
+             };
+         }
+
+        // Style cho header bảng bán chạy (màu nền #a7ddf2)
+        const topSellingHeaderRowIndex = 13; // Header nằm ngay sau tiêu đề TOP 10 (r=12)
+        const topSellingHeaderRow = ws_data[topSellingHeaderRowIndex];
+        for(let c = 0; c < topSellingHeaderRow.length; c++) {
+            const cellAddress = XLSX.utils.encode_cell({r: topSellingHeaderRowIndex, c: c});
+            if (!ws[cellAddress]) ws[cellAddress] = {};
+            ws[cellAddress].s = {
+                fill: { fgColor: { rgb: "FFA7DDF2" } }, // Thêm tiền tố FF cho alpha full
+                font: { bold: true }
+            };
+        }
+
+        // Style cho header bảng tồn kho (màu nền #f0e69e)
+        const inventoryTitleRowIndex = ws_data.findIndex(row => row[0] === "TOP 10 SẢN PHẨM TỒN KHO NHIỀU NHẤT");
+        const inventoryHeaderRowIndex = inventoryTitleRowIndex + 1; // Header nằm ngay sau tiêu đề TOP 10 tồn kho
+        const inventoryHeaderRow = ws_data[inventoryHeaderRowIndex];
+        for(let c = 0; c < inventoryHeaderRow.length; c++) {
+            const cellAddress = XLSX.utils.encode_cell({r: inventoryHeaderRowIndex, c: c});
+            if (!ws[cellAddress]) ws[cellAddress] = {};
+            ws[cellAddress].s = {
+                fill: { fgColor: { rgb: "FFF0E69E" } }, // Thêm tiền tố FF cho alpha full
+                font: { bold: true }
+            };
+        }
+
+        // Thêm worksheet vào workbook
+        XLSX.utils.book_append_sheet(wb, ws, "Báo cáo sản phẩm");
+        
+        // Xuất file
+        XLSX.writeFile(wb, "BaoCaoSanPham.xlsx");
+    }
+
+    // Hàm xuất file Word
+    function exportToWord() {
+        const { Document, Paragraph, Table, TableRow, TableCell, WidthType, AlignmentType, HeadingLevel, Packer } = docx;
+
+        // Tạo document mới
+        const doc = new Document({
+            sections: [{
+                properties: {},
+                children: [
+                    // Header
+                    new Paragraph({
+                        text: "CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM",
+                        alignment: AlignmentType.CENTER,
+                        spacing: {
+                            after: 200
+                        }
+                    }),
+                    new Paragraph({
+                        text: "Độc lập - Tự do - Hạnh phúc",
+                        alignment: AlignmentType.CENTER,
+                        spacing: {
+                            after: 200
+                        }
+                    }),
+                    // Thông tin cửa hàng
+                    new Paragraph({
+                        text: "Tên cửa hàng: PrimeShop",
+                        spacing: {
+                            after: 100
+                        }
+                    }),
+                    new Paragraph({
+                        text: "Địa chỉ: 140 Lê Trọng Tấn, Phường Tây Thạnh, Quận Tân Phú, TP.HCM",
+                        spacing: {
+                            after: 100
+                        }
+                    }),
+                    new Paragraph({
+                        text: "Người xuất báo cáo: " + "................",
+                        spacing: {
+                            after: 200
+                        }
+                    }),
+                    // Tiêu đề báo cáo
+                    new Paragraph({
+                        text: "BÁO CÁO SẢN PHẨM",
+                        heading: HeadingLevel.HEADING_1,
+                        alignment: AlignmentType.CENTER,
+                        spacing: {
+                            after: 200
+                        }
+                    }),
+                    new Paragraph({
+                        text: "Thống kê về sản phẩm của cửa hàng",
+                        alignment: AlignmentType.CENTER,
+                        spacing: {
+                            after: 200
+                        }
+                    }),
+                    // Thống kê nhanh
+                    new Paragraph({
+                        text: "Tổng số sản phẩm: " + @ViewBag.TongSoSanPham,
+                        spacing: {
+                            after: 100
+                        }
+                    }),
+                    new Paragraph({
+                        text: "Tổng số biến thể: " + @ViewBag.TongSoBienThe,
+                        spacing: {
+                            after: 200
+                        }
+                    }),
+                    // Top 10 sản phẩm bán chạy
+                    new Paragraph({
+                        text: "TOP 10 SẢN PHẨM BÁN CHẠY NHẤT",
+                        heading: HeadingLevel.HEADING_2,
+                        spacing: {
+                            after: 200
+                        }
+                    }),
+                    new Table({
+                        width: {
+                            size: 100,
+                            type: WidthType.PERCENTAGE,
+                        },
+                        rows: [
+                            // Lấy header của bảng sản phẩm bán chạy
+                            new TableRow({
+                                children: Array.from(document.querySelectorAll('table')[0].querySelectorAll('thead th')).map(th => {
+                                    return new TableCell({
+                                        children: [new Paragraph(th.textContent.trim())],
+                                        // Có thể cần điều chỉnh lại độ rộng cột ở đây tùy thuộc vào số cột trong bảng bán chạy
+                                    });
+                                }),
+                            }),
+                            // Lấy dữ liệu từ tbody của bảng sản phẩm bán chạy
+                            ...Array.from(document.querySelectorAll('table')[0].querySelectorAll('tbody tr')).map(row => {
+                                return new TableRow({
+                                    children: Array.from(row.cells).map(cell => {
+                                        return new TableCell({
+                                            children: [new Paragraph(cell.textContent.trim())],
+                                        });
+                                    }),
+                                });
+                            }),
+                        ],
+                    }),
+                    // Top 10 sản phẩm tồn kho
+                    new Paragraph({
+                        text: "TOP 10 SẢN PHẨM TỒN KHO NHIỀU NHẤT",
+                        heading: HeadingLevel.HEADING_2,
+                        spacing: {
+                            before: 400, // Thêm khoảng cách trước tiêu đề bảng mới
+                            after: 200
+                        }
+                    }),
+                    new Table({
+                        width: {
+                            size: 100,
+                            type: WidthType.PERCENTAGE,
+                        },
+                        rows: [
+                            // Lấy header của bảng sản phẩm tồn kho
+                            new TableRow({
+                                children: Array.from(document.querySelectorAll('table')[1].querySelectorAll('thead th')).map(th => {
+                                    return new TableCell({
+                                        children: [new Paragraph(th.textContent.trim())],
+                                        // Có thể cần điều chỉnh lại độ rộng cột ở đây
+                                    });
+                                }),
+                            }),
+                            // Lấy dữ liệu từ tbody của bảng sản phẩm tồn kho
+                            ...Array.from(document.querySelectorAll('table')[1].querySelectorAll('tbody tr')).map(row => {
+                                return new TableRow({
+                                    children: Array.from(row.cells).map(cell => {
+                                        return new TableCell({
+                                            children: [new Paragraph(cell.textContent.trim())],
+                                        });
+                                    }),
+                                });
+                            }),
+                        ],
+                    }),
+                    // Footer
+                    new Paragraph({
+                        text: "",
+                        spacing: {
+                            after: 200
+                        }
+                    }),
+                    new Paragraph({
+                        text: "Người lập báo cáo",
+                        alignment: AlignmentType.RIGHT,
+                        spacing: {
+                            after: 100
+                        }
+                    }),
+                    new Paragraph({
+                        text: "(Ký, ghi rõ họ tên)",
+                        alignment: AlignmentType.RIGHT,
+                    }),
+                ],
+            }],
+        });
+
+        // Xuất file
+        Packer.toBlob(doc).then(blob => {
+            saveAs(blob, "BaoCaoSanPham.docx");
+        });
+    }
+</script>
+
+<style>
+    .card {
+        transition: all 0.3s;
+    }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
+        }
+</style> 

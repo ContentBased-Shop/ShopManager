@@ -1,0 +1,591 @@
+﻿@{
+    ViewBag.Title = "Báo cáo khách hàng";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@using System.Web.Helpers;
+
+<!-- Thêm các thư viện cần thiết -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://unpkg.com/docx@7.8.2/build/index.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold text-primary">Báo cáo khách hàng</h2>
+            <p class="text-muted">Thống kê về khách hàng của cửa hàng</p>
+        </div>
+        <div>
+            <button class="btn btn-success me-2" onclick="exportToExcel()">
+                <i class="bi bi-file-earmark-excel me-2"></i>Xuất Excel
+            </button>
+            <button class="btn btn-primary" onclick="exportToWord()">
+                <i class="bi bi-file-earmark-word me-2"></i>Xuất Word
+            </button>
+        </div>
+    </div>
+
+    <!-- Thống kê nhanh -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between mb-2">
+                        <div>
+                            <h6 class="text-muted mb-1">Tổng số khách hàng</h6>
+                            <h3 class="fw-bold mb-0">@ViewBag.TongSoKhachHang</h3>
+                        </div>
+                        <div class="bg-primary bg-opacity-10 rounded-circle p-3">
+                            <i class="bi bi-people text-primary fs-4"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between mb-2">
+                        <div>
+                            <h6 class="text-muted mb-1">Khách hàng mới tháng này</h6>
+                            <h3 class="fw-bold mb-0">@ViewBag.KhachHangMoiThangNay</h3>
+                        </div>
+                        <div class="bg-success bg-opacity-10 rounded-circle p-3">
+                            <i class="bi bi-person-plus text-success fs-4"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between mb-2">
+                        <div>
+                            <h6 class="text-muted mb-1">Khách hàng tích cực</h6>
+                            <h3 class="fw-bold mb-0">@ViewBag.KhachHangHoatDong</h3>
+                        </div>
+                        <div class="bg-info bg-opacity-10 rounded-circle p-3">
+                            <i class="bi bi-person-check text-info fs-4"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between mb-2">
+                        <div>
+                            <h6 class="text-muted mb-1">Tỷ lệ chuyển đổi</h6>
+                            <h3 class="fw-bold mb-0">@ViewBag.TyLeChuyenDoi%</h3>
+                        </div>
+                        <div class="bg-warning bg-opacity-10 rounded-circle p-3">
+                            <i class="bi bi-graph-up-arrow text-warning fs-4"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <!-- Biểu đồ khách hàng theo tháng -->
+        <div class="col-md-8">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-white border-0 pt-4 pb-0">
+                    <h5 class="card-title fw-bold">Khách hàng mới theo tháng</h5>
+                </div>
+                <div class="card-body p-4">
+                    <canvas id="customerChart" style="height: 300px;"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Biểu đồ trạng thái khách hàng -->
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-white border-0 pt-4 pb-0">
+                    <h5 class="card-title fw-bold">Trạng thái khách hàng</h5>
+                </div>
+                <div class="card-body p-4 d-flex justify-content-center align-items-center">
+                    <canvas id="customerStatusChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <!-- Top 10 khách hàng chi tiêu nhiều nhất -->
+        <div class="col-md-8">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white pt-4 pb-3 border-0 d-flex justify-content-between align-items-center">
+                    <h5 class="card-title fw-bold mb-0">Top 10 khách hàng chi tiêu nhiều nhất</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle" id="topCustomersTable">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="ps-4">#</th>
+                                    <th>Tên khách hàng</th>
+                                    <th>Email</th>
+                                    <th>Số điện thoại</th>
+                                    <th>Số đơn hàng</th>
+                                    <th>Tổng chi tiêu</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @{
+                                    int stt = 1;
+                                    foreach (var kh in ViewBag.TopKhachHang)
+                                    {
+                                        <tr>
+                                            <td class="ps-4">@stt</td>
+                                            <td>@kh.HoTen</td>
+                                            <td>@kh.Email</td>
+                                            <td>@kh.SoDienThoai</td>
+                                            <td>@kh.TongDonHang</td>
+                                            <td>@string.Format("{0:N0}", kh.TongChiTieu)đ</td>
+                                        </tr>
+                                        stt++;
+                                    }
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Thống kê tương tác khách hàng -->
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-white pt-4 pb-3 border-0">
+                    <h5 class="card-title fw-bold">Tương tác khách hàng</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-4">
+                        <h6 class="text-muted mb-2">Tổng số đánh giá</h6>
+                        <div class="d-flex align-items-center">
+                            <h4 class="fw-bold mb-0">@ViewBag.TongSoDanhGia</h4>
+                            <div class="ms-2">
+                                <div class="d-flex align-items-center">
+                                    <div class="rating">
+                                        @for (int i = 1; i <= 5; i++)
+                                        {
+                                            <i class="bi bi-star-fill text-warning"></i>
+                                        }
+                                    </div>
+                                    <span class="ms-2">@ViewBag.DiemDanhGiaTrungBinh.ToString("0.0")/5</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-4">
+                        <h6 class="text-muted mb-2">Sản phẩm yêu thích</h6>
+                        <h4 class="fw-bold">@ViewBag.TongSoYeuThich</h4>
+                    </div>
+                    <div>
+                        <h6 class="text-muted mb-2">Lịch sử xem</h6>
+                        <h4 class="fw-bold">@ViewBag.TongSoLuotXem</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Thêm Chart.js và TableExport -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/tableexport@5.2.0/dist/js/tableexport.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.17.0/dist/xlsx.full.min.js"></script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Biểu đồ khách hàng theo tháng
+        var customerCtx = document.getElementById('customerChart').getContext('2d');
+        var customerChart = new Chart(customerCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Tháng 1', 'Tháng 2', 'Tháng 3', 'Tháng 4', 'Tháng 5', 'Tháng 6', 'Tháng 7', 'Tháng 8', 'Tháng 9', 'Tháng 10', 'Tháng 11', 'Tháng 12'],
+                datasets: [{
+                    label: 'Khách hàng mới',
+                    data: @Html.Raw(Json.Encode(ViewBag.KhachHangTheoThang)),
+                    backgroundColor: 'rgba(75, 192, 192, 0.5)',
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            stepSize: 1
+                        }
+                    }
+                }
+            }
+        });
+
+        // Biểu đồ trạng thái khách hàng
+        var statusCtx = document.getElementById('customerStatusChart').getContext('2d');
+        var statusChart = new Chart(statusCtx, {
+            type: 'pie',
+            data: {
+                labels: ['Hoạt động', 'Bị cấm'],
+                datasets: [{
+                    data: [@ViewBag.SoKhachHangHoatDong, @ViewBag.SoKhachHangBiCam],
+                    backgroundColor: [
+                        'rgba(92, 184, 92, 0.7)',
+                        'rgba(217, 83, 79, 0.7)'
+                    ],
+                    borderColor: [
+                        'rgba(92, 184, 92, 1)',
+                        'rgba(217, 83, 79, 1)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                }
+            }
+        });
+    });
+
+    // Hàm xuất file Excel
+    function exportToExcel() {
+        // Tạo workbook mới
+        const wb = XLSX.utils.book_new();
+        
+        // Tạo worksheet mới
+        const ws = XLSX.utils.aoa_to_sheet([
+            // Header
+            ["", "", "", "", "", ""],
+            ["Tên cửa hàng: " + "PrimeShop", "", "", "", "", "CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM"],
+            ["Địa chỉ: " + "140 Lê Trọng Tấn, Phường Tây Thạnh, Quận Tân Phú, TP.HCM", "", "", "", "", "Độc lập - Tự do - Hạnh phúc"],
+            ["Người xuất báo cáo: " + "................", "", "", "", "", "Ngày: " + new Date().toLocaleDateString('vi-VN')],
+            ["", "", "", "", "", ""],
+            // Tiêu đề báo cáo
+            ["", "", "BÁO CÁO KHÁCH HÀNG", "", "", ""],
+            ["", "", "Thống kê về khách hàng của cửa hàng", "", "", ""],
+            ["", "", "", "", "", ""],
+            // Thống kê nhanh
+            ["Tổng số khách hàng:", @ViewBag.TongSoKhachHang, "", "", "", ""],
+            ["Khách hàng mới tháng này:", @ViewBag.KhachHangMoiThangNay, "", "", "", ""],
+            ["Khách hàng tích cực:", @ViewBag.KhachHangHoatDong, "", "", "", ""],
+            ["Tỷ lệ chuyển đổi:", @ViewBag.TyLeChuyenDoi + "%", "", "", "", ""],
+            ["", "", "", "", "", ""],
+            // Top 10 khách hàng chi tiêu nhiều nhất
+            ["TOP 10 KHÁCH HÀNG CHI TIÊU NHIỀU NHẤT", "", "", "", "", ""],
+            ["STT", "Tên khách hàng", "Email", "Số điện thoại", "Số đơn hàng", "Tổng chi tiêu"],
+            ...Array.from(document.querySelectorAll('#topCustomersTable tbody tr')).map((row, index) => {
+                const cells = Array.from(row.cells);
+                return [
+                    index + 1,
+                    cells[1].textContent, // Tên khách hàng
+                    cells[2].textContent, // Email
+                    cells[3].textContent, // Số điện thoại
+                    cells[4].textContent, // Số đơn hàng
+                    cells[5].textContent  // Tổng chi tiêu
+                ];
+            }),
+            ["", "", "", "", "", ""],
+            // Thống kê tương tác
+            ["THỐNG KÊ TƯƠNG TÁC KHÁCH HÀNG", "", "", "", "", ""],
+            ["Tổng số đánh giá:", @ViewBag.TongSoDanhGia, "", "", "", ""],
+            ["Điểm đánh giá trung bình:", @ViewBag.DiemDanhGiaTrungBinh.ToString("0.0") + "/5", "", "", "", ""],
+            ["Sản phẩm yêu thích:", @ViewBag.TongSoYeuThich, "", "", "", ""],
+            ["Lịch sử xem:", @ViewBag.TongSoLuotXem, "", "", "", ""]
+        ]);
+
+        // Thiết lập độ rộng cột
+        const wscols = [
+            {wch: 5},  // STT
+            {wch: 25}, // Tên khách hàng
+            {wch: 30}, // Email
+            {wch: 15}, // Số điện thoại
+            {wch: 15}, // Số đơn hàng
+            {wch: 15}  // Tổng chi tiêu
+        ];
+        ws['!cols'] = wscols;
+
+        // Thiết lập style cho các ô
+        // Merge cells cho tiêu đề
+        ws['!merges'] = [
+            {s: {r: 5, c: 2}, e: {r: 5, c: 4}}, // Tiêu đề báo cáo
+            {s: {r: 6, c: 2}, e: {r: 6, c: 4}}, // Mô tả báo cáo
+            {s: {r: 13, c: 0}, e: {r: 13, c: 5}}, // Tiêu đề top khách hàng
+            {s: {r: 19, c: 0}, e: {r: 19, c: 5}}  // Tiêu đề thống kê tương tác
+        ];
+
+        // Thêm worksheet vào workbook
+        XLSX.utils.book_append_sheet(wb, ws, "Báo cáo khách hàng");
+        
+        // Xuất file
+        XLSX.writeFile(wb, "BaoCaoKhachHang.xlsx");
+    }
+
+    // Hàm xuất file Word
+    function exportToWord() {
+        const { Document, Paragraph, Table, TableRow, TableCell, WidthType, AlignmentType, HeadingLevel, Packer } = docx;
+
+        // Tạo document mới
+        const doc = new Document({
+            sections: [{
+                properties: {},
+                children: [
+                    // Header
+                    new Paragraph({
+                        text: "CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM",
+                        alignment: AlignmentType.CENTER,
+                        spacing: {
+                            after: 200
+                        }
+                    }),
+                    new Paragraph({
+                        text: "Độc lập - Tự do - Hạnh phúc",
+                        alignment: AlignmentType.CENTER,
+                        spacing: {
+                            after: 200
+                        }
+                    }),
+                    // Thông tin cửa hàng
+                    new Paragraph({
+                        text: "Tên cửa hàng: PrimeShop",
+                        spacing: {
+                            after: 100
+                        }
+                    }),
+                    new Paragraph({
+                        text: "Địa chỉ: 140 Lê Trọng Tấn, Phường Tây Thạnh, Quận Tân Phú, TP.HCM",
+                        spacing: {
+                            after: 100
+                        }
+                    }),
+                    new Paragraph({
+                        text: "Người xuất báo cáo: " + "................",
+                        spacing: {
+                            after: 200
+                        }
+                    }),
+                    // Tiêu đề báo cáo
+                    new Paragraph({
+                        text: "BÁO CÁO KHÁCH HÀNG",
+                        heading: HeadingLevel.HEADING_1,
+                        alignment: AlignmentType.CENTER,
+                        spacing: {
+                            after: 200
+                        }
+                    }),
+                    new Paragraph({
+                        text: "Thống kê về khách hàng của cửa hàng",
+                        alignment: AlignmentType.CENTER,
+                        spacing: {
+                            after: 200
+                        }
+                    }),
+                    // Thống kê nhanh
+                    new Paragraph({
+                        text: "Tổng số khách hàng: " + @ViewBag.TongSoKhachHang,
+                        spacing: {
+                            after: 100
+                        }
+                    }),
+                    new Paragraph({
+                        text: "Khách hàng mới tháng này: " + @ViewBag.KhachHangMoiThangNay,
+                        spacing: {
+                            after: 100
+                        }
+                    }),
+                    new Paragraph({
+                        text: "Khách hàng tích cực: " + @ViewBag.KhachHangHoatDong,
+                        spacing: {
+                            after: 100
+                        }
+                    }),
+                    new Paragraph({
+                        text: "Tỷ lệ chuyển đổi: " + @ViewBag.TyLeChuyenDoi + "%",
+                        spacing: {
+                            after: 200
+                        }
+                    }),
+                    // Top 10 khách hàng chi tiêu nhiều nhất
+                    new Paragraph({
+                        text: "TOP 10 KHÁCH HÀNG CHI TIÊU NHIỀU NHẤT",
+                        heading: HeadingLevel.HEADING_2,
+                        spacing: {
+                            after: 200
+                        }
+                    }),
+                    new Table({
+                        width: {
+                            size: 100,
+                            type: WidthType.PERCENTAGE,
+                        },
+                        rows: [
+                            // Header
+                            new TableRow({
+                                children: [
+                                    new TableCell({
+                                        children: [new Paragraph("STT")],
+                                        width: {
+                                            size: 10,
+                                            type: WidthType.PERCENTAGE,
+                                        },
+                                    }),
+                                    new TableCell({
+                                        children: [new Paragraph("Tên khách hàng")],
+                                        width: {
+                                            size: 25,
+                                            type: WidthType.PERCENTAGE,
+                                        },
+                                    }),
+                                    new TableCell({
+                                        children: [new Paragraph("Email")],
+                                        width: {
+                                            size: 25,
+                                            type: WidthType.PERCENTAGE,
+                                        },
+                                    }),
+                                    new TableCell({
+                                        children: [new Paragraph("Số điện thoại")],
+                                        width: {
+                                            size: 15,
+                                            type: WidthType.PERCENTAGE,
+                                        },
+                                    }),
+                                    new TableCell({
+                                        children: [new Paragraph("Số đơn hàng")],
+                                        width: {
+                                            size: 15,
+                                            type: WidthType.PERCENTAGE,
+                                        },
+                                    }),
+                                    new TableCell({
+                                        children: [new Paragraph("Tổng chi tiêu")],
+                                        width: {
+                                            size: 15,
+                                            type: WidthType.PERCENTAGE,
+                                        },
+                                    }),
+                                ],
+                            }),
+                            // Dữ liệu
+                            ...Array.from(document.querySelectorAll('#topCustomersTable tbody tr')).map((row, index) => {
+                                const cells = Array.from(row.cells);
+                                return new TableRow({
+                                    children: [
+                                        new TableCell({
+                                            children: [new Paragraph((index + 1).toString())],
+                                        }),
+                                        new TableCell({
+                                            children: [new Paragraph(cells[1].textContent)],
+                                        }),
+                                        new TableCell({
+                                            children: [new Paragraph(cells[2].textContent)],
+                                        }),
+                                        new TableCell({
+                                            children: [new Paragraph(cells[3].textContent)],
+                                        }),
+                                        new TableCell({
+                                            children: [new Paragraph(cells[4].textContent)],
+                                        }),
+                                        new TableCell({
+                                            children: [new Paragraph(cells[5].textContent)],
+                                        }),
+                                    ],
+                                });
+                            }),
+                        ],
+                    }),
+                    // Thống kê tương tác
+                    new Paragraph({
+                        text: "THỐNG KÊ TƯƠNG TÁC KHÁCH HÀNG",
+                        heading: HeadingLevel.HEADING_2,
+                        spacing: {
+                            after: 200
+                        }
+                    }),
+                    new Paragraph({
+                        text: "Tổng số đánh giá: " + @ViewBag.TongSoDanhGia,
+                        spacing: {
+                            after: 100
+                        }
+                    }),
+                    new Paragraph({
+                        text: "Điểm đánh giá trung bình: " + @ViewBag.DiemDanhGiaTrungBinh.ToString("0.0") + "/5",
+                        spacing: {
+                            after: 100
+                        }
+                    }),
+                    new Paragraph({
+                        text: "Sản phẩm yêu thích: " + @ViewBag.TongSoYeuThich,
+                        spacing: {
+                            after: 100
+                        }
+                    }),
+                    new Paragraph({
+                        text: "Lịch sử xem: " + @ViewBag.TongSoLuotXem,
+                        spacing: {
+                            after: 200
+                        }
+                    }),
+                    // Footer
+                    new Paragraph({
+                        text: "",
+                        spacing: {
+                            after: 200
+                        }
+                    }),
+                    new Paragraph({
+                        text: "Người lập báo cáo",
+                        alignment: AlignmentType.RIGHT,
+                        spacing: {
+                            after: 100
+                        }
+                    }),
+                    new Paragraph({
+                        text: "(Ký, ghi rõ họ tên)",
+                        alignment: AlignmentType.RIGHT,
+                    }),
+                ],
+            }],
+        });
+
+        // Xuất file
+        Packer.toBlob(doc).then(blob => {
+            saveAs(blob, "BaoCaoKhachHang.docx");
+        });
+    }
+</script>
+
+<style>
+    .card {
+        transition: all 0.3s;
+    }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
+        }
+        
+    .rating {
+        display: flex;
+    }
+    
+    .rating i {
+        font-size: 14px;
+        margin-right: 2px;
+    }
+</style> 

@@ -1,0 +1,597 @@
+﻿@model Manager.Models.ChiTietDonHangViewModel
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
+
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3 class="fw-bold">Chi tiết đơn hàng</h3>
+        <a href="@Url.Action("DanhSachDonBanHang")" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Quay lại
+        </a>
+    </div>
+    
+    <!-- Hiển thị thông báo -->
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle-fill me-2"></i> @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+    
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i> @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+    
+    @if (TempData["WarningMessage"] != null)
+    {
+        <div class="alert alert-warning alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-circle-fill me-2"></i> @TempData["WarningMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+    
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb bg-info bg-opacity-25 px-3 py-2 rounded">
+            <li class="breadcrumb-item"><a href="#">Trang chủ</a></li>
+            <li class="breadcrumb-item"><a href="@Url.Action("DanhSachDonBanHang")">Đơn bán hàng</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Chi tiết đơn hàng</li>
+        </ol>
+    </nav>
+    
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header bg-primary bg-opacity-75 text-white">
+                    <h5 class="card-title mb-0">Thông tin đơn hàng</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-2 row">
+                        <label class="col-sm-4 fw-bold">Mã đơn hàng:</label>
+                        <div class="col-sm-8">@Model.DonHang.MaDonHang</div>
+                    </div>
+                    <div class="mb-2 row">
+                        <label class="col-sm-4 fw-bold">Khách hàng:</label>
+                        <div class="col-sm-8">
+                            <span data-bs-toggle="tooltip" title="Mã: @Model.DonHang.MaKhachHang">
+                                @(Model.DonHang.KhachHang != null ? Model.DonHang.KhachHang.HoTen : "Không xác định")
+                            </span>
+                        </div>
+                    </div>
+                    <div class="mb-2 row">
+                        <label class="col-sm-4 fw-bold">Tổng tiền:</label>
+                        <div class="col-sm-8">@((Model.DonHang.TongTien ?? 0).ToString("N0")) ₫</div>
+                    </div>
+                    <div class="mb-2 row">
+                        <label class="col-sm-4 fw-bold">Trạng thái đơn hàng:</label>
+                        <div class="col-sm-8">
+                            @{
+                                var donHangClass = "";
+                                var trangThaiText = "";
+                                switch (Model.DonHang.TrangThaiDonHang)
+                                {
+                                    case "DangXuLy":
+                                        donHangClass = "bg-warning";
+                                        trangThaiText = "Đang xử lý";
+                                        break;
+                                    case "DangGiao":
+                                        donHangClass = "bg-info";
+                                        trangThaiText = "Đang giao";
+                                        break;
+                                    case "HoanThanh":
+                                        donHangClass = "bg-success";
+                                        trangThaiText = "Hoàn thành";
+                                        break;
+                                    case "DaHuy":
+                                        donHangClass = "bg-danger";
+                                        trangThaiText = "Đã hủy";
+                                        break;
+                                }
+                            }
+                            <span class="badge @donHangClass">@trangThaiText</span>
+                        </div>
+                    </div>
+                    <div class="mb-2 row">
+                        <label class="col-sm-4 fw-bold">Trạng thái thanh toán:</label>
+                        <div class="col-sm-8">
+                            @{
+                                var paymentClass = "";
+                                var thanhToanText = "";
+                                switch (Model.DonHang.TrangThaiThanhToan)
+                                {
+                                    case "ChoThanhToan":
+                                        paymentClass = "bg-warning";
+                                        thanhToanText = "Chờ thanh toán";
+                                        break;
+                                    case "DaThanhToan":
+                                        paymentClass = "bg-success";
+                                        thanhToanText = "Đã thanh toán";
+                                        break;
+                                    case "DaHuy":
+                                        paymentClass = "bg-danger";
+                                        thanhToanText = "Đã hủy";
+                                        break;
+                                }
+                            }
+                            <span class="badge @paymentClass">@thanhToanText</span>
+                        </div>
+                    </div>
+                    <div class="mb-2 row">
+                        <label class="col-sm-4 fw-bold">Ngày tạo:</label>
+                        <div class="col-sm-8">@(Convert.ToDateTime(Model.DonHang.NgayTao).ToString("dd/MM/yyyy HH:mm"))</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header bg-success bg-opacity-75 text-white">
+                    <h5 class="card-title mb-0">Thông tin thanh toán</h5>
+                </div>
+                <div class="card-body">
+                    @if (Model.ThanhToan != null)
+                    {
+                        <div class="mb-2 row">
+                            <label class="col-sm-4 fw-bold">Phương thức:</label>
+                            <div class="col-sm-8">
+                                @{
+                                    var phuongThucText = "";
+                                    switch (Model.ThanhToan.PhuongThucThanhToan)
+                                    {
+                                        case "TheTinDung":
+                                            phuongThucText = "Thẻ tín dụng";
+                                            break;
+                                        case "ChuyenKhoan":
+                                            phuongThucText = "Chuyển khoản";
+                                            break;
+                                        case "COD":
+                                            phuongThucText = "Thanh toán khi nhận hàng";
+                                            break;
+                                    }
+                                }
+                                @phuongThucText
+                            </div>
+                        </div>
+                        <div class="mb-2 row">
+                            <label class="col-sm-4 fw-bold">Mã giao dịch:</label>
+                            <div class="col-sm-8">@(string.IsNullOrEmpty(Model.ThanhToan.MaGiaoDich) ? "Chưa có" : Model.ThanhToan.MaGiaoDich)</div>
+                        </div>
+                        <div class="mb-2 row">
+                            <label class="col-sm-4 fw-bold">Trạng thái:</label>
+                            <div class="col-sm-8">
+                                @{
+                                    var thanhToanClass = "";
+                                    var trangThaiThanhToanText = "";
+                                    switch (Model.ThanhToan.TrangThai)
+                                    {
+                                        case "ChoXuLy":
+                                            thanhToanClass = "bg-warning";
+                                            trangThaiThanhToanText = "Chờ xử lý";
+                                            break;
+                                        case "ThanhCong":
+                                            thanhToanClass = "bg-success";
+                                            trangThaiThanhToanText = "Thành công";
+                                            break;
+                                        case "ThatBai":
+                                            thanhToanClass = "bg-danger";
+                                            trangThaiThanhToanText = "Thất bại";
+                                            break;
+                                    }
+                                }
+                                <span class="badge @thanhToanClass">@trangThaiThanhToanText</span>
+                            </div>
+                        </div>
+                        <div class="mb-2 row">
+                            <label class="col-sm-4 fw-bold">Ngày thanh toán:</label>
+                            <div class="col-sm-8">
+                                @(Model.ThanhToan.NgayThanhToan.HasValue 
+                                  ? Convert.ToDateTime(Model.ThanhToan.NgayThanhToan).ToString("dd/MM/yyyy HH:mm") 
+                                  : "Chưa thanh toán")
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <p class="text-muted">Chưa có thông tin thanh toán</p>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-12">
+            <div class="card mb-4">
+                <div class="card-header bg-info bg-opacity-75 text-white d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">Thông tin giao hàng</h5>
+                    @if (Model.GiaoHang != null)
+                    {
+                        <div>
+                            <button type="button" class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#modalCapNhatGiaoHang">
+                                <i class="bi bi-pencil"></i> Cập nhật
+                            </button>
+                        </div>
+                    }
+                </div>
+                <div class="card-body">
+                    @if (Model.GiaoHang != null)
+                    {
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-2 row">
+                                    <label class="col-sm-4 fw-bold">Mã vận đơn:</label>
+                                    <div class="col-sm-8">@(string.IsNullOrEmpty(Model.GiaoHang.MaVanDon) ? "Chưa có" : Model.GiaoHang.MaVanDon)</div>
+                                </div>
+                                <div class="mb-2 row">
+                                    <label class="col-sm-4 fw-bold">Đơn vị vận chuyển:</label>
+                                    <div class="col-sm-8">@(string.IsNullOrEmpty(Model.GiaoHang.DonViVanChuyen) ? "Chưa có" : Model.GiaoHang.DonViVanChuyen)</div>
+                                </div>
+                                <div class="mb-2 row">
+                                    <label class="col-sm-4 fw-bold">Mã giao hàng:</label>
+                                    <div class="col-sm-8">@Model.GiaoHang.MaGiaoHang</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-2 row">
+                                    <label class="col-sm-4 fw-bold">Trạng thái giao hàng:</label>
+                                    <div class="col-sm-8">
+                                        @{
+                                            var giaoHangClass = "";
+                                            var trangThaiGiaoHangText = "";
+                                            switch (Model.GiaoHang.TrangThaiGiaoHang)
+                                            {
+                                                case "ChuanBiHang":
+                                                    giaoHangClass = "bg-secondary";
+                                                    trangThaiGiaoHangText = "Chuẩn bị hàng";
+                                                    break;
+                                                case "DangVanChuyen":
+                                                    giaoHangClass = "bg-primary";
+                                                    trangThaiGiaoHangText = "Đang vận chuyển";
+                                                    break;
+                                                case "DaGiao":
+                                                    giaoHangClass = "bg-success";
+                                                    trangThaiGiaoHangText = "Đã giao";
+                                                    break;
+                                                case "ThatBai":
+                                                    giaoHangClass = "bg-danger";
+                                                    trangThaiGiaoHangText = "Thất bại";
+                                                    break;
+                                                case "BiHoan":
+                                                    giaoHangClass = "bg-warning";
+                                                    trangThaiGiaoHangText = "Bị hoàn";
+                                                    break;
+                                            }
+                                        }
+                                        <span class="badge @giaoHangClass">@trangThaiGiaoHangText</span>
+                                    </div>
+                                </div>
+                                <div class="mb-2 row">
+                                    <label class="col-sm-4 fw-bold">Ngày gửi hàng:</label>
+                                    <div class="col-sm-8">
+                                        @(Model.GiaoHang.NgayGuiHang.HasValue 
+                                          ? Convert.ToDateTime(Model.GiaoHang.NgayGuiHang).ToString("dd/MM/yyyy HH:mm") 
+                                          : "Chưa gửi hàng")
+                                    </div>
+                                </div>
+                                <div class="mb-2 row">
+                                    <label class="col-sm-4 fw-bold">Ngày nhận hàng:</label>
+                                    <div class="col-sm-8">
+                                        @(Model.GiaoHang.NgayNhanHang.HasValue 
+                                          ? Convert.ToDateTime(Model.GiaoHang.NgayNhanHang).ToString("dd/MM/yyyy HH:mm") 
+                                          : "Chưa nhận hàng")
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Thông tin địa chỉ giao hàng -->
+                        if (Model.DiaChiGiaoHang != null)
+                        {
+                            <hr />
+                            <h6 class="fw-bold mb-3">Thông tin địa chỉ nhận hàng</h6>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-2 row">
+                                        <label class="col-sm-4 fw-bold">Người nhận:</label>
+                                        <div class="col-sm-8">@Model.DiaChiGiaoHang.TenNguoiNhan</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-2 row">
+                                        <label class="col-sm-4 fw-bold">Số điện thoại:</label>
+                                        <div class="col-sm-8">@Model.DiaChiGiaoHang.SoDienThoai</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-12">
+                                    <div class="mb-2 row">
+                                        <label class="col-sm-2 fw-bold">Địa chỉ đầy đủ:</label>
+                                        <div class="col-sm-10">@Model.DiaChiGiaoHang.DiaChiDayDu</div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <p class="text-muted">Chưa có thông tin giao hàng</p>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header bg-dark bg-opacity-75 text-white">
+            <h5 class="card-title mb-0">Chi tiết đơn hàng</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered table-striped align-middle">
+                    <thead class="table-light">
+                        <tr class="text-center">
+                            <th>STT</th>
+                            <th>Biến thể</th>
+                            <th>Số lượng</th>
+                            <th>Đơn giá</th>
+                            <th>Thành tiền</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @{
+                            int stt = 1;
+                            double? tongTien = 0;
+                        }
+                        @foreach (var item in Model.ChiTietDonHangs)
+                        {
+                            var thanhTien = item.SoLuong * item.DonGia;
+                            tongTien += thanhTien;
+                            var bienThe = item.BienTheHangHoa;
+                            var tenBienThe = "";
+
+                            if (bienThe != null)
+                            {
+                                var tenSanPham = bienThe.HangHoa != null ? bienThe.HangHoa.TenHangHoa : "";
+                                var thongTinBienThe = new List<string>();
+
+                                if (!string.IsNullOrEmpty(bienThe.MauSac)) { thongTinBienThe.Add(bienThe.MauSac); }
+                                if (!string.IsNullOrEmpty(bienThe.DungLuong)) { thongTinBienThe.Add(bienThe.DungLuong); }
+                                if (!string.IsNullOrEmpty(bienThe.CPU)) { thongTinBienThe.Add(bienThe.CPU); }
+                                if (!string.IsNullOrEmpty(bienThe.RAM)) { thongTinBienThe.Add(bienThe.RAM); }
+                                if (!string.IsNullOrEmpty(bienThe.KichThuocManHinh)) { thongTinBienThe.Add(bienThe.KichThuocManHinh); }
+
+                                tenBienThe = string.Format("{0} ({1})", tenSanPham, string.Join(", ", thongTinBienThe));
+                            }
+
+                            <tr>
+                                <td class="text-center">@stt</td>
+                                <td>
+                                    <span data-bs-toggle="tooltip" title="@tenBienThe">
+                                        @item.MaBienThe
+                                    </span>
+                                </td>
+                                <td class="text-center">@item.SoLuong</td>
+                                <td class="text-end">@((item.DonGia ?? 0).ToString("N0")) ₫</td>
+                                <td class="text-end">@((thanhTien ?? 0).ToString("N0")) ₫</td>
+                            </tr>
+                            stt++;
+                        }
+                    </tbody>
+                    <tfoot>
+                        <tr class="fw-bold">
+                            <td colspan="4" class="text-end">Tổng cộng:</td>
+                            <td class="text-end">@((tongTien ?? 0).ToString("N0")) ₫</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Cập Nhật Giao Hàng -->
+@if (Model.GiaoHang != null)
+{
+    <div class="modal fade" id="modalCapNhatGiaoHang" tabindex="-1" aria-labelledby="modalCapNhatGiaoHangLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-warning">
+                    <h5 class="modal-title" id="modalCapNhatGiaoHangLabel">Cập nhật thông tin giao hàng</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form action="@Url.Action("CapNhatGiaoHang", "Home")" method="post" id="formCapNhatGiaoHang">
+                    <div class="modal-body">
+                        <input type="hidden" name="MaGiaoHang" value="@Model.GiaoHang.MaGiaoHang" />
+                        <input type="hidden" name="MaDonHang" value="@Model.DonHang.MaDonHang" />
+                        <input type="hidden" id="oldDonViVanChuyen" value="@Model.GiaoHang.DonViVanChuyen" />
+                        <input type="hidden" name="MaDiaChi" value="@Model.GiaoHang.MaDiaChi" />
+                        <input type="hidden" name="NgayGuiHang" value="@(Model.GiaoHang.NgayGuiHang.HasValue ? Model.GiaoHang.NgayGuiHang.Value.ToString("yyyy-MM-ddTHH:mm") : "")" />
+                        <input type="hidden" name="NgayNhanHang" value="@(Model.GiaoHang.NgayNhanHang.HasValue ? Model.GiaoHang.NgayNhanHang.Value.ToString("yyyy-MM-ddTHH:mm") : "")" />
+                        
+                        <div class="mb-3 row">
+                            <label class="col-sm-3 col-form-label">Mã vận đơn:</label>
+                            <div class="col-sm-9">
+                                <input type="text" class="form-control" name="MaVanDon" id="maVanDon" value="@Model.GiaoHang.MaVanDon" readonly />
+                                <div id="maVanDonWarning" class="text-danger mt-1" style="display: none;">
+                                    <small><i class="bi bi-exclamation-circle"></i> Đơn vị vận chuyển đã thay đổi, vui lòng cập nhật mã vận đơn mới</small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3 row">
+                            <label class="col-sm-3 col-form-label">Đơn vị vận chuyển:</label>
+                            <div class="col-sm-9">
+                                <input type="text" class="form-control" name="DonViVanChuyen" id="donViVanChuyen" value="@Model.GiaoHang.DonViVanChuyen" />
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3 row">
+                            <label class="col-sm-3 col-form-label">Trạng thái giao hàng:</label>
+                            <div class="col-sm-9">
+                                <select class="form-select" name="TrangThaiGiaoHang" id="trangThaiGiaoHang">
+                                    <option value="ChuanBiHang" @(Model.GiaoHang.TrangThaiGiaoHang == "ChuanBiHang" ? "selected" : "")>Chuẩn bị hàng</option>
+                                    <option value="DangVanChuyen" @(Model.GiaoHang.TrangThaiGiaoHang == "DangVanChuyen" ? "selected" : "")>Đang vận chuyển</option>
+                                    <option value="DaGiao" @(Model.GiaoHang.TrangThaiGiaoHang == "DaGiao" ? "selected" : "")>Đã giao</option>
+                                    <option value="ThatBai" @(Model.GiaoHang.TrangThaiGiaoHang == "ThatBai" ? "selected" : "")>Thất bại</option>
+                                    <option value="BiHoan" @(Model.GiaoHang.TrangThaiGiaoHang == "BiHoan" ? "selected" : "")>Bị hoàn</option>
+                                </select>
+                                <div id="ngayCapNhatInfo" class="text-info mt-1" style="display: none;">
+                                    <small><i class="bi bi-info-circle"></i> <span id="ngayCapNhatMessage"></span></small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3 row">
+                            <label class="col-sm-3 col-form-label">Địa chỉ giao hàng:</label>
+                            <div class="col-sm-9">
+                                @if (Model.DiaChiGiaoHang != null)
+                                {
+                                    <p class="form-control-plaintext">
+                                        @Model.DiaChiGiaoHang.TenNguoiNhan - @Model.DiaChiGiaoHang.SoDienThoai - @Model.DiaChiGiaoHang.DiaChiDayDu
+                                    </p>
+                                }
+                                else
+                                {
+                                    <p class="form-control-plaintext text-muted">Không có thông tin địa chỉ</p>
+                                }
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3 row">
+                            <label class="col-sm-3 col-form-label">Ngày gửi hàng:</label>
+                            <div class="col-sm-9">
+                                <p class="form-control-plaintext">
+                                    @(Model.GiaoHang.NgayGuiHang.HasValue ? Model.GiaoHang.NgayGuiHang.Value.ToString("dd/MM/yyyy HH:mm") : "Chưa gửi hàng")
+                                </p>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3 row">
+                            <label class="col-sm-3 col-form-label">Ngày nhận hàng:</label>
+                            <div class="col-sm-9">
+                                <p class="form-control-plaintext">
+                                    @(Model.GiaoHang.NgayNhanHang.HasValue ? Model.GiaoHang.NgayNhanHang.Value.ToString("dd/MM/yyyy HH:mm") : "Chưa nhận hàng")
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                        <button type="submit" class="btn btn-warning">Cập nhật</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+}
+
+<script>
+    $(document).ready(function() {
+        // Kích hoạt tooltip
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl)
+        });
+        
+        // Lưu trạng thái ban đầu khi mở modal
+        var trangThaiGiaoHangBanDau = "";
+        
+        // Đảm bảo dữ liệu được tải khi mở modal
+        $('#modalCapNhatGiaoHang').on('shown.bs.modal', function() {
+            // Thiết lập lại trạng thái ban đầu của cảnh báo mã vận đơn
+            $("#maVanDonWarning").hide();
+            $("#maVanDon").removeClass("border-warning");
+            
+            // Lưu trạng thái giao hàng ban đầu để xác định khi nào có thay đổi
+            trangThaiGiaoHangBanDau = $("#trangThaiGiaoHang").val();
+            
+            // Ẩn thông báo thông tin ngày khi mới mở modal
+            $("#ngayCapNhatInfo").hide();
+
+            // Đảm bảo trường trạng thái giao hàng được chọn đúng
+            var trangThai = "@Model.GiaoHang?.TrangThaiGiaoHang";
+            if (trangThai) {
+                $("select[name='TrangThaiGiaoHang']").val(trangThai);
+            }
+        });
+
+        // Kiểm tra thay đổi đơn vị vận chuyển
+        $("#donViVanChuyen").on("input", function() {
+            var oldValue = $("#oldDonViVanChuyen").val();
+            var currentValue = $(this).val();
+
+            if (oldValue && currentValue && oldValue !== currentValue) {
+                // Hiển thị cảnh báo về mã vận đơn
+                $("#maVanDonWarning").show();
+                $("#maVanDon").addClass("border-warning");
+            } else {
+                $("#maVanDonWarning").hide();
+                $("#maVanDon").removeClass("border-warning");
+            }
+        });
+        
+        // Kiểm tra thay đổi trạng thái giao hàng
+        $("#trangThaiGiaoHang").on("change", function() {
+            var oldValue = trangThaiGiaoHangBanDau;
+            var currentValue = $(this).val();
+            
+            // Reset thông báo
+            $("#ngayCapNhatInfo").hide();
+            
+            // Kiểm tra nếu có thay đổi
+            if (oldValue && currentValue && oldValue !== currentValue) {
+                // Hiển thị thông báo tương ứng với trạng thái mới
+                if (currentValue === "DangVanChuyen") {
+                    $("#ngayCapNhatMessage").text("Khi cập nhật, Ngày gửi hàng sẽ được đặt thành ngày hôm nay.");
+                    $("#ngayCapNhatInfo").show();
+                } else if (currentValue === "DaGiao") {
+                    $("#ngayCapNhatMessage").text("Khi cập nhật, Ngày nhận hàng sẽ được đặt thành ngày hôm nay.");
+                    $("#ngayCapNhatInfo").show();
+                }
+            }
+        });
+
+        // Kiểm tra trước khi submit form
+        $("#formCapNhatGiaoHang").on("submit", function(e) {
+            var oldDonViVanChuyen = $("#oldDonViVanChuyen").val();
+            var newDonViVanChuyen = $("#donViVanChuyen").val();
+
+            // Nếu đơn vị vận chuyển thay đổi, hiển thị thông báo xác nhận
+            if (oldDonViVanChuyen && newDonViVanChuyen && oldDonViVanChuyen !== newDonViVanChuyen) {
+                if (!confirm("Bạn đang thay đổi đơn vị vận chuyển. Bạn có chắc chắn muốn tiếp tục?")) {
+                    e.preventDefault(); // Ngăn form submit nếu người dùng không xác nhận
+                    return false;
+                }
+            }
+            
+            // Xác nhận cập nhật nếu thay đổi trạng thái giao hàng
+            var oldTrangThaiGiaoHang = trangThaiGiaoHangBanDau;
+            var newTrangThaiGiaoHang = $("#trangThaiGiaoHang").val();
+            
+            if (oldTrangThaiGiaoHang && newTrangThaiGiaoHang && oldTrangThaiGiaoHang !== newTrangThaiGiaoHang) {
+                var confirmMessage = "Bạn đang thay đổi trạng thái giao hàng";
+                
+                if (newTrangThaiGiaoHang === "DangVanChuyen") {
+                    confirmMessage += ", Ngày gửi hàng sẽ được cập nhật thành ngày hôm nay";
+                } else if (newTrangThaiGiaoHang === "DaGiao") {
+                    confirmMessage += ", Ngày nhận hàng sẽ được cập nhật thành ngày hôm nay";
+                }
+                
+                confirmMessage += ". Bạn có chắc chắn muốn tiếp tục?";
+                
+                if (!confirm(confirmMessage)) {
+                    e.preventDefault();
+                    return false;
+                }
+            }
+        });
+    });
+</script>

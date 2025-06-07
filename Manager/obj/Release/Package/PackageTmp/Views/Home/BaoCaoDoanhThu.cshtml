@@ -1,0 +1,545 @@
+﻿@model Manager.Models.BaoCaoDoanhThuViewModel
+@{
+    ViewBag.Title = "Báo cáo doanh thu";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@using System.Web.Helpers;
+
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold text-primary">Báo cáo doanh thu & lợi nhuận</h2>
+            <p class="text-muted">Thống kê doanh thu và lợi nhuận của cửa hàng</p>
+        </div>
+        <div>
+            <button class="btn btn-success me-2" onclick="exportToExcel()">
+                <i class="bi bi-file-earmark-excel me-2"></i>Xuất Excel
+            </button>
+            <button class="btn btn-primary" onclick="exportToWord()">
+                <i class="bi bi-file-earmark-word me-2"></i>Xuất Word
+            </button>
+        </div>
+    </div>
+
+    <!-- Thẻ thống kê nhanh -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between mb-2">
+                        <div>
+                            <h6 class="text-muted mb-1">Doanh thu hôm nay</h6>
+                            <h3 class="fw-bold mb-0">@string.Format("{0:N0}", Model.DoanhThuHomNay)đ</h3>
+                        </div>
+                        <div class="bg-primary bg-opacity-10 rounded-circle p-3">
+                            <i class="bi bi-calendar-day text-primary fs-4"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between mb-2">
+                        <div>
+                            <h6 class="text-muted mb-1">Lợi nhuận hôm nay</h6>
+                            <h3 class="fw-bold mb-0">@string.Format("{0:N0}", Model.LoiNhuanHomNay)đ</h3>
+                        </div>
+                        <div class="bg-success bg-opacity-10 rounded-circle p-3">
+                            <i class="bi bi-graph-up-arrow text-success fs-4"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between mb-2">
+                        <div>
+                            <h6 class="text-muted mb-1">Doanh thu tháng này</h6>
+                            <h3 class="fw-bold mb-0">@string.Format("{0:N0}", Model.DoanhThuThangNay)đ</h3>
+                        </div>
+                        <div class="bg-warning bg-opacity-10 rounded-circle p-3">
+                            <i class="bi bi-calendar-month text-warning fs-4"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between mb-2">
+                        <div>
+                            <h6 class="text-muted mb-1">Lợi nhuận tháng này</h6>
+                            <h3 class="fw-bold mb-0">@string.Format("{0:N0}", Model.LoiNhuanThangNay)đ</h3>
+                        </div>
+                        <div class="bg-info bg-opacity-10 rounded-circle p-3">
+                            <i class="bi bi-cash-stack text-info fs-4"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Biểu đồ doanh thu và lợi nhuận theo tháng -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-white border-0 pt-4 pb-0">
+                    <h5 class="card-title fw-bold">Doanh thu & Lợi nhuận theo tháng</h5>
+                </div>
+                <div class="card-body p-4">
+                    <canvas id="revenueChart" style="height: 300px;"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-white border-0 pt-4 pb-0">
+                    <h5 class="card-title fw-bold">Tỷ suất lợi nhuận</h5>
+                </div>
+                <div class="card-body p-4">
+                    <canvas id="profitMarginChart" style="height: 300px;"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bảng chi tiết doanh thu và lợi nhuận theo danh mục -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white pt-4 pb-3 border-0">
+                    <h5 class="card-title fw-bold">Chi tiết doanh thu & lợi nhuận theo danh mục</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="ps-4">Danh mục</th>
+                                    <th>Doanh thu</th>
+                                    <th>Chi phí</th>
+                                    <th>Lợi nhuận</th>
+                                    <th>Tỷ suất lợi nhuận</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model.ChiTietDoanhThuTheoDanhMuc)
+                                {
+                                    <tr>
+                                        <td class="ps-4">@item.TenDanhMuc</td>
+                                        <td>@string.Format("{0:N0}", item.DoanhThu)đ</td>
+                                        <td>@string.Format("{0:N0}", item.ChiPhi)đ</td>
+                                        <td>@string.Format("{0:N0}", item.LoiNhuan)đ</td>
+                                        <td>@string.Format("{0:N1}", item.TySuatLoiNhuan)%</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Thêm Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<!-- Thêm các thư viện cần thiết -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://unpkg.com/docx@7.8.2/build/index.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Biểu đồ doanh thu và lợi nhuận theo tháng
+        var revenueCtx = document.getElementById('revenueChart').getContext('2d');
+        var revenueChart = new Chart(revenueCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Tháng 1', 'Tháng 2', 'Tháng 3', 'Tháng 4', 'Tháng 5', 'Tháng 6', 'Tháng 7', 'Tháng 8', 'Tháng 9', 'Tháng 10', 'Tháng 11', 'Tháng 12'],
+                datasets: [{
+                    label: 'Doanh thu',
+                    data: @Html.Raw(Json.Encode(Model.DoanhThuTheoThang)),
+                    backgroundColor: 'rgba(54, 162, 235, 0.5)',
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    borderWidth: 1
+                },
+                {
+                    label: 'Lợi nhuận',
+                    data: @Html.Raw(Json.Encode(Model.LoiNhuanTheoThang)),
+                    backgroundColor: 'rgba(75, 192, 192, 0.5)',
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return value.toLocaleString('vi-VN') + 'đ';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Biểu đồ tỷ suất lợi nhuận
+        var marginCtx = document.getElementById('profitMarginChart').getContext('2d');
+        var marginChart = new Chart(marginCtx, {
+            type: 'line',
+            data: {
+                labels: ['Tháng 1', 'Tháng 2', 'Tháng 3', 'Tháng 4', 'Tháng 5', 'Tháng 6', 'Tháng 7', 'Tháng 8', 'Tháng 9', 'Tháng 10', 'Tháng 11', 'Tháng 12'],
+                datasets: [{
+                    label: 'Tỷ suất lợi nhuận (%)',
+                    data: @Html.Raw(Json.Encode(Model.TySuatLoiNhuanTheoThang)),
+                    borderColor: 'rgba(255, 99, 132, 1)',
+                    backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                    fill: true,
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return value + '%';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    });
+
+    // Hàm xuất file Excel
+    function exportToExcel() {
+        // Tạo workbook mới
+        const wb = XLSX.utils.book_new();
+        
+        // Tạo worksheet mới
+        const ws = XLSX.utils.aoa_to_sheet([
+            // Header
+            ["", "", "", "", "", ""],
+            ["Tên cửa hàng: " + "PrimeShop", "", "", "", "", "CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM"],
+            ["Địa chỉ: " + "140 Lê Trọng Tấn, Phường Tây Thạnh, Quận Tân Phú, TP.HCM", "", "", "", "", "Độc lập - Tự do - Hạnh phúc"],
+            ["Người xuất báo cáo: " + "................", "", "", "", "", "Ngày: " + new Date().toLocaleDateString('vi-VN')],
+            ["", "", "", "", "", ""],
+            // Tiêu đề báo cáo
+            ["", "", "BÁO CÁO DOANH THU & LỢI NHUẬN", "", "", ""],
+            ["", "", "Thống kê doanh thu và lợi nhuận của cửa hàng", "", "", ""],
+            ["", "", "", "", "", ""],
+            // Header bảng
+            ["","STT", "Danh mục", "Doanh thu", "Chi phí", "Lợi nhuận", "Tỷ suất lợi nhuận"],
+            // Dữ liệu bảng
+            ...Array.from(document.querySelectorAll('table tbody tr')).map((row, index) => {
+                return [
+                    "",
+                    index + 1,
+                    ...Array.from(row.cells).map(cell => cell.textContent)
+                ];
+            }),
+            // Footer
+            ["", "", "", "", "", ""],
+            ["", "", "", "", "", "Người lập báo cáo"],
+            ["", "", "", "", "", "(Ký, ghi rõ họ tên)"]
+        ]);
+
+        // Thiết lập độ rộng cột
+        const wscols = [
+            {wch: 5},  // Cột trống
+            {wch: 5},  // STT
+            {wch: 30}, // Danh mục
+            {wch: 15}, // Doanh thu
+            {wch: 15}, // Chi phí
+            {wch: 15}, // Lợi nhuận
+            {wch: 20}  // Tỷ suất lợi nhuận
+        ];
+        ws['!cols'] = wscols;
+
+        // Thiết lập style cho các ô
+        // Merge cells cho tiêu đề
+        ws['!merges'] = [
+            {s: {r: 1, c: 0}, e: {r: 1, c: 3}}, // Tên cửa hàng
+            {s: {r: 2, c: 0}, e: {r: 2, c: 3}}, // Địa chỉ
+            {s: {r: 3, c: 0}, e: {r: 3, c: 3}}, // Người xuất báo cáo
+            {s: {r: 5, c: 2}, e: {r: 5, c: 4}}, // Tiêu đề báo cáo
+            {s: {r: 6, c: 2}, e: {r: 6, c: 4}}  // Mô tả báo cáo
+        ];
+
+        // Thêm style cho các ô
+        const range = XLSX.utils.decode_range(ws['!ref']);
+        for(let R = range.s.r; R <= range.e.r; ++R) {
+            for(let C = range.s.c; C <= range.e.c; ++C) {
+                const cell_address = {c: C, r: R};
+                const cell_ref = XLSX.utils.encode_cell(cell_address);
+                
+                if(!ws[cell_ref]) continue;
+
+                // Style mặc định
+                ws[cell_ref].s = {
+                    font: { sz: 11, name: "Arial" },
+                    alignment: { vertical: "center", horizontal: "left" },
+                    border: {
+                        top: { style: "thin" },
+                        bottom: { style: "thin" },
+                        left: { style: "thin" },
+                        right: { style: "thin" }
+                    }
+                };
+
+                // Style cho header
+                if(R === 8) {
+                    ws[cell_ref].s = {
+                        font: { sz: 11, name: "Arial", bold: true, color: { rgb: "FFFFFF" } },
+                        fill: { fgColor: { rgb: "4472C4" } },
+                        alignment: { vertical: "center", horizontal: "center" },
+                        border: {
+                            top: { style: "thin" },
+                            bottom: { style: "thin" },
+                            left: { style: "thin" },
+                            right: { style: "thin" }
+                        }
+                    };
+                }
+
+                // Style cho tiêu đề báo cáo
+                if(R === 5) {
+                    ws[cell_ref].s = {
+                        font: { sz: 14, name: "Arial", bold: true },
+                        alignment: { vertical: "center", horizontal: "center" }
+                    };
+                }
+
+                // Style cho mô tả báo cáo
+                if(R === 6) {
+                    ws[cell_ref].s = {
+                        font: { sz: 12, name: "Arial", italic: true },
+                        alignment: { vertical: "center", horizontal: "center" }
+                    };
+                }
+
+                // Style cho dữ liệu số
+                if(R > 8 && (C === 3 || C === 4 || C === 5)) {
+                    ws[cell_ref].s = {
+                        font: { sz: 11, name: "Arial" },
+                        alignment: { vertical: "center", horizontal: "right" },
+                        numFmt: "#,##0",
+                        border: {
+                            top: { style: "thin" },
+                            bottom: { style: "thin" },
+                            left: { style: "thin" },
+                            right: { style: "thin" }
+                        }
+                    };
+                }
+
+                // Style cho tỷ suất lợi nhuận
+                if(R > 8 && C === 6) {
+                    ws[cell_ref].s = {
+                        font: { sz: 11, name: "Arial" },
+                        alignment: { vertical: "center", horizontal: "right" },
+                        numFmt: "0.0%",
+                        border: {
+                            top: { style: "thin" },
+                            bottom: { style: "thin" },
+                            left: { style: "thin" },
+                            right: { style: "thin" }
+                        }
+                    };
+                }
+            }
+        }
+
+        // Thêm worksheet vào workbook
+        XLSX.utils.book_append_sheet(wb, ws, "Báo cáo doanh thu");
+        
+        // Xuất file
+        XLSX.writeFile(wb, "BaoCaoDoanhThu.xlsx");
+    }
+
+    // Hàm xuất file Word
+    function exportToWord() {
+        const { Document, Paragraph, Table, TableRow, TableCell, WidthType, AlignmentType, HeadingLevel, Packer } = docx;
+
+        // Tạo document mới
+        const doc = new Document({
+            sections: [{
+                properties: {},
+                children: [
+                    // Header
+                    new Paragraph({
+                        text: "CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM",
+                        alignment: AlignmentType.CENTER,
+                        spacing: {
+                            after: 200
+                        }
+                    }),
+                    new Paragraph({
+                        text: "Độc lập - Tự do - Hạnh phúc",
+                        alignment: AlignmentType.CENTER,
+                        spacing: {
+                            after: 200
+                        }
+                    }),
+                    // Thông tin cửa hàng
+                    new Paragraph({
+                        text: "Tên cửa hàng: PrimeShop",
+                        spacing: {
+                            after: 100
+                        }
+                    }),
+                    new Paragraph({
+                        text: "Địa chỉ: 140 Lê Trọng Tấn, Phường Tây Thạnh, Quận Tân Phú, TP.HCM",
+                        spacing: {
+                            after: 100
+                        }
+                    }),
+                    new Paragraph({
+                        text: "Người xuất báo cáo: " + "................",
+                        spacing: {
+                            after: 200
+                        }
+                    }),
+                    // Tiêu đề báo cáo
+                    new Paragraph({
+                        text: "BÁO CÁO DOANH THU & LỢI NHUẬN",
+                        heading: HeadingLevel.HEADING_1,
+                        alignment: AlignmentType.CENTER,
+                        spacing: {
+                            after: 200
+                        }
+                    }),
+                    new Paragraph({
+                        text: "Thống kê doanh thu và lợi nhuận của cửa hàng",
+                        alignment: AlignmentType.CENTER,
+                        spacing: {
+                            after: 200
+                        }
+                    }),
+                    // Bảng dữ liệu
+                    new Table({
+                        width: {
+                            size: 100,
+                            type: WidthType.PERCENTAGE,
+                        },
+                        rows: [
+                            // Header
+                            new TableRow({
+                                children: [
+                                    new TableCell({
+                                        children: [new Paragraph("STT")],
+                                        width: {
+                                            size: 10,
+                                            type: WidthType.PERCENTAGE,
+                                        },
+                                    }),
+                                    new TableCell({
+                                        children: [new Paragraph("Danh mục")],
+                                        width: {
+                                            size: 30,
+                                            type: WidthType.PERCENTAGE,
+                                        },
+                                    }),
+                                    new TableCell({
+                                        children: [new Paragraph("Doanh thu")],
+                                        width: {
+                                            size: 15,
+                                            type: WidthType.PERCENTAGE,
+                                        },
+                                    }),
+                                    new TableCell({
+                                        children: [new Paragraph("Chi phí")],
+                                        width: {
+                                            size: 15,
+                                            type: WidthType.PERCENTAGE,
+                                        },
+                                    }),
+                                    new TableCell({
+                                        children: [new Paragraph("Lợi nhuận")],
+                                        width: {
+                                            size: 15,
+                                            type: WidthType.PERCENTAGE,
+                                        },
+                                    }),
+                                    new TableCell({
+                                        children: [new Paragraph("Tỷ suất lợi nhuận")],
+                                        width: {
+                                            size: 15,
+                                            type: WidthType.PERCENTAGE,
+                                        },
+                                    }),
+                                ],
+                            }),
+                            // Dữ liệu
+                            ...Array.from(document.querySelectorAll('table tbody tr')).map((row, index) => {
+                                return new TableRow({
+                                    children: [
+                                        new TableCell({
+                                            children: [new Paragraph((index + 1).toString())],
+                                        }),
+                                        ...Array.from(row.cells).map(cell => {
+                                            return new TableCell({
+                                                children: [new Paragraph(cell.textContent)],
+                                            });
+                                        }),
+                                    ],
+                                });
+                            }),
+                        ],
+                    }),
+                    // Footer
+                    new Paragraph({
+                        text: "",
+                        spacing: {
+                            after: 200
+                        }
+                    }),
+                    new Paragraph({
+                        text: "Người lập báo cáo",
+                        alignment: AlignmentType.RIGHT,
+                        spacing: {
+                            after: 100
+                        }
+                    }),
+                    new Paragraph({
+                        text: "(Ký, ghi rõ họ tên)",
+                        alignment: AlignmentType.RIGHT,
+                    }),
+                ],
+            }],
+        });
+
+        // Xuất file
+        Packer.toBlob(doc).then(blob => {
+            saveAs(blob, "BaoCaoDoanhThu.docx");
+        });
+    }
+</script>
+
+<style>
+    .card {
+        transition: all 0.3s;
+    }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
+        }
+</style> 

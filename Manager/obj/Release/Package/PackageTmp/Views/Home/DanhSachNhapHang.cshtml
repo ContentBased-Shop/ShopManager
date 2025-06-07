@@ -1,0 +1,812 @@
+﻿@model List<Manager.Models.NhapHang>
+@{
+    var nhapHangSapXep = Model.OrderByDescending(n => n.NgayNhap).ToList();
+    var pageSize = 10; // Số phiếu nhập trên mỗi trang
+    var currentPage = Request.QueryString["page"] != null ? int.Parse(Request.QueryString["page"]) : 1;
+    var totalItems = nhapHangSapXep.Count;
+    var totalPages = (int)Math.Ceiling((double)totalItems / pageSize);
+    var itemsToShow = nhapHangSapXep.Skip((currentPage - 1) * pageSize).Take(pageSize).ToList();
+}
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
+
+<div class="container py-4">
+    <h3 class="fw-bold mb-3">Danh sách phiếu nhập hàng</h3>
+
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb bg-info bg-opacity-25 px-3 py-2 rounded">
+            <li class="breadcrumb-item"><a href="#">Trang chủ</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Phiếu nhập hàng</li>
+        </ol>
+    </nav>
+
+    <!-- Action Bar -->
+    <div class="d-flex flex-wrap align-items-center mb-3 gap-2">
+        <a href="#" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#createImportModal">
+            <i class="bi bi-plus-circle"></i> Tạo phiếu nhập
+        </a>
+        <div class="d-flex flex-grow-1 gap-2">
+            <input type="text" class="form-control" id="searchInput" placeholder="Tìm kiếm theo mã phiếu hoặc nhà cung cấp..." />
+            <button class="btn btn-primary" id="btnSearch"><i class="bi bi-search"></i> Tìm</button>
+        </div>
+        <button id="btnXoaNhieu" class="btn btn-danger d-none" onclick="xoaNhieu()">
+            <i class="bi bi-trash3"></i> Xóa đã chọn
+        </button>
+    </div>
+
+    <!-- Bộ lọc mở rộng -->
+    <div class="card mb-3">
+        <div class="card-header bg-light">
+            <a class="btn btn-sm p-0 text-primary" data-bs-toggle="collapse" href="#filterCollapse">
+                <i class="bi bi-funnel"></i> Bộ lọc nâng cao
+            </a>
+        </div>
+        <div class="collapse" id="filterCollapse">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3 mb-2">
+                        <label class="form-label">Từ ngày</label>
+                        <input type="date" class="form-control" id="filterFromDate" />
+                    </div>
+                    <div class="col-md-3 mb-2">
+                        <label class="form-label">Đến ngày</label>
+                        <input type="date" class="form-control" id="filterToDate" />
+                    </div>
+                    <div class="col-md-3 mb-2">
+                        <label class="form-label">Giá trị từ</label>
+                        <input type="number" class="form-control" id="filterMinValue" placeholder="VNĐ" />
+                    </div>
+                    <div class="col-md-3 mb-2">
+                        <label class="form-label">Giá trị đến</label>
+                        <input type="number" class="form-control" id="filterMaxValue" placeholder="VNĐ" />
+                    </div>
+                    <div class="col-md-3 mb-2">
+                        <label class="form-label">Nhân viên</label>
+                        <select class="form-select" id="filterEmployee">
+                            <option value="">-- Tất cả nhân viên --</option>
+                            @foreach (var nv in ViewBag.NhanViens ?? new List<Manager.Models.NhanVien>())
+                            {
+                                <option value="@nv.MaNhanVien">@nv.HoTen</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="col-md-3 mb-2">
+                        <label class="form-label">Trạng thái thanh toán</label>
+                        <select class="form-select" id="filterPaymentStatus">
+                            <option value="">-- Tất cả --</option>
+                            <option value="Chuathanhtoan">Chưa thanh toán</option>
+                            <option value="Dathanhtoanmotphan">Đã thanh toán một phần</option>
+                            <option value="Dathanhtoanhet">Đã thanh toán hết</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="mt-2">
+                    <button class="btn btn-primary" id="btnApplyFilter">
+                        <i class="bi bi-filter"></i> Áp dụng lọc
+                    </button>
+                    <button class="btn btn-outline-secondary" id="btnResetFilter">
+                        <i class="bi bi-arrow-counterclockwise"></i> Đặt lại
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Table -->
+    <div class="table-responsive">
+        <table class="table table-bordered align-middle" id="importTable">
+            <thead class="table-light text-center">
+                <tr>
+                    <th style="width: 50px;">
+                        <input type="checkbox" id="checkAll" />
+                    </th>
+                    <th>Mã nhập hàng</th>
+                    <th>Nhà cung cấp</th>
+                    <th>Nhân viên</th>
+                    <th>Tổng tiền</th>
+                    <th>Đã thanh toán</th>
+                    <th>Còn lại</th>
+                    <th>Trạng thái</th>
+                    <th>Ngày nhập</th>
+                    <th>Thao tác</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in itemsToShow)
+                {
+                    <tr>
+                        <td class="text-center">
+                            <input type="checkbox" class="check-item" value="@item.MaNhapHang" />
+                        </td>
+                        <td>@item.MaNhapHang</td>
+                        <td>@(item.NhaCungCap != null ? string.Format("{0} - {1}", item.NhaCungCap.TenNhaCungCap, item.MaNhaCungCap) : item.MaNhaCungCap)</td>
+                        <td>@(item.NhanVien != null ? string.Format("{0} - {1}", item.NhanVien.HoTen, item.MaNhanVien) : item.MaNhanVien)</td>
+                        <td class="text-end">@String.Format("{0:N0}₫", item.TongTien)</td>
+                        <td class="text-end">@String.Format("{0:N0}₫", item.DaThanhToan)</td>
+                        <td class="text-end">@String.Format("{0:N0}₫", item.TongTien - item.DaThanhToan)</td>
+                        <td class="text-center">
+                            @switch (item.TrangThai)
+                            {
+                                case "Chuathanhtoan":
+                                    <span class="badge bg-danger">Chưa thanh toán</span>
+                                    break;
+                                case "Dathanhtoanmotphan":
+                                    <span class="badge bg-warning text-dark">Đã thanh toán một phần</span>
+                                    break;
+                                case "Dathanhtoanhet":
+                                    <span class="badge bg-success">Đã thanh toán hết</span>
+                                    break;
+                                default:
+                                    <span class="badge bg-secondary">@item.TrangThai</span>
+                                    break;
+                            }
+                        </td>
+                        <td>@item.NgayNhap.Value.ToString("dd/MM/yyyy HH:mm")</td>
+                        <td class="text-center">
+                            <a href="@Url.Action("ChiTietNhapHang", new { id = item.MaNhapHang })" class="btn btn-sm btn-info">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                            <a href="#" class="btn btn-sm btn-primary btn-edit" data-id="@item.MaNhapHang" data-bs-toggle="modal" data-bs-target="#editImportModal">
+                                <i class="bi bi-pencil-square"></i>
+                            </a>
+                            <a href="#" class="btn btn-sm btn-warning btn-delete" data-id="@item.MaNhapHang" data-bs-toggle="modal" data-bs-target="#confirmDeleteModal">
+                                <i class="bi bi-trash3"></i>
+                            </a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Phân trang -->
+    <nav aria-label="Page navigation" class="mt-3">
+        <ul class="pagination justify-content-center">
+            <li class="page-item @(currentPage == 1 ? "disabled" : "")">
+                <a class="page-link" href="@Url.Action("DanhSachNhapHang", new { page = 1 })" aria-label="First">
+                    <span aria-hidden="true">&laquo;&laquo;</span>
+                </a>
+            </li>
+            <li class="page-item @(currentPage == 1 ? "disabled" : "")">
+                <a class="page-link" href="@Url.Action("DanhSachNhapHang", new { page = currentPage - 1 })" aria-label="Previous">
+                    <span aria-hidden="true">&laquo;</span>
+                </a>
+            </li>
+            
+            @for (int i = Math.Max(1, currentPage - 2); i <= Math.Min(totalPages, currentPage + 2); i++)
+            {
+                <li class="page-item @(i == currentPage ? "active" : "")">
+                    <a class="page-link" href="@Url.Action("DanhSachNhapHang", new { page = i })">@i</a>
+                </li>
+            }
+            
+            <li class="page-item @(currentPage == totalPages ? "disabled" : "")">
+                <a class="page-link" href="@Url.Action("DanhSachNhapHang", new { page = currentPage + 1 })" aria-label="Next">
+                    <span aria-hidden="true">&raquo;</span>
+                </a>
+            </li>
+            <li class="page-item @(currentPage == totalPages ? "disabled" : "")">
+                <a class="page-link" href="@Url.Action("DanhSachNhapHang", new { page = totalPages })" aria-label="Last">
+                    <span aria-hidden="true">&raquo;&raquo;</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+
+    <!-- Modal Xác nhận xóa -->
+    <div class="modal fade" id="confirmDeleteModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Xác nhận xóa</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p id="deleteMessage">Bạn có chắc chắn muốn xóa phiếu nhập hàng này?</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <button type="button" class="btn btn-danger" id="confirmDelete">Xóa</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal thành công -->
+    <div class="modal fade" id="successModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title">Thành công</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+                </div>
+                <div class="modal-body" id="successMessage">
+                    Thao tác thành công!
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Đóng</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Tạo phiếu nhập hàng -->
+    <div class="modal fade" id="createImportModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Tạo phiếu nhập hàng</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="createImportForm">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="maNhaCungCap" class="form-label">Nhà cung cấp</label>
+                                <select class="form-select" id="maNhaCungCap" required>
+                                    <option value="">-- Chọn nhà cung cấp --</option>
+                                    @foreach (var ncc in ViewBag.NhaCungCaps ?? new List<Manager.Models.NhaCungCap>())
+                                    {
+                                        <option value="@ncc.MaNhaCungCap">@ncc.TenNhaCungCap</option>
+                                    }
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="daThanhToan" class="form-label">Số tiền đã thanh toán</label>
+                                <input type="number" class="form-control" id="daThanhToan" min="0" value="0" />
+                            </div>
+                        </div>
+
+                        <h6 class="mt-4 mb-3">Chi tiết nhập hàng</h6>
+                        <div id="chiTietContainer">
+                            <div class="row mb-3 chiTietRow">
+                                <div class="col-md-4">
+                                    <label class="form-label">Biến thể</label>
+                                    <select class="form-select maBienThe" required>
+                                        <option value="">-- Chọn biến thể --</option>
+                                        @foreach (var bt in ViewBag.BienThes ?? new List<Manager.Models.BienTheHangHoa>())
+                                        {
+                                            <option value="@bt.MaBienThe" data-gia="@bt.GiaNhap">@bt.MaHangHoa - @bt.MauSac - @bt.DungLuong</option>
+                                        }
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">Số lượng</label>
+                                    <input type="number" class="form-control soLuong" min="1" required />
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">Đơn giá</label>
+                                    <input type="number" class="form-control donGia" min="0" required />
+                                </div>
+                                <div class="col-md-2">
+                                    <label class="form-label">&nbsp;</label>
+                                    <button type="button" class="btn btn-danger form-control btn-remove-chitiet">Xóa</button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between mt-3">
+                            <button type="button" class="btn btn-info" id="btnAddChiTiet">
+                                <i class="bi bi-plus-circle"></i> Thêm sản phẩm
+                            </button>
+                            <div class="text-end">
+                                <h5>Tổng tiền: <span id="tongTien">0₫</span></h5>
+                                <div class="d-flex flex-column">
+                                    <div class="form-check mt-2">
+                                        <input class="form-check-input" type="checkbox" id="thanhToanHet">
+                                        <label class="form-check-label" for="thanhToanHet">
+                                            Thanh toán hết
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <button type="button" class="btn btn-primary" id="btnSaveImport">Lưu</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Chỉnh sửa phiếu nhập -->
+    <div class="modal fade" id="editImportModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Cập nhật thông tin phiếu nhập</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="editImportForm">
+                        <input type="hidden" id="editMaNhapHang" />
+                        
+                        <div class="mb-3">
+                            <label for="editMaNhaCungCap" class="form-label">Nhà cung cấp</label>
+                            <select class="form-select" id="editMaNhaCungCap">
+                                @foreach (var ncc in ViewBag.NhaCungCaps ?? new List<Manager.Models.NhaCungCap>())
+                                {
+                                    <option value="@ncc.MaNhaCungCap">@ncc.TenNhaCungCap</option>
+                                }
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="editTongTien" class="form-label">Tổng tiền</label>
+                            <input type="text" class="form-control" id="editTongTien" readonly />
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="editDaThanhToan" class="form-label">Đã thanh toán</label>
+                            <input type="text" class="form-control" id="editDaThanhToan" readonly />
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="editConLai" class="form-label">Số tiền còn lại</label>
+                            <input type="text" class="form-control" id="editConLai" readonly />
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="editThanhToanThem" class="form-label">Thanh toán thêm</label>
+                            <input type="number" class="form-control" id="editThanhToanThem" min="0" value="0" />
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="editTrangThai" class="form-label">Trạng thái</label>
+                            <select class="form-select" id="editTrangThai">
+                                <option value="Chuathanhtoan">Chưa thanh toán</option>
+                                <option value="Dathanhtoanmotphan">Đã thanh toán một phần</option>
+                                <option value="Dathanhtoanhet">Đã thanh toán hết</option>
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <p class="form-text text-info">
+                                <i class="bi bi-info-circle"></i> Để chỉnh sửa chi tiết nhập hàng, vui lòng xem chi tiết phiếu nhập.
+                            </p>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <button type="button" class="btn btn-primary" id="updateImport">Lưu</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        $(document).ready(function () {
+            // Xử lý checkbox "Chọn tất cả"
+            $('#checkAll').change(function() {
+                $('.check-item').prop('checked', $(this).prop('checked'));
+                toggleDeleteButton();
+            });
+
+            // Xử lý khi checkbox đơn lẻ thay đổi
+            $('.check-item').change(function() {
+                toggleDeleteButton();
+                // Nếu tất cả checkbox con được chọn, checkbox "Chọn tất cả" cũng được chọn
+                $('#checkAll').prop('checked', $('.check-item:checked').length === $('.check-item').length);
+            });
+
+            // Hàm hiển thị/ẩn nút xóa
+            function toggleDeleteButton() {
+                if($('.check-item:checked').length > 0) {
+                    $('#btnXoaNhieu').removeClass('d-none');
+                } else {
+                    $('#btnXoaNhieu').addClass('d-none');
+                }
+            }
+
+            // Xử lý tìm kiếm
+            $('#btnSearch').click(function() {
+                searchImports();
+            });
+            
+            $('#searchInput').on('keypress', function(e) {
+                if(e.which === 13) {
+                    searchImports();
+                }
+            });
+
+            function searchImports() {
+                var searchText = $('#searchInput').val().toLowerCase();
+                $('#importTable tbody tr').each(function() {
+                    var maNhapHang = $(this).find('td:eq(1)').text().toLowerCase();
+                    var nhaCungCap = $(this).find('td:eq(2)').text().toLowerCase();
+                    
+                    if(maNhapHang.includes(searchText) || nhaCungCap.includes(searchText)) {
+                        $(this).show();
+                    } else {
+                        $(this).hide();
+                    }
+                });
+            }
+
+            // Xử lý lọc nâng cao
+            $('#btnApplyFilter').click(function() {
+                applyFilters();
+            });
+            
+            $('#btnResetFilter').click(function() {
+                $('#filterFromDate').val('');
+                $('#filterToDate').val('');
+                $('#filterMinValue').val('');
+                $('#filterMaxValue').val('');
+                $('#filterEmployee').val('');
+                $('#filterPaymentStatus').val('');
+                $('#importTable tbody tr').show();
+            });
+            
+            function applyFilters() {
+                var fromDate = $('#filterFromDate').val() ? new Date($('#filterFromDate').val()) : null;
+                var toDate = $('#filterToDate').val() ? new Date($('#filterToDate').val()) : null;
+                var minValue = parseFloat($('#filterMinValue').val()) || 0;
+                var maxValue = parseFloat($('#filterMaxValue').val()) || Number.MAX_VALUE;
+                var employee = $('#filterEmployee').val();
+                var paymentStatus = $('#filterPaymentStatus').val();
+                
+                $('#importTable tbody tr').each(function() {
+                    var row = $(this);
+                    var showRow = true;
+                    
+                    // Lọc theo ngày
+                    if (fromDate || toDate) {
+                        var dateStr = row.find('td:eq(7)').text();
+                        var parts = dateStr.split(' ')[0].split('/');
+                        var rowDate = new Date(parts[2], parts[1] - 1, parts[0]);
+                        
+                        if (fromDate && rowDate < fromDate) showRow = false;
+                        if (toDate && rowDate > toDate) showRow = false;
+                    }
+                    
+                    // Lọc theo giá trị
+                    if (showRow) {
+                        var valueStr = row.find('td:eq(4)').text().replace(/\D/g, '');
+                        var value = parseFloat(valueStr);
+                        
+                        if (value < minValue || value > maxValue) showRow = false;
+                    }
+                    
+                    // Lọc theo nhân viên
+                    if (showRow && employee) {
+                        var employeeCell = row.find('td:eq(3)').text();
+                        if (!employeeCell.includes(employee)) showRow = false;
+                    }
+                    
+                    // Lọc theo trạng thái thanh toán
+                    if (showRow && paymentStatus) {
+                        var statusClass = row.find('td:eq(6) .badge').attr('class');
+                        var statusText = row.find('td:eq(6) .badge').text().trim();
+                        
+                        if (paymentStatus === "Chuathanhtoan" && !statusClass.includes('bg-danger')) showRow = false;
+                        else if (paymentStatus === "Dathanhtoanmotphan" && !statusClass.includes('bg-warning')) showRow = false;
+                        else if (paymentStatus === "Dathanhtoanhet" && !statusClass.includes('bg-success')) showRow = false;
+                    }
+                    
+                    row.toggle(showRow);
+                });
+            }
+
+            // Thêm dòng chi tiết nhập hàng
+            $('#btnAddChiTiet').click(function() {
+                var newRow = $('#chiTietContainer .chiTietRow:first').clone();
+                newRow.find('input, select').val('');
+                newRow.appendTo('#chiTietContainer');
+                bindRemoveEvent();
+                bindChangeEvents();
+            });
+
+            // Xóa dòng chi tiết
+            function bindRemoveEvent() {
+                $('.btn-remove-chitiet').off('click').on('click', function() {
+                    if ($('#chiTietContainer .chiTietRow').length > 1) {
+                        $(this).closest('.chiTietRow').remove();
+                        tinhTongTien();
+                    } else {
+                        alert('Phải có ít nhất một sản phẩm');
+                    }
+                });
+            }
+            
+            // Tính tổng tiền
+            function tinhTongTien() {
+                var tongTien = 0;
+                $('#chiTietContainer .chiTietRow').each(function() {
+                    var soLuong = parseInt($(this).find('.soLuong').val()) || 0;
+                    var donGia = parseFloat($(this).find('.donGia').val()) || 0;
+                    tongTien += soLuong * donGia;
+                });
+                $('#tongTien').text(new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(tongTien));
+                return tongTien;
+            }
+            
+            // Bind sự kiện thay đổi số lượng và đơn giá
+            function bindChangeEvents() {
+                $('.soLuong, .donGia').off('input').on('input', function() {
+                    tinhTongTien();
+                });
+                
+                $('.maBienThe').off('change').on('change', function() {
+                    var selectedOption = $(this).find('option:selected');
+                    var gia = selectedOption.data('gia') || 0;
+                    $(this).closest('.chiTietRow').find('.donGia').val(gia);
+                    tinhTongTien();
+                });
+            }
+            
+            bindRemoveEvent();
+            bindChangeEvents();
+
+            // Xử lý khi nhấn checkbox "Thanh toán hết"
+            $('#thanhToanHet').change(function() {
+                if($(this).is(':checked')) {
+                    var tongTien = tinhTongTien();
+                    $('#daThanhToan').val(tongTien);
+                } else {
+                    $('#daThanhToan').val(0);
+                }
+            });
+
+            // Xử lý khi nhấn nút Lưu phiếu nhập
+            $('#btnSaveImport').click(function() {
+                var maNhaCungCap = $('#maNhaCungCap').val();
+                if (!maNhaCungCap) {
+                    alert('Vui lòng chọn nhà cung cấp');
+                    return;
+                }
+                
+                var chiTietList = [];
+                var isValid = true;
+                
+                $('#chiTietContainer .chiTietRow').each(function() {
+                    var maBienThe = $(this).find('.maBienThe').val();
+                    var soLuong = $(this).find('.soLuong').val();
+                    var donGia = $(this).find('.donGia').val();
+                    
+                    if (!maBienThe || !soLuong || !donGia || soLuong < 1 || donGia < 0) {
+                        isValid = false;
+                        return false; // break each loop
+                    }
+                    
+                    chiTietList.push({
+                        MaBienThe: maBienThe,
+                        SoLuong: soLuong,
+                        DonGia: donGia
+                    });
+                });
+                
+                if (!isValid) {
+                    alert('Vui lòng điền đầy đủ thông tin cho tất cả sản phẩm');
+                    return;
+                }
+                
+                if (chiTietList.length === 0) {
+                    alert('Vui lòng thêm ít nhất một sản phẩm');
+                    return;
+                }
+                
+                var tongTien = tinhTongTien();
+                var daThanhToan = parseFloat($('#daThanhToan').val()) || 0;
+                
+                // Xác định trạng thái thanh toán
+                var trangThai = "Chuathanhtoan";
+                if (daThanhToan >= tongTien) {
+                    trangThai = "Dathanhtoanhet";
+                    daThanhToan = tongTien; // Đảm bảo không thanh toán quá
+                } else if (daThanhToan > 0) {
+                    trangThai = "Dathanhtoanmotphan";
+                }
+                
+                var data = {
+                    MaNhaCungCap: maNhaCungCap,
+                    TongTien: tongTien,
+                    DaThanhToan: daThanhToan,
+                    TrangThai: trangThai,
+                    ChiTietNhapHangs: chiTietList
+                };
+                
+                console.log('Dữ liệu gửi đi:', data); // Log dữ liệu để debug
+                
+                $.ajax({
+                    url: '@Url.Action("TaoNhapHang", "Home")',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(data),
+                    success: function(response) {
+                        $('#createImportModal').modal('hide');
+                        if (response.success) {
+                            $('#successMessage').text('Tạo phiếu nhập hàng thành công!');
+                            $('#successModal').modal('show');
+                            setTimeout(function() {
+                                location.reload();
+                            }, 1500);
+                        } else {
+                            alert(response.message || 'Tạo phiếu nhập hàng thất bại');
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Lỗi AJAX:', xhr.responseText);
+                        alert('Lỗi khi gọi server: ' + error);
+                    }
+                });
+            });
+
+            // Xử lý khi nhấn nút sửa
+            $('.btn-edit').click(function() {
+                var maNhapHang = $(this).data('id');
+                
+                $.ajax({
+                    url: '@Url.Action("LayThongTinNhapHang", "Home")',
+                    type: 'GET',
+                    data: { id: maNhapHang },
+                    success: function(response) {
+                        if (response) {
+                            $('#editMaNhapHang').val(response.MaNhapHang);
+                            $('#editMaNhaCungCap').val(response.MaNhaCungCap);
+                            
+                            var tongTien = response.TongTien;
+                            var daThanhToan = response.DaThanhToan || 0;
+                            var conLai = tongTien - daThanhToan;
+                            
+                            $('#editTongTien').val(new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(tongTien));
+                            $('#editDaThanhToan').val(new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(daThanhToan));
+                            $('#editConLai').val(new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(conLai));
+                            $('#editThanhToanThem').val(0);
+                            $('#editTrangThai').val(response.TrangThai);
+                        } else {
+                            alert('Không tìm thấy thông tin phiếu nhập');
+                        }
+                    },
+                    error: function() {
+                        alert('Lỗi khi lấy thông tin phiếu nhập');
+                    }
+                });
+            });
+
+            // Tự động cập nhật trạng thái khi thay đổi số tiền thanh toán thêm
+            $('#editThanhToanThem').on('input', function() {
+                var tongTienText = $('#editTongTien').val().replace(/\D/g, '');
+                var daThanhToanText = $('#editDaThanhToan').val().replace(/\D/g, '');
+                
+                var tongTien = parseFloat(tongTienText) || 0;
+                var daThanhToan = parseFloat(daThanhToanText) || 0;
+                var thanhToanThem = parseFloat($(this).val()) || 0;
+                
+                var tongDaThanhToan = daThanhToan + thanhToanThem;
+                
+                if (tongDaThanhToan <= 0) {
+                    $('#editTrangThai').val('Chuathanhtoan');
+                } else if (tongDaThanhToan >= tongTien) {
+                    $('#editTrangThai').val('Dathanhtoanhet');
+                    // Giới hạn số tiền thanh toán thêm để không vượt quá số tiền còn lại
+                    var conLai = tongTien - daThanhToan;
+                    if (thanhToanThem > conLai) {
+                        $(this).val(conLai);
+                    }
+                } else {
+                    $('#editTrangThai').val('Dathanhtoanmotphan');
+                }
+            });
+
+            // Xử lý khi nhấn nút Lưu trong modal sửa
+            $('#updateImport').click(function() {
+                var maNhapHang = $('#editMaNhapHang').val();
+                var maNhaCungCap = $('#editMaNhaCungCap').val();
+                var thanhToanThem = parseFloat($('#editThanhToanThem').val()) || 0;
+                var trangThai = $('#editTrangThai').val();
+                
+                // Đảm bảo giá trị không null
+                if (!maNhapHang || !maNhaCungCap || trangThai === undefined || trangThai === null) {
+                    alert('Vui lòng điền đầy đủ thông tin');
+                    return;
+                }
+                
+                var data = {
+                    MaNhapHang: maNhapHang,
+                    MaNhaCungCap: maNhaCungCap,
+                    ThanhToanThem: thanhToanThem,
+                    TrangThai: trangThai
+                };
+                
+                console.log('Dữ liệu cập nhật:', data);
+                
+                $.ajax({
+                    url: '@Url.Action("CapNhatThanhToanNhapHang", "Home")',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(data),
+                    success: function(response) {
+                        $('#editImportModal').modal('hide');
+                        if (response.success) {
+                            $('#successMessage').text('Cập nhật phiếu nhập thành công!');
+                            $('#successModal').modal('show');
+                            setTimeout(function() {
+                                location.reload();
+                            }, 1500);
+                        } else {
+                            alert(response.message || 'Cập nhật phiếu nhập thất bại');
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Lỗi AJAX:', xhr.responseText);
+                        alert('Lỗi khi gọi server: ' + error);
+                    }
+                });
+            });
+
+            // Xử lý khi nhấn nút xóa
+            $('.btn-delete').click(function() {
+                var maNhapHang = $(this).data('id');
+                
+                $('#confirmDelete').off('click').on('click', function() {
+                    $.ajax({
+                        url: '@Url.Action("XoaNhapHang", "Home")',
+                        type: 'POST',
+                        data: { id: maNhapHang },
+                        success: function(response) {
+                            $('#confirmDeleteModal').modal('hide');
+                            if (response.success) {
+                                $('#successMessage').text('Xóa phiếu nhập thành công!');
+                                $('#successModal').modal('show');
+                                setTimeout(function() {
+                                    location.reload();
+                                }, 1500);
+                            } else {
+                                alert(response.message || 'Xóa phiếu nhập thất bại');
+                            }
+                        },
+                        error: function() {
+                            alert('Lỗi khi gọi server');
+                        }
+                    });
+                });
+            });
+        });
+
+        // Hàm xóa nhiều phiếu nhập
+        function xoaNhieu() {
+            var selectedIds = [];
+            $('.check-item:checked').each(function() {
+                selectedIds.push($(this).val());
+            });
+
+            if(selectedIds.length === 0) {
+                alert('Vui lòng chọn ít nhất một phiếu nhập để xóa!');
+                return;
+            }
+
+            $('#deleteMessage').text("Bạn có chắc chắn muốn xóa " + selectedIds.length + " phiếu nhập đã chọn?");
+            $('#confirmDeleteModal').modal('show');
+
+            $('#confirmDelete').off('click').on('click', function() {
+                $.ajax({
+                    url: '@Url.Action("XoaNhieuNhapHang", "Home")',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({ ids: selectedIds }),
+                    success: function(response) {
+                        $('#confirmDeleteModal').modal('hide');
+                        if(response.success) {
+                            $('#successMessage').text('Xóa phiếu nhập thành công!');
+                            $('#successModal').modal('show');
+                            setTimeout(function() {
+                                location.reload();
+                            }, 1500);
+                        } else {
+                            alert(response.message || "Xóa thất bại");
+                        }
+                    },
+                    error: function() {
+                        alert("Lỗi khi gọi server.");
+                    }
+                });
+            });
+        }
+    </script>
+</div>

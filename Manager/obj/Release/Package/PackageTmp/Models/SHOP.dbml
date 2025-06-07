@@ -1,0 +1,346 @@
+﻿<?xml version="1.0" encoding="utf-8"?><Database Name="CuaHang2" Class="SHOPDataContext" xmlns="http://schemas.microsoft.com/linqtosql/dbml/2007">
+  <Table Name="dbo.BienTheHangHoa" Member="BienTheHangHoas">
+    <Type Name="BienTheHangHoa">
+      <Column Name="MaBienThe" Type="System.String" DbType="NVarChar(50) NOT NULL" IsPrimaryKey="true" CanBeNull="false" />
+      <Column Name="MaHangHoa" Type="System.String" DbType="NVarChar(50)" CanBeNull="true" />
+      <Column Name="MauSac" Type="System.String" DbType="NVarChar(50)" CanBeNull="true" />
+      <Column Name="DungLuong" Type="System.String" DbType="NVarChar(50)" CanBeNull="true" />
+      <Column Name="CPU" Type="System.String" DbType="NVarChar(100)" CanBeNull="true" />
+      <Column Name="RAM" Type="System.String" DbType="NVarChar(50)" CanBeNull="true" />
+      <Column Name="KichThuocManHinh" Type="System.String" DbType="NVarChar(50)" CanBeNull="true" />
+      <Column Name="LoaiBoNho" Type="System.String" DbType="NVarChar(50)" CanBeNull="true" />
+      <Column Name="GiaNhap" Type="System.Double" DbType="Float" CanBeNull="true" />
+      <Column Name="GiaBan" Type="System.Double" DbType="Float" CanBeNull="true" />
+      <Column Name="GiaKhuyenMai" Type="System.Double" DbType="Float" CanBeNull="true" />
+      <Column Name="SoLuongTonKho" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Association Name="BienTheHangHoa_ChiTietDonHang" Member="ChiTietDonHangs" ThisKey="MaBienThe" OtherKey="MaBienThe" Type="ChiTietDonHang" />
+      <Association Name="BienTheHangHoa_ChiTietGioHang" Member="ChiTietGioHangs" ThisKey="MaBienThe" OtherKey="MaBienThe" Type="ChiTietGioHang" />
+      <Association Name="BienTheHangHoa_ChiTietNhapHang" Member="ChiTietNhapHangs" ThisKey="MaBienThe" OtherKey="MaBienThe" Type="ChiTietNhapHang" />
+      <Association Name="BienTheHangHoa_HinhAnhHangHoa" Member="HinhAnhHangHoas" ThisKey="MaBienThe" OtherKey="MaBienThe" Type="HinhAnhHangHoa" />
+      <Association Name="HangHoa_BienTheHangHoa" Member="HangHoa" ThisKey="MaHangHoa" OtherKey="MaHangHoa" Type="HangHoa" IsForeignKey="true" DeleteRule="CASCADE" />
+    </Type>
+  </Table>
+  <Table Name="dbo.YeuThich" Member="YeuThiches">
+    <Type Name="YeuThich">
+      <Column Name="MaYeuThich" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
+      <Column Name="MaKhachHang" Type="System.String" DbType="NVarChar(50)" CanBeNull="true" />
+      <Column Name="MaHangHoa" Type="System.String" DbType="NVarChar(50)" CanBeNull="true" />
+      <Association Name="HangHoa_YeuThich" Member="HangHoa" ThisKey="MaHangHoa" OtherKey="MaHangHoa" Type="HangHoa" IsForeignKey="true" DeleteRule="CASCADE" />
+      <Association Name="KhachHang_YeuThich" Member="KhachHang" ThisKey="MaKhachHang" OtherKey="MaKhachHang" Type="KhachHang" IsForeignKey="true" DeleteRule="CASCADE" />
+    </Type>
+  </Table>
+  <Table Name="dbo.ChiTietDonHang" Member="ChiTietDonHangs">
+    <Type Name="ChiTietDonHang">
+      <Column Name="MaChiTietDonHang" Type="System.String" DbType="NVarChar(50) NOT NULL" IsPrimaryKey="true" CanBeNull="false" />
+      <Column Name="MaDonHang" Type="System.String" DbType="NVarChar(50)" CanBeNull="true" />
+      <Column Name="MaBienThe" Type="System.String" DbType="NVarChar(50)" CanBeNull="true" />
+      <Column Name="SoLuong" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="DonGia" Type="System.Double" DbType="Float" CanBeNull="true" />
+      <Association Name="BienTheHangHoa_ChiTietDonHang" Member="BienTheHangHoa" ThisKey="MaBienThe" OtherKey="MaBienThe" Type="BienTheHangHoa" IsForeignKey="true" DeleteRule="CASCADE" />
+      <Association Name="DonHang_ChiTietDonHang" Member="DonHang" ThisKey="MaDonHang" OtherKey="MaDonHang" Type="DonHang" IsForeignKey="true" DeleteRule="CASCADE" />
+    </Type>
+  </Table>
+  <Table Name="dbo.ChiTietGioHang" Member="ChiTietGioHangs">
+    <Type Name="ChiTietGioHang">
+      <Column Name="MaChiTietGioHang" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
+      <Column Name="MaGioHang" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="MaBienThe" Type="System.String" DbType="NVarChar(50)" CanBeNull="true" />
+      <Column Name="SoLuong" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="NgayThem" Type="System.DateTime" DbType="DateTime" CanBeNull="true" />
+      <Association Name="BienTheHangHoa_ChiTietGioHang" Member="BienTheHangHoa" ThisKey="MaBienThe" OtherKey="MaBienThe" Type="BienTheHangHoa" IsForeignKey="true" DeleteRule="CASCADE" />
+      <Association Name="GioHang_ChiTietGioHang" Member="GioHang" ThisKey="MaGioHang" OtherKey="MaGioHang" Type="GioHang" IsForeignKey="true" DeleteRule="CASCADE" />
+    </Type>
+  </Table>
+  <Table Name="dbo.ChiTietNhapHang" Member="ChiTietNhapHangs">
+    <Type Name="ChiTietNhapHang">
+      <Column Name="MaChiTietNhapHang" Type="System.String" DbType="NVarChar(50) NOT NULL" IsPrimaryKey="true" CanBeNull="false" />
+      <Column Name="MaNhapHang" Type="System.String" DbType="NVarChar(50)" CanBeNull="true" />
+      <Column Name="MaBienThe" Type="System.String" DbType="NVarChar(50)" CanBeNull="true" />
+      <Column Name="SoLuong" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="DonGia" Type="System.Double" DbType="Float" CanBeNull="true" />
+      <Association Name="BienTheHangHoa_ChiTietNhapHang" Member="BienTheHangHoa" ThisKey="MaBienThe" OtherKey="MaBienThe" Type="BienTheHangHoa" IsForeignKey="true" DeleteRule="CASCADE" />
+      <Association Name="NhapHang_ChiTietNhapHang" Member="NhapHang" ThisKey="MaNhapHang" OtherKey="MaNhapHang" Type="NhapHang" IsForeignKey="true" DeleteRule="CASCADE" />
+    </Type>
+  </Table>
+  <Table Name="dbo.CollaborativeFiltering" Member="CollaborativeFilterings">
+    <Type Name="CollaborativeFiltering">
+      <Column Name="MaKhachHang" Type="System.String" DbType="NVarChar(50) NOT NULL" IsPrimaryKey="true" CanBeNull="false" />
+      <Column Name="MaHangHoa" Type="System.String" DbType="NVarChar(50) NOT NULL" IsPrimaryKey="true" CanBeNull="false" />
+      <Column Name="DiemSo" Type="System.Double" DbType="Float" CanBeNull="true" />
+      <Association Name="HangHoa_CollaborativeFiltering" Member="HangHoa" ThisKey="MaHangHoa" OtherKey="MaHangHoa" Type="HangHoa" IsForeignKey="true" DeleteRule="CASCADE" DeleteOnNull="true" />
+      <Association Name="KhachHang_CollaborativeFiltering" Member="KhachHang" ThisKey="MaKhachHang" OtherKey="MaKhachHang" Type="KhachHang" IsForeignKey="true" DeleteRule="CASCADE" DeleteOnNull="true" />
+    </Type>
+  </Table>
+  <Table Name="dbo.ContentBasedFiltering" Member="ContentBasedFilterings">
+    <Type Name="ContentBasedFiltering">
+      <Column Name="MaHangHoa1" Type="System.String" DbType="NVarChar(50) NOT NULL" IsPrimaryKey="true" CanBeNull="false" />
+      <Column Name="MaHangHoa2" Type="System.String" DbType="NVarChar(50) NOT NULL" IsPrimaryKey="true" CanBeNull="false" />
+      <Column Name="DiemTuongDong" Type="System.Double" DbType="Float" CanBeNull="true" />
+      <Association Name="HangHoa_ContentBasedFiltering" Member="HangHoa" ThisKey="MaHangHoa1" OtherKey="MaHangHoa" Type="HangHoa" IsForeignKey="true" />
+      <Association Name="HangHoa_ContentBasedFiltering1" Member="HangHoa1" ThisKey="MaHangHoa2" OtherKey="MaHangHoa" Type="HangHoa" IsForeignKey="true" />
+    </Type>
+  </Table>
+  <Table Name="dbo.DanhGia" Member="DanhGias">
+    <Type Name="DanhGia">
+      <Column Name="MaDanhGia" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
+      <Column Name="MaKhachHang" Type="System.String" DbType="NVarChar(50)" CanBeNull="true" />
+      <Column Name="MaHangHoa" Type="System.String" DbType="NVarChar(50)" CanBeNull="true" />
+      <Column Name="SoSao" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="BinhLuan" Type="System.String" DbType="NVarChar(MAX)" CanBeNull="true" />
+      <Column Name="NgayTao" Type="System.DateTime" DbType="DateTime" CanBeNull="true" />
+      <Association Name="HangHoa_DanhGia" Member="HangHoa" ThisKey="MaHangHoa" OtherKey="MaHangHoa" Type="HangHoa" IsForeignKey="true" DeleteRule="CASCADE" />
+      <Association Name="KhachHang_DanhGia" Member="KhachHang" ThisKey="MaKhachHang" OtherKey="MaKhachHang" Type="KhachHang" IsForeignKey="true" DeleteRule="CASCADE" />
+    </Type>
+  </Table>
+  <Table Name="dbo.DanhMuc" Member="DanhMucs">
+    <Type Name="DanhMuc">
+      <Column Name="MaDanhMuc" Type="System.String" DbType="NVarChar(50) NOT NULL" IsPrimaryKey="true" CanBeNull="false" />
+      <Column Name="TenDanhMuc" Type="System.String" DbType="NVarChar(100)" CanBeNull="true" />
+      <Association Name="DanhMuc_HangHoa" Member="HangHoas" ThisKey="MaDanhMuc" OtherKey="MaDanhMuc" Type="HangHoa" />
+    </Type>
+  </Table>
+  <Table Name="dbo.DiaChiKhachHang" Member="DiaChiKhachHangs">
+    <Type Name="DiaChiKhachHang">
+      <Column Name="MaDiaChi" Type="System.String" DbType="NVarChar(50) NOT NULL" IsPrimaryKey="true" CanBeNull="false" />
+      <Column Name="MaKhachHang" Type="System.String" DbType="NVarChar(50)" CanBeNull="true" />
+      <Column Name="TenNguoiNhan" Type="System.String" DbType="NVarChar(100)" CanBeNull="true" />
+      <Column Name="SoDienThoai" Type="System.String" DbType="NVarChar(20)" CanBeNull="true" />
+      <Column Name="DiaChiDayDu" Type="System.String" DbType="NVarChar(255)" CanBeNull="true" />
+      <Column Name="LaMacDinh" Type="System.Boolean" DbType="Bit" CanBeNull="true" />
+      <Association Name="DiaChiKhachHang_GiaoHang" Member="GiaoHangs" ThisKey="MaDiaChi" OtherKey="MaDiaChi" Type="GiaoHang" />
+      <Association Name="KhachHang_DiaChiKhachHang" Member="KhachHang" ThisKey="MaKhachHang" OtherKey="MaKhachHang" Type="KhachHang" IsForeignKey="true" DeleteRule="CASCADE" />
+    </Type>
+  </Table>
+  <Table Name="dbo.DonHang" Member="DonHangs">
+    <Type Name="DonHang">
+      <Column Name="MaDonHang" Type="System.String" DbType="NVarChar(50) NOT NULL" IsPrimaryKey="true" CanBeNull="false" />
+      <Column Name="MaKhachHang" Type="System.String" DbType="NVarChar(50)" CanBeNull="true" />
+      <Column Name="MaVoucher" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="TongTien" Type="System.Double" DbType="Float" CanBeNull="true" />
+      <Column Name="TrangThaiThanhToan" Type="System.String" DbType="NVarChar(20)" CanBeNull="true" />
+      <Column Name="TrangThaiDonHang" Type="System.String" DbType="NVarChar(20)" CanBeNull="true" />
+      <Column Name="NgayTao" Type="System.DateTime" DbType="DateTime" CanBeNull="true" />
+      <Association Name="DonHang_ChiTietDonHang" Member="ChiTietDonHangs" ThisKey="MaDonHang" OtherKey="MaDonHang" Type="ChiTietDonHang" />
+      <Association Name="DonHang_GiaoHang" Member="GiaoHangs" ThisKey="MaDonHang" OtherKey="MaDonHang" Type="GiaoHang" />
+      <Association Name="DonHang_ThanhToan" Member="ThanhToans" ThisKey="MaDonHang" OtherKey="MaDonHang" Type="ThanhToan" />
+      <Association Name="KhachHang_DonHang" Member="KhachHang" ThisKey="MaKhachHang" OtherKey="MaKhachHang" Type="KhachHang" IsForeignKey="true" DeleteRule="CASCADE" />
+      <Association Name="Voucher_DonHang" Member="Voucher" ThisKey="MaVoucher" OtherKey="MaVoucher" Type="Voucher" IsForeignKey="true" />
+    </Type>
+  </Table>
+  <Table Name="dbo.GiaoHang" Member="GiaoHangs">
+    <Type Name="GiaoHang">
+      <Column Name="MaGiaoHang" Type="System.String" DbType="NVarChar(50) NOT NULL" IsPrimaryKey="true" CanBeNull="false" />
+      <Column Name="MaDonHang" Type="System.String" DbType="NVarChar(50)" CanBeNull="true" />
+      <Column Name="MaDiaChi" Type="System.String" DbType="NVarChar(50)" CanBeNull="true" />
+      <Column Name="MaVanDon" Type="System.String" DbType="NVarChar(100)" CanBeNull="true" />
+      <Column Name="DonViVanChuyen" Type="System.String" DbType="NVarChar(100)" CanBeNull="true" />
+      <Column Name="TrangThaiGiaoHang" Type="System.String" DbType="NVarChar(50)" CanBeNull="true" />
+      <Column Name="NgayGuiHang" Type="System.DateTime" DbType="DateTime" CanBeNull="true" />
+      <Column Name="NgayNhanHang" Type="System.DateTime" DbType="DateTime" CanBeNull="true" />
+      <Association Name="DiaChiKhachHang_GiaoHang" Member="DiaChiKhachHang" ThisKey="MaDiaChi" OtherKey="MaDiaChi" Type="DiaChiKhachHang" IsForeignKey="true" />
+      <Association Name="DonHang_GiaoHang" Member="DonHang" ThisKey="MaDonHang" OtherKey="MaDonHang" Type="DonHang" IsForeignKey="true" DeleteRule="CASCADE" />
+    </Type>
+  </Table>
+  <Table Name="dbo.GioHang" Member="GioHangs">
+    <Type Name="GioHang">
+      <Column Name="MaGioHang" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
+      <Column Name="MaKhachHang" Type="System.String" DbType="NVarChar(50)" CanBeNull="true" />
+      <Column Name="NgayCapNhat" Type="System.DateTime" DbType="DateTime" CanBeNull="true" />
+      <Association Name="GioHang_ChiTietGioHang" Member="ChiTietGioHangs" ThisKey="MaGioHang" OtherKey="MaGioHang" Type="ChiTietGioHang" />
+      <Association Name="KhachHang_GioHang" Member="KhachHang" ThisKey="MaKhachHang" OtherKey="MaKhachHang" Type="KhachHang" IsForeignKey="true" DeleteRule="CASCADE" />
+    </Type>
+  </Table>
+  <Table Name="dbo.HangHoa" Member="HangHoas">
+    <Type Name="HangHoa">
+      <Column Name="MaHangHoa" Type="System.String" DbType="NVarChar(50) NOT NULL" IsPrimaryKey="true" CanBeNull="false" />
+      <Column Name="TenHangHoa" Type="System.String" DbType="NVarChar(255)" CanBeNull="true" />
+      <Column Name="MaDanhMuc" Type="System.String" DbType="NVarChar(50)" CanBeNull="true" />
+      <Column Name="MaThuongHieu" Type="System.String" DbType="NVarChar(50)" CanBeNull="true" />
+      <Column Name="HinhAnh" Type="System.String" DbType="NVarChar(500)" CanBeNull="true" />
+      <Column Name="MoTa" Type="System.String" DbType="NVarChar(MAX)" CanBeNull="true" />
+      <Column Name="DanhGiaTrungBinh" Type="System.Double" DbType="Float" CanBeNull="true" />
+      <Column Name="TrangThai" Type="System.String" DbType="NVarChar(20)" CanBeNull="true" />
+      <Column Name="MoTaDai" Type="System.String" DbType="NVarChar(MAX)" CanBeNull="true" />
+      <Column Name="NgayTao" Type="System.DateTime" DbType="DateTime" CanBeNull="true" />
+      <Association Name="HangHoa_BienTheHangHoa" Member="BienTheHangHoas" ThisKey="MaHangHoa" OtherKey="MaHangHoa" Type="BienTheHangHoa" />
+      <Association Name="HangHoa_YeuThich" Member="YeuThiches" ThisKey="MaHangHoa" OtherKey="MaHangHoa" Type="YeuThich" />
+      <Association Name="HangHoa_CollaborativeFiltering" Member="CollaborativeFilterings" ThisKey="MaHangHoa" OtherKey="MaHangHoa" Type="CollaborativeFiltering" />
+      <Association Name="HangHoa_ContentBasedFiltering" Member="ContentBasedFilterings" ThisKey="MaHangHoa" OtherKey="MaHangHoa1" Type="ContentBasedFiltering" />
+      <Association Name="HangHoa_ContentBasedFiltering1" Member="ContentBasedFilterings1" ThisKey="MaHangHoa" OtherKey="MaHangHoa2" Type="ContentBasedFiltering" />
+      <Association Name="HangHoa_DanhGia" Member="DanhGias" ThisKey="MaHangHoa" OtherKey="MaHangHoa" Type="DanhGia" />
+      <Association Name="HangHoa_HinhAnhHangHoa" Member="HinhAnhHangHoas" ThisKey="MaHangHoa" OtherKey="MaHangHoa" Type="HinhAnhHangHoa" />
+      <Association Name="HangHoa_KhuyenMaiTangKem" Member="KhuyenMaiTangKems" ThisKey="MaHangHoa" OtherKey="MaHangHoaTangKem" Type="KhuyenMaiTangKem" />
+      <Association Name="HangHoa_LichSuXem" Member="LichSuXems" ThisKey="MaHangHoa" OtherKey="MaHangHoa" Type="LichSuXem" />
+      <Association Name="HangHoa_MoTaChiTietHangHoa" Member="MoTaChiTietHangHoas" ThisKey="MaHangHoa" OtherKey="MaHangHoa" Type="MoTaChiTietHangHoa" />
+      <Association Name="DanhMuc_HangHoa" Member="DanhMuc" ThisKey="MaDanhMuc" OtherKey="MaDanhMuc" Type="DanhMuc" IsForeignKey="true" />
+      <Association Name="ThuongHieu_HangHoa" Member="ThuongHieu" ThisKey="MaThuongHieu" OtherKey="MaThuongHieu" Type="ThuongHieu" IsForeignKey="true" />
+    </Type>
+  </Table>
+  <Table Name="dbo.HinhAnhHangHoa" Member="HinhAnhHangHoas">
+    <Type Name="HinhAnhHangHoa">
+      <Column Name="MaHinhAnh" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
+      <Column Name="MaHangHoa" Type="System.String" DbType="NVarChar(50)" CanBeNull="true" />
+      <Column Name="MaBienThe" Type="System.String" DbType="NVarChar(50)" CanBeNull="true" />
+      <Column Name="UrlAnh" Type="System.String" DbType="NVarChar(500)" CanBeNull="true" />
+      <Association Name="BienTheHangHoa_HinhAnhHangHoa" Member="BienTheHangHoa" ThisKey="MaBienThe" OtherKey="MaBienThe" Type="BienTheHangHoa" IsForeignKey="true" />
+      <Association Name="HangHoa_HinhAnhHangHoa" Member="HangHoa" ThisKey="MaHangHoa" OtherKey="MaHangHoa" Type="HangHoa" IsForeignKey="true" DeleteRule="CASCADE" />
+    </Type>
+  </Table>
+  <Table Name="dbo.KhachHang" Member="KhachHangs">
+    <Type Name="KhachHang">
+      <Column Name="MaKhachHang" Type="System.String" DbType="NVarChar(50) NOT NULL" IsPrimaryKey="true" CanBeNull="false" />
+      <Column Name="TenDangNhap" Type="System.String" DbType="NVarChar(50)" CanBeNull="true" />
+      <Column Name="HoTen" Type="System.String" DbType="NVarChar(50)" CanBeNull="true" />
+      <Column Name="MatKhauHash" Type="System.String" DbType="NVarChar(255)" CanBeNull="true" />
+      <Column Name="Email" Type="System.String" DbType="NVarChar(100)" CanBeNull="true" />
+      <Column Name="SoDienThoai" Type="System.String" DbType="NVarChar(20)" CanBeNull="true" />
+      <Column Name="ExpiryTime" Type="System.DateTime" DbType="DateTime" CanBeNull="true" />
+      <Column Name="NgayTao" Type="System.DateTime" DbType="DateTime" CanBeNull="true" />
+      <Column Name="TrangThai" Type="System.String" DbType="NVarChar(20)" CanBeNull="true" />
+      <Association Name="KhachHang_YeuThich" Member="YeuThiches" ThisKey="MaKhachHang" OtherKey="MaKhachHang" Type="YeuThich" />
+      <Association Name="KhachHang_CollaborativeFiltering" Member="CollaborativeFilterings" ThisKey="MaKhachHang" OtherKey="MaKhachHang" Type="CollaborativeFiltering" />
+      <Association Name="KhachHang_DanhGia" Member="DanhGias" ThisKey="MaKhachHang" OtherKey="MaKhachHang" Type="DanhGia" />
+      <Association Name="KhachHang_DiaChiKhachHang" Member="DiaChiKhachHangs" ThisKey="MaKhachHang" OtherKey="MaKhachHang" Type="DiaChiKhachHang" />
+      <Association Name="KhachHang_DonHang" Member="DonHangs" ThisKey="MaKhachHang" OtherKey="MaKhachHang" Type="DonHang" />
+      <Association Name="KhachHang_GioHang" Member="GioHangs" ThisKey="MaKhachHang" OtherKey="MaKhachHang" Type="GioHang" />
+      <Association Name="KhachHang_LichSuXem" Member="LichSuXems" ThisKey="MaKhachHang" OtherKey="MaKhachHang" Type="LichSuXem" />
+      <Association Name="KhachHang_PhanPhoiVoucher" Member="PhanPhoiVouchers" ThisKey="MaKhachHang" OtherKey="MaKhachHang" Type="PhanPhoiVoucher" />
+      <Association Name="KhachHang_ThongBao" Member="ThongBaos" ThisKey="MaKhachHang" OtherKey="MaKhachHang" Type="ThongBao" />
+    </Type>
+  </Table>
+  <Table Name="dbo.KhuyenMaiTangKem" Member="KhuyenMaiTangKems">
+    <Type Name="KhuyenMaiTangKem">
+      <Column Name="IDKM" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
+      <Column Name="GiaTriDonHangToiThieu" Type="System.Double" DbType="Float" CanBeNull="true" />
+      <Column Name="MaHangHoaTangKem" Type="System.String" DbType="NVarChar(50)" CanBeNull="true" />
+      <Column Name="SoLuongTang" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="NgayBatDau" Type="System.DateTime" DbType="Date" CanBeNull="true" />
+      <Column Name="NgayKetThuc" Type="System.DateTime" DbType="Date" CanBeNull="true" />
+      <Association Name="HangHoa_KhuyenMaiTangKem" Member="HangHoa" ThisKey="MaHangHoaTangKem" OtherKey="MaHangHoa" Type="HangHoa" IsForeignKey="true" />
+    </Type>
+  </Table>
+  <Table Name="dbo.LichSuXem" Member="LichSuXems">
+    <Type Name="LichSuXem">
+      <Column Name="MaLichSuXem" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
+      <Column Name="MaKhachHang" Type="System.String" DbType="NVarChar(50)" CanBeNull="true" />
+      <Column Name="MaHangHoa" Type="System.String" DbType="NVarChar(50)" CanBeNull="true" />
+      <Column Name="NgayXem" Type="System.DateTime" DbType="DateTime" CanBeNull="true" />
+      <Association Name="HangHoa_LichSuXem" Member="HangHoa" ThisKey="MaHangHoa" OtherKey="MaHangHoa" Type="HangHoa" IsForeignKey="true" DeleteRule="CASCADE" />
+      <Association Name="KhachHang_LichSuXem" Member="KhachHang" ThisKey="MaKhachHang" OtherKey="MaKhachHang" Type="KhachHang" IsForeignKey="true" DeleteRule="CASCADE" />
+    </Type>
+  </Table>
+  <Table Name="dbo.MoTaChiTietHangHoa" Member="MoTaChiTietHangHoas">
+    <Type Name="MoTaChiTietHangHoa">
+      <Column Name="ID" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
+      <Column Name="MaHangHoa" Type="System.String" DbType="NVarChar(50)" CanBeNull="true" />
+      <Column Name="TieuDe" Type="System.String" DbType="NVarChar(255)" CanBeNull="true" />
+      <Column Name="NoiDung" Type="System.String" DbType="NVarChar(MAX)" CanBeNull="true" />
+      <Column Name="NgayTao" Type="System.DateTime" DbType="DateTime" CanBeNull="true" />
+      <Column Name="NgayCapNhat" Type="System.DateTime" DbType="DateTime" CanBeNull="true" />
+      <Association Name="HangHoa_MoTaChiTietHangHoa" Member="HangHoa" ThisKey="MaHangHoa" OtherKey="MaHangHoa" Type="HangHoa" IsForeignKey="true" DeleteRule="CASCADE" />
+    </Type>
+  </Table>
+  <Table Name="dbo.NhaCungCap" Member="NhaCungCaps">
+    <Type Name="NhaCungCap">
+      <Column Name="MaNhaCungCap" Type="System.String" DbType="NVarChar(50) NOT NULL" IsPrimaryKey="true" CanBeNull="false" />
+      <Column Name="TenNhaCungCap" Type="System.String" DbType="NVarChar(255)" CanBeNull="true" />
+      <Column Name="LienHe" Type="System.String" DbType="NVarChar(255)" CanBeNull="true" />
+      <Column Name="Email" Type="System.String" DbType="NVarChar(100)" CanBeNull="true" />
+      <Column Name="SoDienThoai" Type="System.String" DbType="NVarChar(20)" CanBeNull="true" />
+      <Association Name="NhaCungCap_NhapHang" Member="NhapHangs" ThisKey="MaNhaCungCap" OtherKey="MaNhaCungCap" Type="NhapHang" />
+    </Type>
+  </Table>
+  <Table Name="dbo.NhanVien" Member="NhanViens">
+    <Type Name="NhanVien">
+      <Column Name="MaNhanVien" Type="System.String" DbType="NVarChar(50) NOT NULL" IsPrimaryKey="true" CanBeNull="false" />
+      <Column Name="TenDangNhap" Type="System.String" DbType="NVarChar(50)" CanBeNull="true" />
+      <Column Name="HoTen" Type="System.String" DbType="NVarChar(50)" CanBeNull="true" />
+      <Column Name="DiaChi" Type="System.String" DbType="NVarChar(50)" CanBeNull="true" />
+      <Column Name="MatKhau" Type="System.String" DbType="NVarChar(255)" CanBeNull="true" />
+      <Column Name="Email" Type="System.String" DbType="NVarChar(100)" CanBeNull="true" />
+      <Column Name="SoDienThoai" Type="System.String" DbType="NVarChar(20)" CanBeNull="true" />
+      <Column Name="ExpiryTime" Type="System.DateTime" DbType="DateTime" CanBeNull="true" />
+      <Column Name="NgayTao" Type="System.DateTime" DbType="DateTime" CanBeNull="true" />
+      <Column Name="TrangThai" Type="System.String" DbType="NVarChar(20)" CanBeNull="true" />
+      <Column Name="VaiTro" Type="System.String" DbType="NVarChar(20)" CanBeNull="true" />
+      <Association Name="NhanVien_NhapHang" Member="NhapHangs" ThisKey="MaNhanVien" OtherKey="MaNhanVien" Type="NhapHang" />
+    </Type>
+  </Table>
+  <Table Name="dbo.NhapHang" Member="NhapHangs">
+    <Type Name="NhapHang">
+      <Column Name="MaNhapHang" Type="System.String" DbType="NVarChar(50) NOT NULL" IsPrimaryKey="true" CanBeNull="false" />
+      <Column Name="MaNhaCungCap" Type="System.String" DbType="NVarChar(50)" CanBeNull="true" />
+      <Column Name="MaNhanVien" Type="System.String" DbType="NVarChar(50)" CanBeNull="true" />
+      <Column Name="TongTien" Type="System.Double" DbType="Float" CanBeNull="true" />
+      <Column Name="DaThanhToan" Type="System.Double" DbType="Float" CanBeNull="true" />
+      <Column Name="TrangThai" Type="System.String" DbType="NVarChar(50)" CanBeNull="true" />
+      <Column Name="NgayNhap" Type="System.DateTime" DbType="DateTime" CanBeNull="true" />
+      <Association Name="NhapHang_ChiTietNhapHang" Member="ChiTietNhapHangs" ThisKey="MaNhapHang" OtherKey="MaNhapHang" Type="ChiTietNhapHang" />
+      <Association Name="NhaCungCap_NhapHang" Member="NhaCungCap" ThisKey="MaNhaCungCap" OtherKey="MaNhaCungCap" Type="NhaCungCap" IsForeignKey="true" DeleteRule="CASCADE" />
+      <Association Name="NhanVien_NhapHang" Member="NhanVien" ThisKey="MaNhanVien" OtherKey="MaNhanVien" Type="NhanVien" IsForeignKey="true" DeleteRule="SET NULL" />
+    </Type>
+  </Table>
+  <Table Name="dbo.PhanPhoiVoucher" Member="PhanPhoiVouchers">
+    <Type Name="PhanPhoiVoucher">
+      <Column Name="ID" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
+      <Column Name="MaVoucher" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="MaKhachHang" Type="System.String" DbType="NVarChar(50)" CanBeNull="true" />
+      <Column Name="DaSuDung" Type="System.Boolean" DbType="Bit" CanBeNull="true" />
+      <Column Name="NgaySuDung" Type="System.DateTime" DbType="DateTime" CanBeNull="true" />
+      <Association Name="KhachHang_PhanPhoiVoucher" Member="KhachHang" ThisKey="MaKhachHang" OtherKey="MaKhachHang" Type="KhachHang" IsForeignKey="true" DeleteRule="CASCADE" />
+      <Association Name="Voucher_PhanPhoiVoucher" Member="Voucher" ThisKey="MaVoucher" OtherKey="MaVoucher" Type="Voucher" IsForeignKey="true" DeleteRule="CASCADE" />
+    </Type>
+  </Table>
+  <Table Name="dbo.ThanhToan" Member="ThanhToans">
+    <Type Name="ThanhToan">
+      <Column Name="MaThanhToan" Type="System.String" DbType="NVarChar(50) NOT NULL" IsPrimaryKey="true" CanBeNull="false" />
+      <Column Name="MaDonHang" Type="System.String" DbType="NVarChar(50)" CanBeNull="true" />
+      <Column Name="PhuongThucThanhToan" Type="System.String" DbType="NVarChar(50)" CanBeNull="true" />
+      <Column Name="MaGiaoDich" Type="System.String" DbType="NVarChar(100)" CanBeNull="true" />
+      <Column Name="TrangThai" Type="System.String" DbType="NVarChar(20)" CanBeNull="true" />
+      <Column Name="NgayThanhToan" Type="System.DateTime" DbType="DateTime" CanBeNull="true" />
+      <Association Name="DonHang_ThanhToan" Member="DonHang" ThisKey="MaDonHang" OtherKey="MaDonHang" Type="DonHang" IsForeignKey="true" DeleteRule="CASCADE" />
+    </Type>
+  </Table>
+  <Table Name="dbo.ThongBao" Member="ThongBaos">
+    <Type Name="ThongBao">
+      <Column Name="MaThongBao" Type="System.String" DbType="NVarChar(50) NOT NULL" IsPrimaryKey="true" CanBeNull="false" />
+      <Column Name="MaKhachHang" Type="System.String" DbType="NVarChar(50)" CanBeNull="true" />
+      <Column Name="TieuDe" Type="System.String" DbType="NVarChar(255)" CanBeNull="true" />
+      <Column Name="NoiDung" Type="System.String" DbType="NVarChar(MAX)" CanBeNull="true" />
+      <Column Name="DaDoc" Type="System.Boolean" DbType="Bit" CanBeNull="true" />
+      <Column Name="NgayGui" Type="System.DateTime" DbType="DateTime" CanBeNull="true" />
+      <Association Name="KhachHang_ThongBao" Member="KhachHang" ThisKey="MaKhachHang" OtherKey="MaKhachHang" Type="KhachHang" IsForeignKey="true" DeleteRule="CASCADE" />
+    </Type>
+  </Table>
+  <Table Name="dbo.ThuongHieu" Member="ThuongHieus">
+    <Type Name="ThuongHieu">
+      <Column Name="MaThuongHieu" Type="System.String" DbType="NVarChar(50) NOT NULL" IsPrimaryKey="true" CanBeNull="false" />
+      <Column Name="TenThuongHieu" Type="System.String" DbType="NVarChar(100)" CanBeNull="true" />
+      <Column Name="MoTa" Type="System.String" DbType="NVarChar(MAX)" CanBeNull="true" />
+      <Column Name="Logo" Type="System.String" DbType="NVarChar(255)" CanBeNull="true" />
+      <Column Name="TrangThai" Type="System.Boolean" DbType="Bit" CanBeNull="true" />
+      <Association Name="ThuongHieu_HangHoa" Member="HangHoas" ThisKey="MaThuongHieu" OtherKey="MaThuongHieu" Type="HangHoa" />
+    </Type>
+  </Table>
+  <Table Name="dbo.Voucher" Member="Vouchers">
+    <Type Name="Voucher">
+      <Column Name="MaVoucher" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
+      <Column Name="MaVoucherCode" Type="System.String" DbType="NVarChar(20)" CanBeNull="true" />
+      <Column Name="TenVoucher" Type="System.String" DbType="NVarChar(100)" CanBeNull="true" />
+      <Column Name="IsPublic" Type="System.Boolean" DbType="Bit" CanBeNull="true" />
+      <Column Name="MoTa" Type="System.String" DbType="NVarChar(255)" CanBeNull="true" />
+      <Column Name="LoaiGiamGia" Type="System.String" DbType="NVarChar(20)" CanBeNull="true" />
+      <Column Name="GiaTriGiamGia" Type="System.Double" DbType="Float" CanBeNull="true" />
+      <Column Name="DonHangToiThieu" Type="System.Double" DbType="Float" CanBeNull="true" />
+      <Column Name="SoLuong" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="SoLuongDaDung" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="NgayBatDau" Type="System.DateTime" DbType="DateTime" CanBeNull="true" />
+      <Column Name="NgayKetThuc" Type="System.DateTime" DbType="DateTime" CanBeNull="true" />
+      <Column Name="TrangThai" Type="System.String" DbType="NVarChar(20)" CanBeNull="true" />
+      <Column Name="NgayTao" Type="System.DateTime" DbType="DateTime" CanBeNull="true" />
+      <Association Name="Voucher_DonHang" Member="DonHangs" ThisKey="MaVoucher" OtherKey="MaVoucher" Type="DonHang" />
+      <Association Name="Voucher_PhanPhoiVoucher" Member="PhanPhoiVouchers" ThisKey="MaVoucher" OtherKey="MaVoucher" Type="PhanPhoiVoucher" />
+    </Type>
+  </Table>
+</Database>

@@ -20,8 +20,8 @@ namespace Manager.Controllers
 {
     public class HomeController : Controller
     {
-        SHOPDataContext data = new SHOPDataContext("Data Source=ACERNITRO5;Initial Catalog=CuaHang2;Persist Security Info=True;Use" +
-                  "r ID=sa;Password=123;Encrypt=True;TrustServerCertificate=True");
+        SHOPDataContext data;
+        string connStr = ConfigurationManager.ConnectionStrings["CuaHangAzureConnectionString"].ConnectionString;
 
         // Khai báo thông tin email
         private readonly string _emailAddress = "managertask34@gmail.com";
@@ -33,6 +33,7 @@ namespace Manager.Controllers
         #region TRANG-CHU
         public ActionResult Dashboard()
         {
+            data = new SHOPDataContext(connStr);
             // Kiểm tra đăng nhập
             if (Session["UserID"] == null)
             {
@@ -128,6 +129,7 @@ namespace Manager.Controllers
         [HttpPost]
         public ActionResult Login(string username, string password)
         {
+            data = new SHOPDataContext(connStr);
             if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(password))
             {
                 ViewBag.Error = "Vui lòng nhập đầy đủ thông tin";
@@ -222,6 +224,7 @@ namespace Manager.Controllers
         [HttpPost]
         public JsonResult DoiMatKhau(string oldPassword, string newPassword)
         {
+            data = new SHOPDataContext(connStr);
             try
             {
                 // Kiểm tra người dùng đã đăng nhập chưa
@@ -274,6 +277,7 @@ namespace Manager.Controllers
         #region DanhMuc
         public ActionResult DanhSachDanhMuc()
         {
+            data = new SHOPDataContext(connStr);
             // Kiểm tra đăng nhập
             if (Session["UserID"] == null)
             {
@@ -286,6 +290,7 @@ namespace Manager.Controllers
         [HttpPost]
         public JsonResult ThemDanhMuc(string TenDanhMuc)
         {
+            data = new SHOPDataContext(connStr);
             try
             {
                 // Kiểm tra dữ liệu đầu vào
@@ -322,6 +327,7 @@ namespace Manager.Controllers
         [HttpPost]
         public JsonResult SuaDanhMuc(string MaDanhMuc, string TenDanhMuc)
         {
+            data = new SHOPDataContext(connStr);
             try
             {
                 // Kiểm tra dữ liệu đầu vào
@@ -352,6 +358,7 @@ namespace Manager.Controllers
         [HttpPost]
         public JsonResult XoaDanhMuc(string id)
         {
+            data = new SHOPDataContext(connStr);
             try
             {
                 // Tìm danh mục cần xóa
@@ -383,6 +390,7 @@ namespace Manager.Controllers
         [HttpPost]
         public JsonResult XoaNhieuDanhMuc(List<string> ids)
         {
+            data = new SHOPDataContext(connStr);
             try
             {
                 if (ids == null || ids.Count == 0)
@@ -441,6 +449,7 @@ namespace Manager.Controllers
         #region ThuongHieu
         public ActionResult DanhSachThuongHieu()
         {
+            data = new SHOPDataContext(connStr);
             if (Session["UserID"] == null)
             {
                 return RedirectToAction("Index");
@@ -462,6 +471,7 @@ namespace Manager.Controllers
         [HttpPost]
         public JsonResult XoaMotThuongHieu(string id)
         {
+            data = new SHOPDataContext(connStr);
             var thuongHieu = data.ThuongHieus.FirstOrDefault(t => t.MaThuongHieu == id);
 
             if (thuongHieu == null)
@@ -485,6 +495,7 @@ namespace Manager.Controllers
         [ValidateInput(false)]
         public JsonResult TaoThuongHieu(string TenThuongHieu, string MoTa, HttpPostedFileBase Logo, bool TrangThai)
         {
+            data = new SHOPDataContext(connStr);
             try
             {
                 // Giải mã nội dung mô tả
@@ -528,6 +539,7 @@ namespace Manager.Controllers
         [ValidateInput(false)]
         public JsonResult SuaThuongHieu(string MaThuongHieu, string TenThuongHieu, string MoTa, HttpPostedFileBase Logo, bool TrangThai)
         {
+            data = new SHOPDataContext(connStr);
             try
             {
                 // Giải mã nội dung mô tả
@@ -564,6 +576,7 @@ namespace Manager.Controllers
         [HttpPost]
         public JsonResult XoaNhieuThuongHieu(string[] ids)
         {
+            data = new SHOPDataContext(connStr);
             try
             {
                 if (ids == null || ids.Length == 0)
@@ -630,6 +643,7 @@ namespace Manager.Controllers
         #region HANGHOA
         public ActionResult DanhSachHangHoa()
         {
+            data = new SHOPDataContext(connStr);
             // Kiểm tra đăng nhập
             if (Session["UserID"] == null)
             {
@@ -641,6 +655,7 @@ namespace Manager.Controllers
         }
         public ActionResult DSBienTheHangHoa(string maHangHoa)
         {
+            data = new SHOPDataContext(connStr);
             // Kiểm tra đăng nhập
             if (Session["UserID"] == null)
             {
@@ -669,6 +684,7 @@ namespace Manager.Controllers
         }
         public ActionResult TaoHangHoa()
         {
+            data = new SHOPDataContext(connStr);
             // Kiểm tra đăng nhập
             if (Session["UserID"] == null)
             {
@@ -689,6 +705,7 @@ namespace Manager.Controllers
         
         public ActionResult SuaHangHoa(string id)
         {
+            data = new SHOPDataContext(connStr);
             // Kiểm tra đăng nhập
             if (Session["UserID"] == null)
             {
@@ -716,6 +733,7 @@ namespace Manager.Controllers
         [HttpPost]
         public JsonResult TaoHangHoa(string TenHangHoa, string MaDanhMuc, string MaThuongHieu, string MoTa, string MoTaDai, string TrangThai, HttpPostedFileBase HinhAnh)
         {
+            data = new SHOPDataContext(connStr);
             try
             {
                 // Tạo mã hàng hóa tự động
@@ -771,6 +789,7 @@ namespace Manager.Controllers
         // Hàm tính điểm tương đồng cho hàng hóa mới
         private void TinhDiemTuongDongChoHangHoa(string maHangHoaMoi)
         {
+            data = new SHOPDataContext(connStr);
             try
             {
                 // Lấy hàng hóa mới vừa thêm
@@ -922,6 +941,7 @@ namespace Manager.Controllers
         [HttpPost]
         public JsonResult SuaHangHoa(string MaHangHoa, string TenHangHoa, string MaDanhMuc, string MaThuongHieu, string MoTa, string MoTaDai, string TrangThai, HttpPostedFileBase HinhAnh)
         {
+            data = new SHOPDataContext(connStr);
             try
             {
                 var hangHoa = data.HangHoas.FirstOrDefault(h => h.MaHangHoa == MaHangHoa);
@@ -990,6 +1010,7 @@ namespace Manager.Controllers
         // Hàm cập nhật điểm tương đồng khi sửa hàng hóa
         private void CapNhatDiemTuongDongChoHangHoa(string maHangHoa)
         {
+            data = new SHOPDataContext(connStr);
             try
             {
                 // Lấy tất cả bản ghi có liên quan đến hàng hóa này
@@ -1015,6 +1036,7 @@ namespace Manager.Controllers
         [HttpPost]
         public JsonResult XoaMotHangHoa(string id)
         {
+            data = new SHOPDataContext(connStr);
             try
             {
                 var hangHoa = data.HangHoas.FirstOrDefault(h => h.MaHangHoa == id);
@@ -1068,6 +1090,7 @@ namespace Manager.Controllers
         // Hàm xóa điểm tương đồng khi xóa hàng hóa
         private void XoaDiemTuongDongCuaHangHoa(string maHangHoa)
         {
+            data = new SHOPDataContext(connStr);
             try
             {
                 // Lấy tất cả bản ghi có liên quan đến hàng hóa này
@@ -1090,6 +1113,7 @@ namespace Manager.Controllers
         [HttpPost]
         public JsonResult XoaNhieuHangHoa(string[] ids)
         {
+            data = new SHOPDataContext(connStr);
             try
             {
                 if (ids == null || ids.Length == 0)
@@ -1177,6 +1201,7 @@ namespace Manager.Controllers
         #region KHACH-HANG
         public ActionResult DanhSachKhachHang()
         {
+            data = new SHOPDataContext(connStr);
             // Kiểm tra đăng nhập
             if (Session["UserID"] == null)
             {
@@ -1187,6 +1212,7 @@ namespace Manager.Controllers
         }
         public ActionResult DiaChiKhach(string id)
         {
+            data = new SHOPDataContext(connStr);
             // Kiểm tra đăng nhập
             if (Session["UserID"] == null)
             {
@@ -1210,6 +1236,7 @@ namespace Manager.Controllers
         [HttpPost]
         public JsonResult ThemDiaChiKhachHang(string MaKhachHang, string TenNguoiNhan, string SoDienThoai, string DiaChiDayDu, bool LaMacDinh)
         {
+            data = new SHOPDataContext(connStr);
             try
             {
                 // Kiểm tra dữ liệu đầu vào
@@ -1270,6 +1297,7 @@ namespace Manager.Controllers
         [HttpPost]
         public JsonResult SuaDiaChiKhachHang(string MaDiaChi, string TenNguoiNhan, string SoDienThoai, string DiaChiDayDu, bool LaMacDinh)
         {
+            data = new SHOPDataContext(connStr);
             try
             {
                 // Kiểm tra dữ liệu đầu vào
@@ -1318,6 +1346,7 @@ namespace Manager.Controllers
         [HttpPost]
         public JsonResult XoaDiaChiKhachHang(string MaDiaChi)
         {
+            data = new SHOPDataContext(connStr);
             try
             {
                 // Tìm địa chỉ cần xóa
@@ -1371,6 +1400,7 @@ namespace Manager.Controllers
         [HttpPost]
         public JsonResult DatDiaChiMacDinh(string MaDiaChi)
         {
+            data = new SHOPDataContext(connStr);
             try
             {
                 // Tìm địa chỉ cần đặt làm mặc định
@@ -1424,6 +1454,7 @@ namespace Manager.Controllers
         [HttpPost]
         public JsonResult TaoKhachHang(string TenDangNhap, string HoTen, string MatKhau, string Email, string SoDienThoai, string DiaChi, string TrangThai)
         {
+            data = new SHOPDataContext(connStr);
             try
             {
                 // Kiểm tra tên đăng nhập đã tồn tại chưa
@@ -1475,6 +1506,7 @@ namespace Manager.Controllers
         [HttpPost]
         public JsonResult SuaKhachHang(string MaKhachHang, string HoTen, string Email, string SoDienThoai, string DiaChi, string TrangThai, string MatKhau)
         {
+            data = new SHOPDataContext(connStr);
             try
             {
                 var khachHang = data.KhachHangs.FirstOrDefault(k => k.MaKhachHang == MaKhachHang);
@@ -1517,6 +1549,7 @@ namespace Manager.Controllers
         [HttpGet]
         public string LayDiaChiKhachHang(string id)
         {
+            data = new SHOPDataContext(connStr);
             var khachHang = data.KhachHangs.FirstOrDefault(k => k.MaKhachHang == id);
             return khachHang?.HoTen ?? "";
         }
@@ -1524,6 +1557,7 @@ namespace Manager.Controllers
         [HttpPost]
         public JsonResult XoaMotKhachHang(string id)
         {
+            data = new SHOPDataContext(connStr);
             try
             {
                 var khachHang = data.KhachHangs.FirstOrDefault(k => k.MaKhachHang == id);
@@ -1561,6 +1595,7 @@ namespace Manager.Controllers
         [HttpPost]
         public JsonResult XoaNhieuKhachHang(string[] ids)
         {
+            data = new SHOPDataContext(connStr);
             try
             {
                 if (ids == null || ids.Length == 0)
@@ -1632,6 +1667,7 @@ namespace Manager.Controllers
         #region DonBanHang
         public ActionResult DanhSachDonBanHang()
         {
+            data = new SHOPDataContext(connStr);
             // Kiểm tra đăng nhập
             if (Session["UserID"] == null)
             {
@@ -1643,6 +1679,7 @@ namespace Manager.Controllers
         
         public ActionResult ChiTietDonBanHang(string id)
         {
+            data = new SHOPDataContext(connStr);
             if (Session["UserID"] == null)
             {
                 return RedirectToAction("Index");
@@ -1683,6 +1720,7 @@ namespace Manager.Controllers
         [HttpGet]
         public JsonResult LayThongTinDonHang(string id)
         {
+            data = new SHOPDataContext(connStr);
             try
             {
                 var donHang = data.DonHangs.FirstOrDefault(d => d.MaDonHang == id);
@@ -1710,6 +1748,7 @@ namespace Manager.Controllers
         [HttpPost]
         public JsonResult CapNhatDonHang(string MaDonHang, string TrangThaiDonHang, string TrangThaiThanhToan)
         {
+            data = new SHOPDataContext(connStr);
             try
             {
                 var donHang = data.DonHangs.FirstOrDefault(d => d.MaDonHang == MaDonHang);
@@ -1742,6 +1781,7 @@ namespace Manager.Controllers
         [HttpPost]
         public JsonResult XoaDonHang(string id)
         {
+            data = new SHOPDataContext(connStr);
             try
             {
                 var donHang = data.DonHangs.FirstOrDefault(d => d.MaDonHang == id);
@@ -1786,6 +1826,7 @@ namespace Manager.Controllers
         [HttpPost]
         public JsonResult XoaNhieuDonHang(string[] ids)
         {
+            data = new SHOPDataContext(connStr);
             try
             {
                 if (ids == null || ids.Length == 0)
@@ -1836,6 +1877,7 @@ namespace Manager.Controllers
         #region DonNhapHang
         public ActionResult DanhSachNhapHang()
         {
+            data = new SHOPDataContext(connStr);
             // Kiểm tra đăng nhập
             if (Session["UserID"] == null)
             {
@@ -1854,6 +1896,7 @@ namespace Manager.Controllers
         
         public ActionResult ChiTietNhapHang(string id)
         {
+            data = new SHOPDataContext(connStr);
             // Kiểm tra đăng nhập
             if (Session["UserID"] == null)
             {
@@ -1876,6 +1919,7 @@ namespace Manager.Controllers
         [HttpPost]
         public JsonResult TaoNhapHang(NhapHangViewModel model)
         {
+            data = new SHOPDataContext(connStr);
             try
             {
                 if (model == null || string.IsNullOrEmpty(model.MaNhaCungCap) || model.ChiTietNhapHangs == null || !model.ChiTietNhapHangs.Any())
@@ -1959,6 +2003,7 @@ namespace Manager.Controllers
         [HttpGet]
         public JsonResult LayThongTinNhapHang(string id)
         {
+            data = new SHOPDataContext(connStr);
             try
             {
                 var nhapHang = data.NhapHangs.FirstOrDefault(n => n.MaNhapHang == id);
@@ -1987,6 +2032,7 @@ namespace Manager.Controllers
         [HttpPost]
         public JsonResult CapNhatNhapHang(string MaNhapHang, string MaNhaCungCap, double DaThanhToan, string TrangThai)
         {
+            data = new SHOPDataContext(connStr);
             try
             {
                 var nhapHang = data.NhapHangs.FirstOrDefault(n => n.MaNhapHang == MaNhapHang);
@@ -2033,6 +2079,7 @@ namespace Manager.Controllers
         [HttpPost]
         public JsonResult XoaNhapHang(string id)
         {
+            data = new SHOPDataContext(connStr);
             try
             {
                 var nhapHang = data.NhapHangs.FirstOrDefault(n => n.MaNhapHang == id);
@@ -2073,6 +2120,7 @@ namespace Manager.Controllers
         [HttpPost]
         public JsonResult XoaNhieuNhapHang(string[] ids)
         {
+            data = new SHOPDataContext(connStr);
             try
             {
                 if (ids == null || ids.Length == 0)
@@ -2119,6 +2167,7 @@ namespace Manager.Controllers
         #region Voucher
         public ActionResult DanhSachVoucher()
         {
+            data = new SHOPDataContext(connStr);
             // Kiểm tra đăng nhập
             if (Session["UserID"] == null)
             {
@@ -2140,6 +2189,7 @@ namespace Manager.Controllers
 
         public ActionResult DanhSachNhanVien()
         {
+            data = new SHOPDataContext(connStr);
             // Kiểm tra đăng nhập
             if (Session["UserID"] == null)
             {
@@ -2152,6 +2202,7 @@ namespace Manager.Controllers
         [HttpPost]
         public JsonResult TaoNhanVien(string TenDangNhap, string HoTen, string DiaChi, string MatKhau, string Email, string SoDienThoai, string TrangThai, string VaiTro)
         {
+            data = new SHOPDataContext(connStr);
             try
             {
                 // Kiểm tra tên đăng nhập đã tồn tại chưa
@@ -2204,6 +2255,7 @@ namespace Manager.Controllers
         [HttpPost]
         public JsonResult SuaNhanVien(string MaNhanVien, string HoTen, string DiaChi, string Email, string SoDienThoai, string TrangThai, string VaiTro, string MatKhau = null)
         {
+            data = new SHOPDataContext(connStr);
             try
             {
                 var nhanVien = data.NhanViens.FirstOrDefault(nv => nv.MaNhanVien == MaNhanVien);
@@ -2247,6 +2299,7 @@ namespace Manager.Controllers
         [HttpPost]
         public JsonResult XoaMotNhanVien(string id)
         {
+            data = new SHOPDataContext(connStr);
             try
             {
                 // Kiểm tra nhân viên có tồn tại không
@@ -2276,6 +2329,7 @@ namespace Manager.Controllers
         [HttpPost]
         public JsonResult XoaNhieuNhanVien(string[] ids)
         {
+            data = new SHOPDataContext(connStr);
             try
             {
                 if (ids == null || ids.Length == 0)
@@ -2328,6 +2382,7 @@ namespace Manager.Controllers
         [HttpGet]
         public JsonResult LayThongTinNhanVien(string id)
         {
+            data = new SHOPDataContext(connStr);
             try
             {
                 var nhanVien = data.NhanViens.FirstOrDefault(nv => nv.MaNhanVien == id);
@@ -2358,6 +2413,7 @@ namespace Manager.Controllers
         [HttpPost]
         public JsonResult XoaVoucher(int id)
         {
+            data = new SHOPDataContext(connStr);
             try
             {
                 // Kiểm tra xem voucher có được sử dụng trong đơn hàng không
@@ -2387,6 +2443,7 @@ namespace Manager.Controllers
         [HttpPost]
         public JsonResult XoaNhieuVoucher(int[] ids)
         {
+            data = new SHOPDataContext(connStr);
             try
             {
                 if (ids == null || ids.Length == 0)
@@ -2442,6 +2499,7 @@ namespace Manager.Controllers
         public JsonResult TaoBienTheHangHoa(string MaHangHoa, string MauSac, string DungLuong, string CPU, 
             string RAM, string KichThuocManHinh, string LoaiBoNho, decimal GiaNhap, decimal GiaBan, decimal? GiaKhuyenMai, int SoLuongTonKho)
         {
+            data = new SHOPDataContext(connStr);
             try
             {
                 // Kiểm tra hàng hóa có tồn tại
@@ -2489,6 +2547,7 @@ namespace Manager.Controllers
         public JsonResult SuaBienTheHangHoa(string MaBienThe, string MauSac, string DungLuong, string CPU, 
             string RAM, string KichThuocManHinh, string LoaiBoNho, decimal GiaNhap, decimal GiaBan, decimal? GiaKhuyenMai, int SoLuongTonKho)
         {
+            data = new SHOPDataContext(connStr);
             try
             {
                 var bienThe = data.BienTheHangHoas.FirstOrDefault(b => b.MaBienThe == MaBienThe);
@@ -2521,6 +2580,7 @@ namespace Manager.Controllers
         [HttpPost]
         public JsonResult XoaMotBienTheHangHoa(string id)
         {
+            data = new SHOPDataContext(connStr);
             try 
             {
                 var bienThe = data.BienTheHangHoas.FirstOrDefault(b => b.MaBienThe == id);
@@ -2550,6 +2610,7 @@ namespace Manager.Controllers
         [HttpPost]
         public JsonResult XoaNhieuBienTheHangHoa(string[] ids)
         {
+            data = new SHOPDataContext(connStr);
             try
             {
                 if (ids == null || ids.Length == 0)
@@ -2618,6 +2679,7 @@ namespace Manager.Controllers
         #region NhaCungCap
         public ActionResult DanhSachNhaCungCap()
         {
+            data = new SHOPDataContext(connStr);
             // Kiểm tra đăng nhập
             if (Session["UserID"] == null)
             {
@@ -2630,6 +2692,7 @@ namespace Manager.Controllers
         [HttpPost]
         public JsonResult ThemNhaCungCap(string TenNhaCungCap, string LienHe, string Email, string SoDienThoai)
         {
+            data = new SHOPDataContext(connStr);
             try
             {
                 // Kiểm tra dữ liệu đầu vào
@@ -2669,6 +2732,7 @@ namespace Manager.Controllers
         [HttpPost]
         public JsonResult SuaNhaCungCap(string MaNhaCungCap, string TenNhaCungCap, string LienHe, string Email, string SoDienThoai)
         {
+            data = new SHOPDataContext(connStr);
             try
             {
                 // Kiểm tra dữ liệu đầu vào
@@ -2702,6 +2766,7 @@ namespace Manager.Controllers
         [HttpPost]
         public JsonResult XoaNhaCungCap(string id)
         {
+            data = new SHOPDataContext(connStr);
             try
             {
                 // Tìm nhà cung cấp cần xóa
@@ -2733,6 +2798,7 @@ namespace Manager.Controllers
         [HttpPost]
         public JsonResult XoaNhieuNhaCungCap(List<string> ids)
         {
+            data = new SHOPDataContext(connStr);
             try
             {
                 if (ids == null || ids.Count == 0)
@@ -2792,6 +2858,7 @@ namespace Manager.Controllers
         // Thêm controller để quản lý nhiều hình ảnh cho hàng hóa
         public ActionResult QuanLyHinhAnh(string maBienThe)
         {
+            data = new SHOPDataContext(connStr);
             BienTheHangHoa bienThe = data.BienTheHangHoas.SingleOrDefault(bt => bt.MaBienThe == maBienThe);
             if (bienThe == null)
             {
@@ -2811,6 +2878,7 @@ namespace Manager.Controllers
         [HttpPost]
         public JsonResult UploadHinhAnh(string MaBienThe, HttpPostedFileBase HinhAnh)
         {
+            data = new SHOPDataContext(connStr);
             try
             {
                 if (HinhAnh == null || HinhAnh.ContentLength <= 0)
@@ -2856,6 +2924,7 @@ namespace Manager.Controllers
         [HttpPost]
         public JsonResult UploadMultipleHinhAnh(string MaBienThe)
         {
+            data = new SHOPDataContext(connStr);
             try
             {
                 if (Request.Files.Count == 0)
@@ -2925,6 +2994,7 @@ namespace Manager.Controllers
         [HttpPost]
         public JsonResult XoaHinhAnh(string MaBienThe, string fileName, int? maHinhAnh = null)
         {
+            data = new SHOPDataContext(connStr);
             try
             {
                 if (string.IsNullOrEmpty(fileName))
@@ -2968,6 +3038,7 @@ namespace Manager.Controllers
         [HttpPost]
         public JsonResult DatHinhAnhChinh(string MaBienThe, string fileName, int maHinhAnh)
         {
+            data = new SHOPDataContext(connStr);
             try
             {
                 BienTheHangHoa bienThe = data.BienTheHangHoas.SingleOrDefault(bt => bt.MaBienThe == MaBienThe);
@@ -3008,6 +3079,7 @@ namespace Manager.Controllers
         // Quản lý mô tả chi tiết hàng hóa
         public ActionResult MoTaChiTietHangHoa(string maHangHoa)
         {
+            data = new SHOPDataContext(connStr);
             HangHoa hangHoa = data.HangHoas.SingleOrDefault(h => h.MaHangHoa == maHangHoa);
             if (hangHoa == null)
             {
@@ -3030,6 +3102,7 @@ namespace Manager.Controllers
         [ValidateInput(false)]
         public JsonResult LuuMoTaChiTiet(string MaHangHoa, string TieuDe, string NoiDung)
         {
+            data = new SHOPDataContext(connStr);
             try
             {
                 if (string.IsNullOrEmpty(MaHangHoa))
@@ -3081,6 +3154,7 @@ namespace Manager.Controllers
         [HttpPost]
         public JsonResult XoaMoTaChiTiet(string MaHangHoa)
         {
+            data = new SHOPDataContext(connStr);
             try
             {
                 if (string.IsNullOrEmpty(MaHangHoa))
@@ -3107,6 +3181,7 @@ namespace Manager.Controllers
 
         public ActionResult BaoCaoDoanhThu()
         {
+            data = new SHOPDataContext(connStr);
             // Tính doanh thu và lợi nhuận hôm nay
             var doanhThuHomNay = data.DonHangs
                 .Where(d => d.NgayTao.Value.Date == DateTime.Now.Date && d.TrangThaiDonHang == "HoanThanh")
@@ -3200,6 +3275,7 @@ namespace Manager.Controllers
 
         public ActionResult BaoCaoSanPham()
         {
+            data = new SHOPDataContext(connStr);
             // Kiểm tra đăng nhập
             if (Session["UserID"] == null)
             {
@@ -3258,6 +3334,7 @@ namespace Manager.Controllers
 
         public ActionResult BaoCaoKhachHang()
         {
+            data = new SHOPDataContext(connStr);
             // Kiểm tra đăng nhập
             if (Session["UserID"] == null)
             {
@@ -3398,6 +3475,7 @@ namespace Manager.Controllers
         [HttpPost]
         public ActionResult RequestPasswordReset(string employeeId, string email)
         {
+            data = new SHOPDataContext(connStr);
             // Kiểm tra mã nhân viên và email có khớp không
             var employee = data.NhanViens.FirstOrDefault(e => 
                 e.MaNhanVien == employeeId && 
@@ -3592,6 +3670,7 @@ namespace Manager.Controllers
 
         public ActionResult DanhSachTangKem()
         {
+            data = new SHOPDataContext(connStr);
             List<KhuyenMaiTangKem> danhSachTangKem = data.KhuyenMaiTangKems.ToList();
             // Lấy danh sách hàng hóa để hiển thị trong dropdown
             ViewBag.DanhSachHangHoa = data.HangHoas.ToList();
@@ -3601,6 +3680,7 @@ namespace Manager.Controllers
         [HttpPost]
         public JsonResult ThemTangKem(float GiaTriDonHangToiThieu, string MaHangHoaTangKem, int SoLuongTang, DateTime NgayBatDau, DateTime NgayKetThuc)
         {
+            data = new SHOPDataContext(connStr);
             try
             {
                 // Kiểm tra hàng hóa tặng có tồn tại không
@@ -3647,6 +3727,7 @@ namespace Manager.Controllers
         [HttpPost]
         public JsonResult SuaTangKem(int IDKM, float GiaTriDonHangToiThieu, string MaHangHoaTangKem, int SoLuongTang, DateTime NgayBatDau, DateTime NgayKetThuc)
         {
+            data = new SHOPDataContext(connStr);
             try
             {
                 // Kiểm tra hàng hóa tặng có tồn tại không
@@ -3694,6 +3775,7 @@ namespace Manager.Controllers
         [HttpPost]
         public JsonResult XoaTangKem(int id)
         {
+            data = new SHOPDataContext(connStr);
             try
             {
                 var tangKem = data.KhuyenMaiTangKems.FirstOrDefault(km => km.IDKM == id);
@@ -3716,6 +3798,7 @@ namespace Manager.Controllers
         [HttpPost]
         public JsonResult XoaNhieuTangKem(List<int> ids)
         {
+            data = new SHOPDataContext(connStr);
             try
             {
                 var tangKemList = data.KhuyenMaiTangKems.Where(km => ids.Contains(km.IDKM)).ToList();
@@ -3738,6 +3821,7 @@ namespace Manager.Controllers
         [HttpPost]
         public JsonResult CapNhatThanhToanNhapHang(string MaNhapHang, string MaNhaCungCap, double ThanhToanThem, string TrangThai)
         {
+            data = new SHOPDataContext(connStr);
             try
             {
                 var nhapHang = data.NhapHangs.FirstOrDefault(n => n.MaNhapHang == MaNhapHang);
@@ -3790,6 +3874,7 @@ namespace Manager.Controllers
         [HttpPost]
         public ActionResult CapNhatGiaoHang(GiaoHang model)
         {
+            data = new SHOPDataContext(connStr);
             try
             {
                 var giaoHang = data.GiaoHangs.FirstOrDefault(g => g.MaGiaoHang == model.MaGiaoHang);
@@ -3937,6 +4022,7 @@ namespace Manager.Controllers
         [HttpPost]
         public JsonResult PhanPhoiVoucher(int maVoucher, List<string> danhSachKhachHang)
         {
+            data = new SHOPDataContext(connStr);
             try
             {
                 var voucher = data.Vouchers.FirstOrDefault(v => v.MaVoucher == maVoucher);
@@ -3976,6 +4062,7 @@ namespace Manager.Controllers
         [HttpPost]
         public JsonResult HuyPhanPhoiVoucher(int maVoucher, List<string> danhSachKhachHang)
         {
+            data = new SHOPDataContext(connStr);
             try
             {
                 var phanPhoiCanXoa = data.PhanPhoiVouchers
@@ -4002,6 +4089,7 @@ namespace Manager.Controllers
         [HttpGet]
         public JsonResult LayDanhSachPhanPhoiVoucher(int maVoucher)
         {
+            data = new SHOPDataContext(connStr);
             try
             {
                 var danhSachPhanPhoi = data.PhanPhoiVouchers
@@ -4026,6 +4114,7 @@ namespace Manager.Controllers
         [HttpGet]
         public JsonResult LayDanhSachKhachHang()
         {
+            data = new SHOPDataContext(connStr);
             try
             {
                 var khachHang = data.KhachHangs
@@ -4047,6 +4136,7 @@ namespace Manager.Controllers
 
         private void GuiThongBaoVoucher(string maKhachHang, string tieuDe, string noiDung)
         {
+            data = new SHOPDataContext(connStr);
             try
             {
                 // Lấy thông tin khách hàng
@@ -4285,6 +4375,7 @@ namespace Manager.Controllers
         [HttpPost]
         public JsonResult SuaVoucher(VoucherModel voucher)
         {
+            data = new SHOPDataContext(connStr);
             try
             {
                 var existingVoucher = data.Vouchers.FirstOrDefault(v => v.MaVoucher == voucher.MaVoucher);
@@ -4357,6 +4448,7 @@ namespace Manager.Controllers
 
         private void GuiThongBaoDonHang(string maKhachHang, string maDonHang, string trangThaiMoi)
         {
+            data = new SHOPDataContext(connStr);
             try
             {
                 // Lấy thông tin khách hàng
