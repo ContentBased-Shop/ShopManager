@@ -481,12 +481,11 @@
                     
                     // Lọc theo trạng thái thanh toán
                     if (showRow && paymentStatus) {
-                        var statusClass = row.find('td:eq(6) .badge').attr('class');
-                        var statusText = row.find('td:eq(6) .badge').text().trim();
+                        var statusText = row.find('td:eq(7) .badge').text().trim();
                         
-                        if (paymentStatus === "Chuathanhtoan" && !statusClass.includes('bg-danger')) showRow = false;
-                        else if (paymentStatus === "Dathanhtoanmotphan" && !statusClass.includes('bg-warning')) showRow = false;
-                        else if (paymentStatus === "Dathanhtoanhet" && !statusClass.includes('bg-success')) showRow = false;
+                        if (paymentStatus === "Chuathanhtoan" && statusText !== "Chưa thanh toán") showRow = false;
+                        else if (paymentStatus === "Dathanhtoanmotphan" && statusText !== "Đã thanh toán một phần") showRow = false;
+                        else if (paymentStatus === "Dathanhtoanhet" && statusText !== "Đã thanh toán hết") showRow = false;
                     }
                     
                     row.toggle(showRow);

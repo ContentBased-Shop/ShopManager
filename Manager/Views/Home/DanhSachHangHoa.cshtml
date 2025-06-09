@@ -77,7 +77,7 @@
                                 @item.TenHangHoa
                             </a>
                         </td>
-                        <td>@(item.DanhMuc.TenDanhMuc ?? "Chưa phân loại")</td>
+                        <td>@Html.Raw(item.DanhMuc.TenDanhMuc ?? "Chưa phân loại")</td>
                         <td>@(item.ThuongHieu.TenThuongHieu ?? "Chưa có")</td>
                         <td>@(item.MoTa.Length > 50 ? item.MoTa.Substring(0, 50) + "..." : item.MoTa ?? "Chưa có mô tả")</td>
                         <td>@(item.DanhGiaTrungBinh.Value.ToString("0.0") ?? "Chưa có")</td>

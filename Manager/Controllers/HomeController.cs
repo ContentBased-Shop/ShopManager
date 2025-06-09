@@ -4592,6 +4592,9 @@ namespace Manager.Controllers
                 System.Diagnostics.Debug.WriteLine("Lỗi gửi thông báo: " + ex.Message);
             }
         }
-
+        public ActionResult Reponse()
+        {
+            return View();
+        }
     }
 }

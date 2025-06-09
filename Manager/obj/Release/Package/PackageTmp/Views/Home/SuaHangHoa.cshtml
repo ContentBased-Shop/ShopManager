@@ -72,6 +72,12 @@
                             <div class="form-text">Trạng thái hoạt động của sản phẩm</div>
                         </div>
 
+                        <div class="mb-3">
+                            <label class="form-label">Hình ảnh sản phẩm</label>
+                            <input type="file" class="form-control" id="hinhAnh" name="HinhAnh" accept="image/*" />
+                            <div class="form-text">Chọn hình ảnh mới cho sản phẩm (nếu muốn thay đổi)</div>
+                        </div>
+
                         <button type="button" id="btnSuaHangHoa" class="btn btn-primary mt-3">
                             <i class="bi bi-save"></i> Lưu thay đổi
                         </button>
@@ -155,20 +161,38 @@
                 return;
             }
 
-            var formData = {
-                MaHangHoa: $('#maHangHoa').val(),
-                TenHangHoa: $('#tenHangHoa').val().trim(),
-                MaDanhMuc: $('#maDanhMuc').val(),
-                MaThuongHieu: $('#maThuongHieu').val(),
-                MoTa: $('#moTa').val().trim(),
-                MoTaDai: $('#moTaDai').val().trim(),
-                TrangThai: $('#trangThai').val()
-            };
+            var formData = new FormData();
+            formData.append('MaHangHoa', $('#maHangHoa').val());
+            formData.append('TenHangHoa', $('#tenHangHoa').val().trim());
+            formData.append('MaDanhMuc', $('#maDanhMuc').val());
+            formData.append('MaThuongHieu', $('#maThuongHieu').val());
+            formData.append('MoTa', $('#moTa').val().trim());
+            formData.append('MoTaDai', $('#moTaDai').val().trim());
+            formData.append('TrangThai', $('#trangThai').val());
+
+            // Thêm file ảnh nếu có
+            var fileInput = $('#hinhAnh')[0];
+            if (fileInput.files.length > 0) {
+                formData.append('HinhAnh', fileInput.files[0]);
+            }
+
+            // Log dữ liệu gửi đi
+            console.log('Dữ liệu gửi đi:');
+            for (var pair of formData.entries()) {
+                console.log(pair[0] + ': ' + pair[1]);
+            }
+
+            // Log file ảnh nếu có
+            if (fileInput.files.length > 0) {
+                console.log('File ảnh:', fileInput.files[0]);
+            }
 
             $.ajax({
                 url: '@Url.Action("SuaHangHoa", "Home")',
                 type: 'POST',
                 data: formData,
+                processData: false,
+                contentType: false,
                 success: function (response) {
                     if (response.success) {
                         // Hiển thị modal thành công
@@ -187,8 +211,9 @@
                         alert(response.message || "Cập nhật sản phẩm thất bại");
                     }
                 },
-                error: function () {
-                    alert("Lỗi khi gọi server");
+                error: function (xhr, status, error) {
+                    console.log('Lỗi:', xhr.responseText);
+                    alert("Lỗi khi gọi server: " + error);
                 }
             });
         });

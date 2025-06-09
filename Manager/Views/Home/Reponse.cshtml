@@ -1,0 +1,203 @@
+﻿@{
+    ViewBag.Title = "Reponse";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+<div class="container bg-white my-3 rounded-3">
+    <h2 class="section-title text-center position-relative mb-5 pt-4">
+        Quản trị viên - Quản lý câu hỏi & phản hồi
+    </h2>
+    <div class="input-group mb-3">
+        <span class="input-group-text bg-success text-white"><i class="bi bi-search"></i></span>
+        <input type="text" id="searchInput" class="form-control" placeholder="Tìm theo tên người hỏi...">
+    </div>
+    <ul class="nav nav-tabs mb-4" id="qaTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="all-tab" data-bs-toggle="tab" data-bs-target="#all-questions" type="button" role="tab">Tất cả câu hỏi</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="unanswered-tab" data-bs-toggle="tab" data-bs-target="#unanswered-questions" type="button" role="tab">Chưa phản hồi bởi Admin</button>
+        </li>
+    </ul>
+
+    <div class="tab-content" id="qaTabsContent">
+        <div class="tab-pane fade show active" id="all-questions" role="tabpanel">
+            <ul id="questionList" class="list-unstyled" style="max-height: 600px; overflow-y: auto;"></ul>
+        </div>
+        <div class="tab-pane fade" id="unanswered-questions" role="tabpanel">
+            <ul id="unansweredList" class="list-unstyled" style="max-height:600px; overflow-y: auto;"></ul>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    const firebaseConfig = {
+        apiKey: "AIzaSyDOmM_iFG3hOUoZ7D053NpXzJc7bYQ9Jho",
+        authDomain: "swootechsmart.firebaseapp.com",
+        databaseURL: "https://swootechsmart-default-rtdb.asia-southeast1.firebasedatabase.app",
+        projectId: "swootechsmart",
+        storageBucket: "swootechsmart.appspot.com",
+        messagingSenderId: "243392421629",
+        appId: "1:243392421629:web:1238116e5f3ecf87e22894"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    // Load danh sách câu hỏi & phản hồi
+    db.ref('qa').orderByChild('timestamp').on('value', (snapshot) => {
+        const data = snapshot.val();
+        const list = document.getElementById('questionList');
+        const unansweredList = document.getElementById('unansweredList');
+        unansweredList.innerHTML = ""; // clear trước
+
+        list.innerHTML = "";
+
+        if (!data) {
+            list.innerHTML = "<li class='text-muted'>Chưa có câu hỏi nào.</li>";
+            return;
+        }
+
+        Object.keys(data).reverse().forEach(id => {
+            const q = data[id];
+            if (!q || !q.question || !q.askedBy) return;
+
+            let repliesHTML = '';
+            if (q.replies) {
+                Object.keys(q.replies).forEach(key => {
+                    const reply = q.replies[key];
+                    if (reply.repliedBy === 'admin') {
+                        // ✅ Phản hồi của Admin (style nổi bật)
+                        repliesHTML += `
+                        <div class="mt-3 ms-4 p-3 bg-danger bg-opacity-10 border-start border-4 border-danger rounded shadow-sm">
+                            <div class="d-flex gap-2 align-items-center mb-1">
+                                <img src="https://cdn-icons-png.flaticon.com/512/1946/1946429.png" width="30" height="30" class="rounded-circle" />
+                                <span class="fw-bold text-danger">Quản trị viên</span>
+                            </div>
+                            <div class="text-muted">${reply.message}</div>
+                            <button class="btn btn-sm btn-link text-danger mt-1 p-0" onclick="deleteReply('${id}', '${key}')">Xoá phản hồi</button>
+                        </div>`;
+                    } else {
+                        // ✅ Phản hồi user
+                        repliesHTML += `
+                        <div class="mt-3 ms-4 p-3 bg-light border-start border-3 border-secondary rounded">
+                            <div class="fw-bold text-secondary">${reply.repliedBy}</div>
+                            <div class="text-muted">${reply.message}</div>
+                            <button class="btn btn-sm btn-link text-danger mt-1 p-0" onclick="deleteReply('${id}', '${key}')">Xoá phản hồi</button>
+                        </div>`;
+                    }
+                });
+            }
+
+            const li = document.createElement('li');
+            li.classList.add("mb-5");
+
+            const createdAt = isNaN(new Date(Number(q.timestamp)).getTime())
+                ? "Không xác định"
+                : new Date(Number(q.timestamp)).toLocaleDateString('vi-VN');
+
+            li.innerHTML = `
+                <div class="p-3 bg-light rounded shadow-sm border">
+                    <div class="mb-2">
+                 <div class="d-flex justify-content-between">
+                    <strong>${q.askedBy}</strong>
+                    <div class="text-muted small">🕒 ${createdAt}</div>
+                </div>
+
+                        <div>${q.question}</div>
+                    </div>
+                    ${repliesHTML}
+                    <div class="mt-3 d-flex flex-column flex-md-row gap-2">
+                        <input class="form-control" placeholder="Nhập phản hồi với tư cách Admin..." />
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-sm btn-danger" onclick="sendReply(this, '${id}')">Gửi phản hồi (Admin)</button>
+                            <button class="btn btn-sm btn-outline-danger" onclick="deleteQuestion('${id}')">Xoá câu hỏi</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+
+            list.appendChild(li);
+            // Kiểm tra xem đã có phản hồi từ admin chưa
+            let hasAdminReply = false;
+            if (q.replies) {
+                Object.values(q.replies).forEach(reply => {
+                    if (reply.repliedBy === 'admin') {
+                        hasAdminReply = true;
+                    }
+                });
+            }
+
+            // Nếu chưa có phản hồi từ admin thì thêm bản sao vào danh sách unansweredList
+            if (!hasAdminReply) {
+                const liClone = li.cloneNode(true);
+                unansweredList.appendChild(liClone);
+            }
+            li.dataset.askedBy = q.askedBy.toLowerCase();
+
+        });
+    });
+
+    // ✅ Gửi phản hồi với vai trò admin
+    function sendReply(button, questionId) {
+        // Tìm phần tử cha bao toàn bộ khối câu hỏi
+        const container = button.closest('.bg-light'); // thẻ div chính chứa input & replies
+
+        if (!container) {
+            alert("Không tìm thấy khối chứa phản hồi.");
+            return;
+        }
+
+        const input = container.querySelector('input');
+
+        if (!input) {
+            alert("Không tìm thấy ô nhập phản hồi.");
+            return;
+        }
+
+        const message = input.value.trim();
+        if (!message) {
+            alert("Vui lòng nhập nội dung phản hồi.");
+            return;
+        }
+
+        const replyId = Date.now().toString();
+
+        db.ref(`qa/${questionId}/replies/${replyId}`).set({
+            message: message,
+            repliedBy: "admin",
+            timestamp: Date.now()
+        });
+
+        input.value = "";
+    }
+
+    // ✅ Xoá câu hỏi
+    function deleteQuestion(id) {
+        if (confirm("Bạn có chắc muốn xoá câu hỏi này không?")) {
+            db.ref('qa/' + id).remove();
+        }
+    }
+
+    // ✅ Xoá phản hồi
+    function deleteReply(questionId, replyId) {
+        if (confirm("Bạn có chắc muốn xoá phản hồi này không?")) {
+            db.ref(`qa/${questionId}/replies/${replyId}`).remove();
+        }
+    }
+    document.getElementById("searchInput").addEventListener("input", function () {
+        const keyword = this.value.toLowerCase().trim();
+        document.querySelectorAll("#questionList li").forEach(item => {
+            const name = item.dataset.askedBy || "";
+            item.style.display = name.includes(keyword) ? "" : "none";
+        });
+    });
+
+</script>
