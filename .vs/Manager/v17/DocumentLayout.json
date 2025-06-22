@@ -3,16 +3,12 @@
   "WorkspaceRootPath": "C:\\Users\\phamn\\OneDrive\\M\u00E1y t\u00EDnh\\ShopManager\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{B5A91320-AF90-4A21-8251-C7D1F762736C}|Manager\\Manager.csproj|c:\\users\\phamn\\onedrive\\m\u00E1y t\u00EDnh\\shopmanager\\manager\\views\\home\\reponse.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
-      "RelativeMoniker": "D:0:0:{B5A91320-AF90-4A21-8251-C7D1F762736C}|Manager\\Manager.csproj|solutionrelative:manager\\views\\home\\reponse.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+      "AbsoluteMoniker": "D:0:0:{B5A91320-AF90-4A21-8251-C7D1F762736C}|Manager\\Manager.csproj|c:\\users\\phamn\\onedrive\\m\u00E1y t\u00EDnh\\shopmanager\\manager\\views\\home\\baocaosanpham.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{B5A91320-AF90-4A21-8251-C7D1F762736C}|Manager\\Manager.csproj|solutionrelative:manager\\views\\home\\baocaosanpham.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{B5A91320-AF90-4A21-8251-C7D1F762736C}|Manager\\Manager.csproj|c:\\users\\phamn\\onedrive\\m\u00E1y t\u00EDnh\\shopmanager\\manager\\controllers\\homecontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{B5A91320-AF90-4A21-8251-C7D1F762736C}|Manager\\Manager.csproj|solutionrelative:manager\\controllers\\homecontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{B5A91320-AF90-4A21-8251-C7D1F762736C}|Manager\\Manager.csproj|c:\\users\\phamn\\onedrive\\m\u00E1y t\u00EDnh\\shopmanager\\manager\\views\\shared\\_layout.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
-      "RelativeMoniker": "D:0:0:{B5A91320-AF90-4A21-8251-C7D1F762736C}|Manager\\Manager.csproj|solutionrelative:manager\\views\\shared\\_layout.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+      "AbsoluteMoniker": "D:0:0:{B5A91320-AF90-4A21-8251-C7D1F762736C}|Manager\\Manager.csproj|c:\\users\\phamn\\onedrive\\m\u00E1y t\u00EDnh\\shopmanager\\manager\\views\\home\\danhsachhanghoa.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{B5A91320-AF90-4A21-8251-C7D1F762736C}|Manager\\Manager.csproj|solutionrelative:manager\\views\\home\\danhsachhanghoa.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
     }
   ],
   "DocumentGroupContainers": [
@@ -39,40 +35,27 @@
             {
               "$type": "Document",
               "DocumentIndex": 0,
-              "Title": "Reponse.cshtml",
-              "DocumentMoniker": "C:\\Users\\phamn\\OneDrive\\M\u00E1y t\u00EDnh\\ShopManager\\Manager\\Views\\Home\\Reponse.cshtml",
-              "RelativeDocumentMoniker": "Manager\\Views\\Home\\Reponse.cshtml",
-              "ToolTip": "C:\\Users\\phamn\\OneDrive\\M\u00E1y t\u00EDnh\\ShopManager\\Manager\\Views\\Home\\Reponse.cshtml",
-              "RelativeToolTip": "Manager\\Views\\Home\\Reponse.cshtml",
-              "ViewState": "AQIAAB4AAAAAAAAAAAAAACIAAAAKAAAA",
+              "Title": "BaoCaoSanPham.cshtml",
+              "DocumentMoniker": "C:\\Users\\phamn\\OneDrive\\M\u00E1y t\u00EDnh\\ShopManager\\Manager\\Views\\Home\\BaoCaoSanPham.cshtml",
+              "RelativeDocumentMoniker": "Manager\\Views\\Home\\BaoCaoSanPham.cshtml",
+              "ToolTip": "C:\\Users\\phamn\\OneDrive\\M\u00E1y t\u00EDnh\\ShopManager\\Manager\\Views\\Home\\BaoCaoSanPham.cshtml",
+              "RelativeToolTip": "Manager\\Views\\Home\\BaoCaoSanPham.cshtml",
+              "ViewState": "AQIAAMYAAAAAAAAAAAAewNIAAAATAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2025-06-09T16:33:46.621Z",
+              "WhenOpened": "2025-06-21T14:38:11.586Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
               "DocumentIndex": 1,
-              "Title": "HomeController.cs",
-              "DocumentMoniker": "C:\\Users\\phamn\\OneDrive\\M\u00E1y t\u00EDnh\\ShopManager\\Manager\\Controllers\\HomeController.cs",
-              "RelativeDocumentMoniker": "Manager\\Controllers\\HomeController.cs",
-              "ToolTip": "C:\\Users\\phamn\\OneDrive\\M\u00E1y t\u00EDnh\\ShopManager\\Manager\\Controllers\\HomeController.cs",
-              "RelativeToolTip": "Manager\\Controllers\\HomeController.cs",
-              "ViewState": "AQIAAOMRAAAAAAAAAAAAwPIRAAAcAAAA",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-06-09T16:32:05.831Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 2,
-              "Title": "_Layout.cshtml",
-              "DocumentMoniker": "C:\\Users\\phamn\\OneDrive\\M\u00E1y t\u00EDnh\\ShopManager\\Manager\\Views\\Shared\\_Layout.cshtml",
-              "RelativeDocumentMoniker": "Manager\\Views\\Shared\\_Layout.cshtml",
-              "ToolTip": "C:\\Users\\phamn\\OneDrive\\M\u00E1y t\u00EDnh\\ShopManager\\Manager\\Views\\Shared\\_Layout.cshtml",
-              "RelativeToolTip": "Manager\\Views\\Shared\\_Layout.cshtml",
-              "ViewState": "AQIAAE4AAAAAAAAAAAAcwFsAAAAmAAAA",
+              "Title": "DanhSachHangHoa.cshtml",
+              "DocumentMoniker": "C:\\Users\\phamn\\OneDrive\\M\u00E1y t\u00EDnh\\ShopManager\\Manager\\Views\\Home\\DanhSachHangHoa.cshtml",
+              "RelativeDocumentMoniker": "Manager\\Views\\Home\\DanhSachHangHoa.cshtml",
+              "ToolTip": "C:\\Users\\phamn\\OneDrive\\M\u00E1y t\u00EDnh\\ShopManager\\Manager\\Views\\Home\\DanhSachHangHoa.cshtml",
+              "RelativeToolTip": "Manager\\Views\\Home\\DanhSachHangHoa.cshtml",
+              "ViewState": "AQIAACcAAAAAAAAAAAAAAE8AAABSAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2025-06-09T16:28:14.945Z",
+              "WhenOpened": "2025-06-21T14:36:29.874Z",
               "EditorCaption": ""
             }
           ]

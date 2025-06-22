@@ -133,7 +133,7 @@
                                 @foreach (var item in Model.ChiTietDoanhThuTheoDanhMuc)
                                 {
                                     <tr>
-                                        <td class="ps-4">@item.TenDanhMuc</td>
+                                        <td class="ps-4">@Html.Raw(item.TenDanhMuc ?? "Chưa phân loại")</td>
                                         <td>@string.Format("{0:N0}", item.DoanhThu)đ</td>
                                         <td>@string.Format("{0:N0}", item.ChiPhi)đ</td>
                                         <td>@string.Format("{0:N0}", item.LoiNhuan)đ</td>
