@@ -114,9 +114,10 @@
                 </tr>
             </thead>
             <tbody>
-                @foreach (var item in itemsToShow)
+                @for (int i = 0; i < nhapHangSapXep.Count; i++)
                 {
-                    <tr>
+                    var item = nhapHangSapXep[i];
+                    <tr data-index="@i" style="display: @(i >= (currentPage - 1) * pageSize && i < currentPage * pageSize ? "" : "none")">
                         <td class="text-center">
                             <input type="checkbox" class="check-item" value="@item.MaNhapHang" />
                         </td>
@@ -416,7 +417,14 @@
 
             function searchImports() {
                 var searchText = $('#searchInput').val().toLowerCase();
-                $('#importTable tbody tr').each(function() {
+                var hasSearch = searchText.length > 0
+                    || $('#filterFromDate').val().length > 0
+                    || $('#filterToDate').val().length > 0
+                    || $('#filterMinValue').val().length > 0
+                    || $('#filterMaxValue').val().length > 0
+                    || $('#filterEmployee').val().length > 0
+                    || $('#filterPaymentStatus').val().length > 0;
+                $('#importTable tbody tr').each(function(index) {
                     var maNhapHang = $(this).find('td:eq(1)').text().toLowerCase();
                     var nhaCungCap = $(this).find('td:eq(2)').text().toLowerCase();
                     
@@ -426,6 +434,19 @@
                         $(this).hide();
                     }
                 });
+                if (hasSearch) {
+                    $('.pagination').hide();
+                } else {
+                    $('.pagination').show();
+                    // Ẩn/hiện lại các dòng theo trang hiện tại
+                    $('#importTable tbody tr').each(function(index) {
+                        if(index >= (currentPage - 1) * pageSize && index < currentPage * pageSize) {
+                            $(this).show();
+                        } else {
+                            $(this).hide();
+                        }
+                    });
+                }
             }
 
             // Xử lý lọc nâng cao

@@ -65,9 +65,10 @@
                 </tr>
             </thead>
             <tbody>
-                @foreach (var nv in itemsToShow)
+                @for (int i = 0; i < nhanVienSapXep.Count; i++)
                 {
-                    <tr>
+                    var nv = nhanVienSapXep[i];
+                    <tr data-index="@i" style="display: @(i >= (currentPage - 1) * pageSize && i < currentPage * pageSize ? "" : "none")">
                         <td>
                             <input type="checkbox" class="check-item" value="@nv.MaNhanVien" />
                         </td>
@@ -674,6 +675,35 @@
                 const fullAddress = $('#editDiaChi').val();
                 $('#editDiaChiChiTiet').val(fullAddress);
             }, 300);
+        });
+
+        var pageSize = @pageSize;
+        var currentPage = @currentPage;
+        $('#searchInput').on('input', function() {
+            var value = $(this).val().toLowerCase();
+            var hasSearch = value.length > 0
+                || $('#roleFilter').val().length > 0
+                || $('#statusFilter').val().length > 0;
+            $('#employeeTable tbody tr').each(function(index) {
+                if($(this).text().toLowerCase().indexOf(value) > -1) {
+                    $(this).show();
+                } else {
+                    $(this).hide();
+                }
+            });
+            if (hasSearch) {
+                $('.pagination').hide();
+            } else {
+                $('.pagination').show();
+                // Ẩn/hiện lại các dòng theo trang hiện tại
+                $('#employeeTable tbody tr').each(function(index) {
+                    if(index >= (currentPage - 1) * pageSize && index < currentPage * pageSize) {
+                        $(this).show();
+                    } else {
+                        $(this).hide();
+                    }
+                });
+            }
         });
     });
 </script>

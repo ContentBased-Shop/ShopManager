@@ -51,9 +51,10 @@
                 </tr>
             </thead>
             <tbody>
-                @foreach (var item in itemsToShow)
+                @for (int i = 0; i < thuongHieuSapXep.Count; i++)
                 {
-                    <tr>
+                    var item = thuongHieuSapXep[i];
+                    <tr data-index="@i" style="display: @(i >= (currentPage - 1) * pageSize && i < currentPage * pageSize ? "" : "none")">
                         <td>
                             <input type="checkbox" class="check-item" value="@item.MaThuongHieu" />
                         </td>
@@ -470,16 +471,31 @@
         // Xử lý tìm kiếm
         function searchBrands() {
             var searchText = $('#searchInput').val().toLowerCase();
+            var hasSearch = searchText.length > 0;
+            var count = 0;
             $('#brandTable tbody tr').each(function() {
                 var maThuongHieu = $(this).find('.ma-thuong-hieu').text().toLowerCase();
                 var tenThuongHieu = $(this).find('.ten-thuong-hieu').text().toLowerCase();
-                
                 if(maThuongHieu.includes(searchText) || tenThuongHieu.includes(searchText)) {
                     $(this).show();
+                    count++;
                 } else {
                     $(this).hide();
                 }
             });
+            if (hasSearch) {
+                $('.pagination').hide();
+            } else {
+                $('.pagination').show();
+                // Ẩn/hiện lại các dòng theo trang hiện tại
+                $('#brandTable tbody tr').each(function(index) {
+                    if(index >= (currentPage - 1) * pageSize && index < currentPage * pageSize) {
+                        $(this).show();
+                    } else {
+                        $(this).hide();
+                    }
+                });
+            }
         }
 
         // Sự kiện khi nhập vào ô tìm kiếm

@@ -55,9 +55,10 @@
                 </tr>
             </thead>
             <tbody>
-                @foreach (var v in itemsToShow)
+                @for (int i = 0; i < voucherSapXep.Count; i++)
                 {
-                    <tr>
+                    var v = voucherSapXep[i];
+                    <tr data-index="@i" style="display: @(i >= (currentPage - 1) * pageSize && i < currentPage * pageSize ? "" : "none")">
                         <td>
                             <input type="checkbox" class="check-item" value="@v.MaVoucher" />
                         </td>
@@ -66,8 +67,8 @@
                         <td class="ten-voucher">@v.TenVoucher</td>
                         <td>
                             @(v.LoaiGiamGia == "TienMat"
-        ? (v.GiaTriGiamGia ?? 0).ToString("N0") + "₫"
-        : (v.GiaTriGiamGia ?? 0).ToString("N0") + "%")
+                                ? (v.GiaTriGiamGia ?? 0).ToString("N0") + "₫"
+                                : (v.GiaTriGiamGia ?? 0).ToString("N0") + "%")
                         </td>
                         <td>@((v.DonHangToiThieu ?? 0).ToString("N0")) ₫</td>
                         <td>@v.SoLuong</td>
@@ -519,16 +520,31 @@ $(document).ready(function () {
     // Xử lý tìm kiếm
     function searchVouchers() {
         var searchText = $('#searchInput').val().toLowerCase();
+        var hasSearch = searchText.length > 0;
+        var count = 0;
         $('#voucherTable tbody tr').each(function() {
             var maCode = $(this).find('.ma-code').text().toLowerCase();
             var tenVoucher = $(this).find('.ten-voucher').text().toLowerCase();
-            
             if(maCode.includes(searchText) || tenVoucher.includes(searchText)) {
                 $(this).show();
+                count++;
             } else {
                 $(this).hide();
             }
         });
+        if (hasSearch) {
+            $('.pagination').hide();
+        } else {
+            $('.pagination').show();
+            // Ẩn/hiện lại các dòng theo trang hiện tại
+            $('#voucherTable tbody tr').each(function(index) {
+                if(index >= (currentPage - 1) * pageSize && index < currentPage * pageSize) {
+                    $(this).show();
+                } else {
+                    $(this).hide();
+                }
+            });
+        }
     }
 
     // Sự kiện khi nhập vào ô tìm kiếm
