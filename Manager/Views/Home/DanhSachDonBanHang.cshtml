@@ -130,9 +130,10 @@
                 </tr>
             </thead>
             <tbody>
-                @foreach (var item in itemsToShow)
+                @for (int i = 0; i < donHangSapXep.Count; i++)
                 {
-                    <tr>
+                    var item = donHangSapXep[i];
+                    <tr data-index="@i" style="display: @(i >= (currentPage - 1) * pageSize && i < currentPage * pageSize ? "" : "none")">
                         <td class="text-center">
                             <input type="checkbox" class="check-item" value="@item.MaDonHang" />
                         </td>
@@ -399,6 +400,14 @@
                 var orderStatus = $('#filterOrderStatus').val();
                 var paymentStatus = $('#filterPaymentStatus').val();
 
+                var hasSearch = $('#searchInput').val().length > 0
+                    || $('#filterFromDate').val().length > 0
+                    || $('#filterToDate').val().length > 0
+                    || $('#filterMinValue').val().length > 0
+                    || $('#filterMaxValue').val().length > 0
+                    || $('#filterOrderStatus').val().length > 0
+                    || $('#filterPaymentStatus').val().length > 0;
+
                 $('#orderTable tbody tr').each(function() {
                     var show = true;
                     
@@ -482,6 +491,20 @@
                         $(this).hide();
                     }
                 });
+
+                if (hasSearch) {
+                    $('.pagination').hide();
+                } else {
+                    $('.pagination').show();
+                    // Ẩn/hiện lại các dòng theo trang hiện tại
+                    $('#orderTable tbody tr').each(function(index) {
+                        if(index >= (currentPage - 1) * pageSize && index < currentPage * pageSize) {
+                            $(this).show();
+                        } else {
+                            $(this).hide();
+                        }
+                    });
+                }
             }
 
             // Xử lý khi nhấn nút sửa

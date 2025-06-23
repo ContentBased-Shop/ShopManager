@@ -24,9 +24,9 @@ namespace Manager.Controllers
         string connStr = ConfigurationManager.ConnectionStrings["CuaHangAzureConnectionString"].ConnectionString;
 
         // Khai báo thông tin email
-        private readonly string _emailAddress = "managertask34@gmail.com";
-        private readonly string _emailPassword = "veaq dwhq oico jlzc";
-        private readonly string _emailDisplayName = "PrimeTech Admin";
+        private readonly string _emailAddress = "nhatquan.nvx@gmail.com";
+        private readonly string _emailPassword = "zsrj hhht ckvu tzmr";
+        private readonly string _emailDisplayName = "SWOOTech Admin";
         private readonly string _emailHost = "smtp.gmail.com";
         private readonly int _emailPort = 587;
         

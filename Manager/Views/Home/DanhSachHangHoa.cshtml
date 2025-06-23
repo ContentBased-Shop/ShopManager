@@ -55,9 +55,10 @@
                 </tr>
             </thead>
             <tbody>
-                @foreach (var item in itemsToShow)
+                @for (int i = 0; i < hangHoaSapXep.Count; i++)
                 {
-                    <tr>
+                    var item = hangHoaSapXep[i];
+                    <tr data-index="@i" style="display: @(i >= (currentPage - 1) * pageSize && i < currentPage * pageSize ? "" : "none")">
                         <td>
                             <input type="checkbox" class="check-item" value="@item.MaHangHoa" />
                         </td>
@@ -220,19 +221,37 @@
 
     <script>
     $(document).ready(function () {
+        var pageSize = @pageSize;
+        var currentPage = @currentPage;
+
         // Xử lý tìm kiếm
         function searchProducts() {
             var searchText = $('#searchInput').val().toLowerCase();
+            var hasSearch = searchText.length > 0;
+            var count = 0;
             $('#productTable tbody tr').each(function() {
                 var maHangHoa = $(this).find('.ma-hang-hoa').text().toLowerCase();
                 var tenHangHoa = $(this).find('.ten-hang-hoa').text().toLowerCase();
-                
                 if(maHangHoa.includes(searchText) || tenHangHoa.includes(searchText)) {
                     $(this).show();
+                    count++;
                 } else {
                     $(this).hide();
                 }
             });
+            if (hasSearch) {
+                $('.pagination').hide();
+            } else {
+                $('.pagination').show();
+                // Ẩn/hiện lại các dòng theo trang hiện tại
+                $('#productTable tbody tr').each(function(index) {
+                    if(index >= (currentPage - 1) * pageSize && index < currentPage * pageSize) {
+                        $(this).show();
+                    } else {
+                        $(this).hide();
+                    }
+                });
+            }
         }
 
         // Sự kiện khi nhập vào ô tìm kiếm

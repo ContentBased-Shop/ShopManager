@@ -47,9 +47,10 @@
                 </tr>
             </thead>
             <tbody>
-                @foreach (var dm in itemsToShow)
+                @for (int i = 0; i < danhMucSapXep.Count; i++)
                 {
-                    <tr>
+                    var dm = danhMucSapXep[i];
+                    <tr data-index="@i" style="display: @(i >= (currentPage - 1) * pageSize && i < currentPage * pageSize ? "" : "none")">
                         <td>
                             <input type="checkbox" class="check-item" value="@dm.MaDanhMuc" />
                         </td>
@@ -245,9 +246,29 @@
         // Xử lý tìm kiếm
         $("#searchInput").on("keyup", function () {
             var value = $(this).val().toLowerCase();
-            $("#categoryTable tbody tr").filter(function() {
-                $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1);
+            var hasSearch = value.length > 0;
+            var count = 0;
+            $("#categoryTable tbody tr").each(function(index) {
+                if($(this).text().toLowerCase().indexOf(value) > -1) {
+                    $(this).show();
+                    count++;
+                } else {
+                    $(this).hide();
+                }
             });
+            if (hasSearch) {
+                $('.pagination').hide();
+            } else {
+                $('.pagination').show();
+                // Ẩn/hiện lại các dòng theo trang hiện tại
+                $("#categoryTable tbody tr").each(function(index) {
+                    if(index >= (currentPage - 1) * pageSize && index < currentPage * pageSize) {
+                        $(this).show();
+                    } else {
+                        $(this).hide();
+                    }
+                });
+            }
         });
 
         // Xử lý checkbox "Chọn tất cả"
